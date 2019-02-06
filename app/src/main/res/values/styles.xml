@@ -8,4 +8,26 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AppDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowTitleStyle">@style/DialogWindowTitle</item>
+        <!-- ...other stuff here... -->
+    </style>
+
+
+    <style name="AppAlertTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:windowTitleStyle">@style/DialogWindowTitle</item>
+        <!-- ...other stuff here... -->
+    </style>
+
+    <style name="DialogWindowTitle" parent="Base.DialogWindowTitle.AppCompat">
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAppearance">@style/DialogWindowTitleText</item>
+    </style>
+
+    <style name="DialogWindowTitleText" parent="@android:style/TextAppearance.DialogWindowTitle">
+    <item name="android:textSize">24sp</item>
+    </style>
+
+
 </resources>
