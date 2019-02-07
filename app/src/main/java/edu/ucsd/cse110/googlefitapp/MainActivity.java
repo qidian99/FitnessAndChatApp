@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         String metric = sharedPreferences.getString("metric", "");
         float strideLength = sharedPreferences.getFloat("stride", 0);
 
-        if(magnitude.equals("") || metric.equals("") || strideLength == 0){
+        if(strideLength == 0){
             showHeightPrompt();
         } else {
             TextView textHeight = findViewById(R.id.textHeight);
