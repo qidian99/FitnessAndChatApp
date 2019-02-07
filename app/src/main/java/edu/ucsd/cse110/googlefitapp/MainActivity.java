@@ -88,16 +88,16 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Estimate stride length, in inches
         float strideLength = 0;
         // Case 1: use centimeter as metric
-        if(inputText[1].equals("cm")){
-            strideLength = (float) (Integer.parseInt(inputText[0]) / 2.54 * 0.413);
+        if(Integer.parseInt(inputText[0]) == 0 ){
+            strideLength = (float) (Integer.parseInt(inputText[1]) / 2.54 * 0.413);
         }
         // Case 2: use feet as metric
         else {
-            strideLength = (float) (Integer.parseInt(inputText[0]) * 0.413);
+            strideLength = (float) ((Integer.parseInt(inputText[1])*12 + Integer.parseInt(inputText[2])) * 0.413);
         }
         editor.putFloat("stride", strideLength);
 
-        textHeight.setText(String.format("Your stride length is estimated to be %.2f feet.", strideLength));
+        textHeight.setText(String.format("Your estimated stride length is %.2f inches.", strideLength));
 
         Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT);
     }
