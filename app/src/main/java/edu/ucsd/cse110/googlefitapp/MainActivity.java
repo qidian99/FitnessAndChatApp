@@ -17,6 +17,7 @@ import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
 public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener {
     private String fitnessServiceKey = "GOOGLE_FIT";
 
+    public static final String showStride = "Your estimated stride length is %.2f inches.";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             showHeightPrompt();
         } else {
             TextView textHeight = findViewById(R.id.textHeight);
-            textHeight.setText(String.format("Your stride length is estimated to be %.2f feet.", strideLength));
+            textHeight.setText(String.format(showStride, strideLength));
         }
 
         // In development, we allow users to re-enter their heights
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         }
         editor.putFloat("stride", strideLength);
 
-        textHeight.setText(String.format("Your estimated stride length is %.2f inches.", strideLength));
+        textHeight.setText(String.format(showStride, strideLength));
 
         Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT);
     }
