@@ -1,4 +1,4 @@
-package com.example.joshuakang.team4_personalbest;
+package edu.ucsd.cse110.googlefitapp;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.joshuakang.team4_personalbest", appContext.getPackageName());
+        assertEquals("edu.ucsd.cse110.googlefitapp", appContext.getPackageName());
     }
 }
