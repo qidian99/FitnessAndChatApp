@@ -1,0 +1,65 @@
+<!-- fragment_prompt_height.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/prompt_height"
+    android:layout_width="320dp"
+    android:layout_height="200dp"
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/txt_prompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        android:text="@string/heightPrompt"
+        android:textSize="24sp" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="299dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="15dp"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/num_height"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:inputType="number" />
+
+        <Spinner
+            android:id="@+id/metricSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="110dp"
+            android:entries="@array/metric"
+            android:visibility="visible" />
+
+    </LinearLayout>
+
+    <!--<RelativeLayout-->
+        <!--android:id="@+id/relativeLayout1"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content">-->
+
+        <!--<Button-->
+            <!--android:id="@+id/posBtn"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentLeft="true"-->
+            <!--android:text="@string/confirm" />-->
+
+        <!--<Button-->
+            <!--android:id="@+id/negBtn"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:text="@string/cancel" />-->
+    <!--</RelativeLayout>-->
+
+
+</LinearLayout>
