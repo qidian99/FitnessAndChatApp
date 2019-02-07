@@ -126,7 +126,7 @@ public class promptHeightEspressoTest {
         onView(withId(R.id.ft_height)).perform(typeText("6"));
         onView(withId(R.id.inch_height)).perform(typeText("0"));
         onView(withId(R.id.posBtn)).perform(click());
-        onView(withId(R.id.textHeight)).check(matches(withText(containsString(String.format("Your stride length is estimated to be %.2f feet.", 6 * 12 * 0.413)))));
+        onView(withId(R.id.textHeight)).check(matches(withText(String.format("Your estimated stride length is %.2f inches.", 6 * 12 * 0.413))));
 
     }
 
