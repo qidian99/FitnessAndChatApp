@@ -1,4 +1,4 @@
-package com.example.joshuakang.team4_personalbest;
+package edu.ucsd.cse110.googlefitapp;
 
 import org.junit.Test;
 
