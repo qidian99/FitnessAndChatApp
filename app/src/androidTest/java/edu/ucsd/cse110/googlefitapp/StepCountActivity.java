@@ -1,4 +1,4 @@
-package com.example.joshuakang.team4_personalbest;
+package edu.ucsd.cse110.googlefitapp;
 
 
 import android.support.test.filters.LargeTest;
@@ -11,12 +11,12 @@ import org.junit.runner.RunWith;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class MainActivityTest {
+public class StepCountActivity {
 
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class);
 
     @Test
-    public void mainActivityTest() {
+    public void stepCountActivity() {
     }
 }
