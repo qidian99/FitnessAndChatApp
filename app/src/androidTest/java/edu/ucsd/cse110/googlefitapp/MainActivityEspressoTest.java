@@ -16,8 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
-import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.fitness.*;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -47,7 +46,7 @@ public class MainActivityEspressoTest {
         mActivityTestRule.getActivity().setFitnessServiceKey(TEST_SERVICE);
 
         ViewInteraction button = onView(
-                allOf(withId(R.id.buttonGoToSteps),
+                allOf(withId(R.id.startButton),
                         childAtPosition(
                                 childAtPosition(
                                         withId(android.R.id.content),
@@ -57,7 +56,7 @@ public class MainActivityEspressoTest {
         button.check(matches(isDisplayed()));
 
         ViewInteraction appCompatButton = onView(
-                allOf(withId(R.id.buttonGoToSteps), withText("go to step counter"),
+                allOf(withId(R.id.startButton), withText("go to step counter"),
                         childAtPosition(
                                 childAtPosition(
                                         withId(android.R.id.content),
