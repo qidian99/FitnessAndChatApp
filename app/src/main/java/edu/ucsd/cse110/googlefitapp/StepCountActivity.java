@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
 
 public class StepCountActivity extends AppCompatActivity {
 
@@ -39,6 +40,15 @@ public class StepCountActivity extends AppCompatActivity {
             }
         });
 
+<<<<<<< HEAD
+        Button btnMockData = findViewById(R.id.btnMockDt);
+        btnMockData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((GoogleFitAdapter) fitnessService).mockDataPoint();
+            }
+        });
+=======
         Button btnEndRecord = findViewById(R.id.btnEndRecord);
         btnEndRecord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,6 +57,7 @@ public class StepCountActivity extends AppCompatActivity {
             }
         });
 
+>>>>>>> 614e266e9e23a5cc98e8a6a233f5ea144f2c3ccd
         fitnessService.setup();
 
     }

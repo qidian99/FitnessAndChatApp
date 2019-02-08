@@ -89,7 +89,11 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
             }
         });
 
-        setCancelable(false);
+        if(MainActivity.firstPromptHeight) {
+            setCancelable(false);
+        } else {
+            setCancelable(true);
+        }
 
         // Show soft keyboard
         this.window = getDialog().getWindow();
