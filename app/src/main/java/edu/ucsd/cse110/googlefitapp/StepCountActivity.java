@@ -27,7 +27,7 @@ public class StepCountActivity extends AppCompatActivity {
     private TextView textSteps;
     private FitnessService fitnessService;
     private long steps = 0;
-    private long distance = 0;
+    private double distance = 0;
     private int time = 0;
     private double speed = 0;
 
