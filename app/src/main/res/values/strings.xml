@@ -1,13 +1,15 @@
 <resources>
     <string name="app_name">Team4-PersonalBest</string>
     <string name="startBtnStr">Start Recording</string>
-    <string name="heightPrompt">Please enter your height</string>
-    <string name="confirm">OK</string>
+    <string name="heightPrompt">Please Enter Your Height</string>
+    <string name="confirm">Done</string>
     <string name="cancel">Cancel</string>
-    <string name="metric_prompt">metric</string>
+    <string name="metric_prompt">Select a metric:</string>
     <string-array name="metric">
         <item>cm</item>
         <item>ft</item>
     </string-array>
     <string name="invalidHeight">Invalid height. Please enter again.</string>
+    <string name="displaySteps">Step Taken</string>
+    <string name="displayGoal">Current Goal</string>
 </resources>
