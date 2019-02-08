@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
 
 public class StepCountActivity extends AppCompatActivity {
 
@@ -36,6 +37,14 @@ public class StepCountActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 fitnessService.updateStepCount();
+            }
+        });
+
+        Button btnMockData = findViewById(R.id.btnMockDt);
+        btnMockData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((GoogleFitAdapter) fitnessService).mockDataPoint();
             }
         });
 
