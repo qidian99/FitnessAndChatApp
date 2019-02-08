@@ -29,9 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.fitness.GoalSetter;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
 
-public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener {
+public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, GoalSetter.GoalPrompterListener {
     private String fitnessServiceKey = "GOOGLE_FIT";
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
 
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public static final String SHOW_STEP = "Your have taken %d steps.";
 
     public static final long DEFAULT_GOAL = 5000L;
+    public static boolean firstPromptHeight = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
-        SharedPreferences sharedPreferences = getSharedPreferences("user_height", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         String magnitude = sharedPreferences.getString("magnitude", "");
         String metric = sharedPreferences.getString("metric", "");
         float strideLength = sharedPreferences.getFloat("stride", 0);
@@ -121,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         if(strideLength == 0){
             showHeightPrompt();
+            firstPromptHeight = false;
+
         } else {
             TextView textHeight = findViewById(R.id.textHeight);
             textHeight.setText(String.format(SHOW_STRIDE, strideLength));
@@ -135,6 +139,16 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
+        // Users can customize their goals
+        Button setGoalBtn = findViewById(R.id.btnSetGoal);
+        setGoalBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showNewGoalPrompt();
+            }
+        });
+
+        // Start an active session
         Button btnGoToSteps = findViewById(R.id.startBtn);
         btnGoToSteps.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -161,10 +175,16 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         editNameDialogFragment.show(fm, "fragment_prompt_height");
     }
 
+    private void showNewGoalPrompt() {
+        FragmentManager fm = getSupportFragmentManager();
+        GoalSetter setGoalDialogFragment = GoalSetter.newInstance(getString(R.string.setGoalPrompt));
+        setGoalDialogFragment.show(fm, "fragment_set_goal");
+    }
+
     @Override
     public void onFinishEditDialog(String[] inputText) {
         TextView textHeight = findViewById(R.id.textHeight);
-        SharedPreferences sharedPreferences = getSharedPreferences("user_height", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         SharedPreferences.Editor editor =   sharedPreferences.edit();
         editor.putString("magnitude", inputText[0]);
         editor.putString("metric", inputText[1]);
@@ -185,5 +205,17 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         textHeight.setText(String.format(SHOW_STRIDE, strideLength));
 
         Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT);
+    }
+
+    @Override
+    public void onFinishEditDialog(long goal) {
+        TextView goalText = findViewById(R.id.textGoal);
+        goalText.setText(String.format(SHOW_GOAL, goal));
+
+        // Save new goal
+        SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
+        SharedPreferences.Editor editor =   sharedPreferences.edit();
+        editor.putLong("goal", goal);
+        editor.apply();
     }
 }
