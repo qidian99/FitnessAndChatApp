@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public void onFinishEditDialog(String[] inputText) {
         TextView textHeight = findViewById(R.id.textHeight);
         SharedPreferences sharedPreferences = getSharedPreferences("user_height", MODE_PRIVATE);
-        SharedPreferences.Editor editor =   sharedPreferences.edit();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("magnitude", inputText[0]);
         editor.putString("metric", inputText[1]);
 
