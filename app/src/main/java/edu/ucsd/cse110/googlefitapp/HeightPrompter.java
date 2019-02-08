@@ -88,6 +88,7 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
                 centText.setVisibility(View.VISIBLE);
             }
         });
+
         if(MainActivity.firstPromptHeight) {
             setCancelable(false);
         } else {
