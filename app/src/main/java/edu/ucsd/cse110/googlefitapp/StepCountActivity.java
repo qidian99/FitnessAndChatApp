@@ -57,6 +57,8 @@ public class StepCountActivity extends AppCompatActivity {
         btnEndRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                fitnessService.stopAsync();
                 Intent homescreen = new Intent(getApplicationContext(), MainActivity.class);
                 homescreen.putExtra("distance", distance);
                 // homescreen.putExtra("time", time);
