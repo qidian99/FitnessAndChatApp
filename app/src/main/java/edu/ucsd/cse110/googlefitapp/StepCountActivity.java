@@ -47,6 +47,15 @@ public class StepCountActivity extends AppCompatActivity {
                 ((GoogleFitAdapter) fitnessService).mockDataPoint();
             }
         });
+
+        Button btnEndRecord = findViewById(R.id.btnEndRecord);
+        btnEndRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
         fitnessService.setup();
 
     }
