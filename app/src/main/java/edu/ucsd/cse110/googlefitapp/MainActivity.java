@@ -94,39 +94,41 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Update step
         GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(this);
         final TextView stepText = findViewById(R.id.textStepsMain);
-        Fitness.getHistoryClient(this, lastSignedInAccount)
-                .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
-                .addOnSuccessListener(
-                        new OnSuccessListener<DataSet>() {
-                            @Override
-                            public void onSuccess(DataSet dataSet) {
-                                if(dataSet.isEmpty()) {
-                                    int stepCountDelta = 950;
-                                    Calendar cal = Calendar.getInstance();
-                                    Date now = new Date();
-                                    cal.setTime(now);
-                                    long endTime = cal.getTimeInMillis();
-                                    cal.add(Calendar.HOUR_OF_DAY, -1);
-                                    long startTime = cal.getTimeInMillis();
-                                    DataPoint dataPoint =
-                                            dataSet.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
-                                    dataPoint.getValue(Field.FIELD_STEPS).setInt(stepCountDelta);
-                                    dataSet.add(dataPoint);
-                                }
+        if (GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
+            Fitness.getHistoryClient(this, lastSignedInAccount)
+                    .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
+                    .addOnSuccessListener(
+                            new OnSuccessListener<DataSet>() {
+                                @Override
+                                public void onSuccess(DataSet dataSet) {
+                                    if (dataSet.isEmpty()) {
+                                        int stepCountDelta = 950;
+                                        Calendar cal = Calendar.getInstance();
+                                        Date now = new Date();
+                                        cal.setTime(now);
+                                        long endTime = cal.getTimeInMillis();
+                                        cal.add(Calendar.HOUR_OF_DAY, -1);
+                                        long startTime = cal.getTimeInMillis();
+                                        DataPoint dataPoint =
+                                                dataSet.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
+                                        dataPoint.getValue(Field.FIELD_STEPS).setInt(stepCountDelta);
+                                        dataSet.add(dataPoint);
+                                    }
 
-                                long total =
-                                        dataSet.isEmpty()
-                                                ? 0
-                                                : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
-                                stepText.setText(String.format(SHOW_STEP, total));
-                            }
-                        })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                            }
-                        });
+                                    long total =
+                                            dataSet.isEmpty()
+                                                    ? 0
+                                                    : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
+                                    stepText.setText(String.format(SHOW_STEP, total));
+                                }
+                            })
+                    .addOnFailureListener(
+                            new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                }
+                            });
+        }
 
         if(strideLength == 0){
             showHeightPrompt();
