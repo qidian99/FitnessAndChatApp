@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public static final String SHOW_GOAL = "Your current goal is %d steps.";
     public static final String SHOW_STEP = "Your have taken %d steps.";
     public static final String TMP_RESULT = "distance: %.2f, speed: %.2f, time: %d, steps: %d";
+    public static final String SHOW_STEPS_LEFT = "You have %d steps left.";
 
     public static final long DEFAULT_GOAL = 5000L;
     public static boolean firstPromptHeight = true;
@@ -94,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Update step
         GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(this);
         final TextView stepText = findViewById(R.id.textStepsMain);
+        final TextView stepsLeft = findViewById(R.id.stepsLeft);
         if (GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
             Fitness.getHistoryClient(this, lastSignedInAccount)
                     .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
@@ -120,6 +122,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                                                     ? 0
                                                     : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
                                     stepText.setText(String.format(SHOW_STEP, total));
+                                    SharedPreferences pref = getSharedPreferences("user_data", MODE_PRIVATE);
+                                    long currGoal = pref.getLong("goal", -1);
+                                    stepsLeft.setText(String.format(SHOW_STEPS_LEFT, currGoal - total));
                                 }
                             })
                     .addOnFailureListener(
