@@ -126,13 +126,14 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             firstPromptHeight = false;
 
         } else {
+            firstPromptHeight = false;
             TextView textHeight = findViewById(R.id.textHeight);
             textHeight.setText(String.format(SHOW_STRIDE, strideLength));
         }
 
         // In development, we allow users to re-enter their heights
-        Button clearBtn = findViewById(R.id.clearBtn);
-        clearBtn.setOnClickListener(new View.OnClickListener() {
+        Button setHeightBtn = findViewById(R.id.clearBtn);
+        setHeightBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showHeightPrompt();
