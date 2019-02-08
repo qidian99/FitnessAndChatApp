@@ -26,4 +26,5 @@
     <string name="congrats">You achieved your goal!\nDo you want to set a new goal?</string>
     <string name="suggested">Suggested:</string>
     <string name="customed">Customed:</string>
+    <string name="progressLeft">Steps Left</string>
 </resources>

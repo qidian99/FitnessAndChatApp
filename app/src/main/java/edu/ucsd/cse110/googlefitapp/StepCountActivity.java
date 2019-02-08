@@ -10,6 +10,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
@@ -32,6 +35,30 @@ public class StepCountActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_step_count);
+
+        Timer t = new Timer();
+        t.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TextView tv = (TextView)findViewById(R.id.timer_text);
+                        int min = time / 60;
+                        int sec = time - min*60;
+
+                        if(sec < 10) {
+                            tv.setText(String.format("%d:0%d", min, sec));
+                        } else {
+                            tv.setText(String.format("%d:%d", min, sec));
+                        }
+
+                        time += 1;
+                    }
+                });
+            }
+        }, 0, 1000);
+
         textSteps = findViewById(R.id.textSteps);
 
         String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
@@ -57,6 +84,8 @@ public class StepCountActivity extends AppCompatActivity {
         btnEndRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                fitnessService.stopAsync();
                 Intent homescreen = new Intent(getApplicationContext(), MainActivity.class);
                 homescreen.putExtra("distance", distance);
                 // homescreen.putExtra("time", time);
