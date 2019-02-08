@@ -35,13 +35,20 @@ import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
 public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, GoalSetter.GoalPrompterListener {
     private String fitnessServiceKey = "GOOGLE_FIT";
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
+    private static final int REQUEST_CODE = 1000;
 
     public static final String SHOW_STRIDE = "Your estimated stride length is %.2f\"";
     public static final String SHOW_GOAL = "Your current goal is %d steps.";
     public static final String SHOW_STEP = "Your have taken %d steps.";
+    public static final String TMP_RESULT = "distance: %.2f, speed: %.2f, time: %d, steps: %d";
 
     public static final long DEFAULT_GOAL = 5000L;
     public static boolean firstPromptHeight = true;
+
+    private double activeDistance;
+    private double activeSpeed;
+    private int activeTimeElapsed;
+    private long activeSteps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,7 +168,21 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public void launchStepCountActivity() {
         Intent intent = new Intent(this, StepCountActivity.class);
         intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
-        startActivity(intent);
+        startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        activeDistance = data.getDoubleExtra("distance", 0.0);
+        activeSpeed = data.getDoubleExtra("speed", 0.0);
+        activeTimeElapsed = data.getIntExtra("time", 0);
+        activeSteps = data.getLongExtra("steps", 0);
+
+        Toast.makeText(getApplicationContext(), String.format(TMP_RESULT,
+                activeDistance, activeSpeed, activeTimeElapsed, activeSteps),
+                Toast.LENGTH_LONG).show();
+        // Toast.makeText(this,String.format("distance: %.2f, speed: %.2f", activeDistance, activeSpeed), Toast.LENGTH_LONG).show();
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {
