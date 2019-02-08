@@ -182,7 +182,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         Toast.makeText(getApplicationContext(), String.format(TMP_RESULT,
                 activeDistance, activeSpeed, activeTimeElapsed, activeSteps),
                 Toast.LENGTH_LONG).show();
-        // Toast.makeText(this,String.format("distance: %.2f, speed: %.2f", activeDistance, activeSpeed), Toast.LENGTH_LONG).show();
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {
