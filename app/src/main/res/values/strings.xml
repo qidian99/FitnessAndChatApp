@@ -14,9 +14,16 @@
     <string name="displaySteps">Step Taken</string>
     <string name="displayGoal">Current Goal</string>
     <string name="setGoalPrompt">Set a New Step Goal</string>
+    <string name="congratsPrompt">Congratulations!</string>
+    <string name="newGoalPrompt">Set your new goal!</string>
     <string name="invalidGoal">Please enter a valid goal.</string>
     <string name="re_enter_height">Re-enter Height</string>
     <string name="show_stride_length">Show Stride Length</string>
     <string name="steps_will_be_shown_here">steps will be shown here</string>
     <string name="update_steps">update steps</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="congrats">You achieved your goal!\nDo you want to set a new goal?</string>
+    <string name="suggested">Suggested:</string>
+    <string name="customed">Customed:</string>
 </resources>

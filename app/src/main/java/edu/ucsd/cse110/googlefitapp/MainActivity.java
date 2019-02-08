@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -29,10 +28,9 @@ import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
-import edu.ucsd.cse110.googlefitapp.fitness.GoalSetter;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
 
-public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, GoalSetter.GoalPrompterListener {
+public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, CustomGoalSetter.GoalPrompterListener {
     private String fitnessServiceKey = "GOOGLE_FIT";
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private static final int REQUEST_CODE = 1000;
@@ -44,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     public static final long DEFAULT_GOAL = 5000L;
     public static boolean firstPromptHeight = true;
+
+    private long goal;
 
     private double activeDistance;
     private double activeSpeed;
@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         String magnitude = sharedPreferences.getString("magnitude", "");
         String metric = sharedPreferences.getString("metric", "");
+        this.goal = sharedPreferences.getLong("goal", DEFAULT_GOAL);
         float strideLength = sharedPreferences.getFloat("stride", 0);
 
         FitnessOptions fitnessOptions = FitnessOptions.builder()
@@ -150,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         setGoalBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showNewGoalPrompt();
+                showCustomGoalPrompt();
             }
         });
 
@@ -183,6 +184,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                 activeDistance, activeSpeed, activeTimeElapsed, activeSteps),
                 Toast.LENGTH_LONG).show();
         // Toast.makeText(this,String.format("distance: %.2f, speed: %.2f", activeDistance, activeSpeed), Toast.LENGTH_LONG).show();
+
+        if(activeSteps >= this.goal) {
+            showNewGoalPrompt();
+        }
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {
@@ -195,10 +200,16 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         editNameDialogFragment.show(fm, "fragment_prompt_height");
     }
 
+    private void showCustomGoalPrompt() {
+        FragmentManager fm = getSupportFragmentManager();
+        CustomGoalSetter setGoalDialogFragment = CustomGoalSetter.newInstance(getString(R.string.setGoalPrompt));
+        setGoalDialogFragment.show(fm, "fragment_set_goal");
+    }
+    
     private void showNewGoalPrompt() {
         FragmentManager fm = getSupportFragmentManager();
-        GoalSetter setGoalDialogFragment = GoalSetter.newInstance(getString(R.string.setGoalPrompt));
-        setGoalDialogFragment.show(fm, "fragment_set_goal");
+        NewGoalSetter setGoalDialogFragment = NewGoalSetter.newInstance(getString(R.string.congratsPrompt), goal);
+        setGoalDialogFragment.show(fm, "fragment_set_new_goal");
     }
 
     @Override
@@ -231,8 +242,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         goalText.setText(String.format(SHOW_GOAL, goal));
 
         // Save new goal
+        this.goal = goal;
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
-        SharedPreferences.Editor editor =   sharedPreferences.edit();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong("goal", goal);
         editor.apply();
     }

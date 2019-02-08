@@ -1,4 +1,4 @@
-package edu.ucsd.cse110.googlefitapp.fitness;
+package edu.ucsd.cse110.googlefitapp;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -14,12 +14,9 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 
-import edu.ucsd.cse110.googlefitapp.R;
-
-public class GoalSetter extends DialogFragment implements TextView.OnEditorActionListener {
+public class CustomGoalSetter extends DialogFragment implements TextView.OnEditorActionListener {
     public interface GoalPrompterListener {
         void onFinishEditDialog(long goal);
     }
@@ -28,10 +25,10 @@ public class GoalSetter extends DialogFragment implements TextView.OnEditorActio
     private Window window;
     private EditText newGoalTxt;
 
-    public GoalSetter() {}
+    public CustomGoalSetter() {}
 
-    public static GoalSetter newInstance(String title) {
-        GoalSetter frag = new GoalSetter();
+    public static CustomGoalSetter newInstance(String title) {
+        CustomGoalSetter frag = new CustomGoalSetter();
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);
