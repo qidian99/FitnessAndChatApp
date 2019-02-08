@@ -124,8 +124,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                                                     : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
                                     stepText.setText(String.format(SHOW_STEP, total));
                                     SharedPreferences pref = getSharedPreferences("user_data", MODE_PRIVATE);
-                                    long currGoal = pref.getLong("goal", -1);
-                                    stepsLeft.setText(String.format(SHOW_STEPS_LEFT, currGoal - total));
+                                    long stepLeft = goal - total > 0 ? goal - total : 0;
+                                    stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
                                 }
                             })
                     .addOnFailureListener(
