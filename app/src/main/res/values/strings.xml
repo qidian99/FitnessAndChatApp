@@ -19,4 +19,5 @@
     <string name="show_stride_length">Show Stride Length</string>
     <string name="steps_will_be_shown_here">steps will be shown here</string>
     <string name="update_steps">update steps</string>
+    <string name="progressLeft">Steps Left</string>
 </resources>
