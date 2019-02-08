@@ -45,10 +45,13 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public static final long DEFAULT_GOAL = 5000L;
     public static boolean firstPromptHeight = true;
 
+    private boolean switchToActive = false;
+
     private double activeDistance;
     private double activeSpeed;
     private int activeTimeElapsed;
     private long activeSteps;
+    private float strideLength;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         String magnitude = sharedPreferences.getString("magnitude", "");
         String metric = sharedPreferences.getString("metric", "");
-        float strideLength = sharedPreferences.getFloat("stride", 0);
+        strideLength = sharedPreferences.getFloat("stride", 0);
 
         FitnessOptions fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -168,20 +171,24 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public void launchStepCountActivity() {
         Intent intent = new Intent(this, StepCountActivity.class);
         intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
+        intent.putExtra("stride", strideLength);
         startActivityForResult(intent, REQUEST_CODE);
+        switchToActive = true;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        activeDistance = data.getDoubleExtra("distance", 0.0);
-        activeSpeed = data.getDoubleExtra("speed", 0.0);
-        activeTimeElapsed = data.getIntExtra("time", 0);
-        activeSteps = data.getLongExtra("steps", 0);
+        if(switchToActive) {
+            super.onActivityResult(requestCode, resultCode, data);
+            activeDistance = data.getDoubleExtra("distance", 0.0);
+            activeSpeed = data.getDoubleExtra("speed", 0.0);
+            activeTimeElapsed = data.getIntExtra("time", 0);
+            activeSteps = data.getLongExtra("steps", 0);
 
-        Toast.makeText(getApplicationContext(), String.format(TMP_RESULT,
-                activeDistance, activeSpeed, activeTimeElapsed, activeSteps),
-                Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), String.format(TMP_RESULT,
+                    activeDistance, activeSpeed, activeTimeElapsed, activeSteps),
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {
@@ -231,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         // Save new goal
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
-        SharedPreferences.Editor editor =   sharedPreferences.edit();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong("goal", goal);
         editor.apply();
     }
