@@ -19,9 +19,14 @@ public class StepCountActivity extends AppCompatActivity {
     public static final String FITNESS_SERVICE_KEY = "FITNESS_SERVICE_KEY";
 
     private static final String TAG = "StepCountActivity";
+    private static final int RESULT_CODE = 1000;
 
     private TextView textSteps;
     private FitnessService fitnessService;
+    private long steps = 0;
+    private long distance = 0;
+    private int time = 0;
+    private double speed = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +57,18 @@ public class StepCountActivity extends AppCompatActivity {
         btnEndRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent homescreen = new Intent(getApplicationContext(), MainActivity.class);
+                homescreen.putExtra("distance", distance);
+                // homescreen.putExtra("time", time);
+                if(time == 0) {
+                    speed = 0.0;
+                } else {
+                    speed = distance/(double)time;
+                }
+                homescreen.putExtra("speed", speed);
+                homescreen.putExtra("steps", steps);
+                homescreen.putExtra("time", time);
+                setResult(RESULT_CODE, homescreen);
                 finish();
             }
         });
@@ -59,7 +76,6 @@ public class StepCountActivity extends AppCompatActivity {
         fitnessService.setup();
 
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -80,12 +96,10 @@ public class StepCountActivity extends AppCompatActivity {
         }
     }
 
-
     public void showEncouragement(long stepCount){
 
         Context context = getApplicationContext();
         CharSequence text = String.format("Good job! You're already at %d percent of the daily recommended number of steps.", (int) stepCount / 100);
-
 
         int duration = Toast.LENGTH_LONG;
 
