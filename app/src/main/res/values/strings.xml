@@ -10,4 +10,8 @@
         <item>ft</item>
     </string-array>
     <string name="invalidHeight">Invalid height. Please enter again.</string>
+    <string name="displaySteps">Step Taken</string>
+    <string name="displayGoal">Current Goal</string>
+    <string name="setGoalPrompt">Set a New Step Goal</string>
+    <string name="invalidGoal">Please enter a valid goal.</string>
 </resources>

@@ -1,0 +1,46 @@
+<!-- fragment_prompt_height.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/prompt_height"
+    android:layout_width="320dp"
+    android:layout_height="150dp"
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </RelativeLayout>
+
+
+    <EditText
+        android:id="@+id/newGoal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="Steps for New Goal"
+        android:imeOptions="actionDone"
+        android:layout_marginTop="20dp"
+        android:inputType="number"
+        android:visibility="visible" />
+
+    <Button
+        android:id="@+id/doneBtn"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_alignParentLeft="true"
+        android:text="@string/confirm" />
+
+        <!--<Button-->
+            <!--android:id="@+id/negBtn"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:text="@string/cancel" />-->
+    <!--</RelativeLayout>-->
+
+
+</LinearLayout>
