@@ -13,12 +13,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
-        android:text="update steps" />
+        android:text="@string/update_steps" />
 
     <TextView
         android:id="@+id/textSteps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="steps will be shown here" />
+        android:text="@string/steps_will_be_shown_here" />
+
+    <Button
+        android:id="@+id/btnEndRecord"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:background="#FF8080"
+        android:text="@string/endBtnStr" />
 
 </LinearLayout>
