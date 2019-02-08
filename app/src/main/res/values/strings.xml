@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Team4-PersonalBest</string>
     <string name="startBtnStr">Start Recording</string>
+    <string name="endBtnStr">End Recording</string>
     <string name="heightPrompt">Please Enter Your Height</string>
     <string name="confirm">Done</string>
     <string name="cancel">Cancel</string>
@@ -12,4 +13,8 @@
     <string name="invalidHeight">Invalid height. Please enter again.</string>
     <string name="displaySteps">Step Taken</string>
     <string name="displayGoal">Current Goal</string>
+    <string name="re_enter_height">Re-enter Height</string>
+    <string name="show_stride_length">Show Stride Length</string>
+    <string name="steps_will_be_shown_here">steps will be shown here</string>
+    <string name="update_steps">update steps</string>
 </resources>
