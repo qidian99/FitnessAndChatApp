@@ -1,5 +1,7 @@
 package edu.ucsd.cse110.googlefitapp.fitness;
 
+import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.TextView;
@@ -8,12 +10,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
-import com.google.android.gms.fitness.HistoryApi;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
-import com.google.android.gms.fitness.request.DataUpdateRequest;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -23,12 +23,13 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.MainActivity;
-import edu.ucsd.cse110.googlefitapp.R;
 import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 
 public class GoogleFitAdapter implements FitnessService {
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "GoogleFitAdapter";
+
+    boolean isCancelled = false;
 
     private StepCountActivity activity;
 
@@ -52,6 +53,60 @@ public class GoogleFitAdapter implements FitnessService {
         } else {
             updateStepCount();
             startRecording();
+
+            //create the async task here to refresh every five seconds
+            //after every 7 seconds refresh the total step count 7718 is "Bill" upside down
+            new CountToTenAsyncTask().execute(String.valueOf(7718));
+
+
+        }
+    }
+
+    public void stopAsync() {
+        isCancelled = true;
+
+    }
+
+    private class CountToTenAsyncTask extends AsyncTask<String, String, Void> {
+
+        private String resp;
+        ProgressDialog progressDialog;
+
+        @Override
+        protected Void doInBackground(String... sleepTime) {
+            while(!isCancelled) {
+
+                try {
+
+                    Thread.sleep(Integer.valueOf(sleepTime[0]));
+                    publishProgress();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onProgressUpdate(String... text) {
+
+            if (isCancelled) {
+                cancel(true);
+            } else {
+                //call update steps here
+                System.out.println("hi mom");
+                updateStepCount();
+            }
         }
     }
 

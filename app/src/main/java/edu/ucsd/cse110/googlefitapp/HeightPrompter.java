@@ -23,7 +23,6 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
         void onFinishEditDialog(String[] inputText);
     }
 
-
     private Window window;
     private EditText centText;
     private EditText ftText;
