@@ -33,21 +33,16 @@ public class StepCountActivity extends AppCompatActivity {
     private static final int RESULT_CODE = 1000;
 
     private TextView textSteps;
+    private TextView textDist;
+    private TextView textSpeed;
     private FitnessService fitnessService;
-<<<<<<< HEAD
-    private long steps = 1000;
+    private long steps = 0;
     private double distance = 0.0;
-    private int time = 20;
+    private int time = 0;
     private double speed = 0.0;
     private float strideLen;
     private boolean recordInitialStep = true;
     private long initialSteps;
-=======
-    private long steps = 0;
-    private double distance = 0;
-    private int time = 0;
-    private double speed = 0;
->>>>>>> cf928c07312c5db8206dd187818ab279ba58f07d
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,9 +65,9 @@ public class StepCountActivity extends AppCompatActivity {
                         int sec = time - min*60;
 
                         if(sec < 10) {
-                            tv.setText(String.format("%d:0%d", min, sec));
+                            tv.setText(String.format("Time: %d:0%d", min, sec));
                         } else {
-                            tv.setText(String.format("%d:%d", min, sec));
+                            tv.setText(String.format("Time: %d:%d", min, sec));
                         }
 
                         time += 1;
@@ -82,8 +77,10 @@ public class StepCountActivity extends AppCompatActivity {
         }, 0, 1000);
 
         textSteps = findViewById(R.id.textSteps);
-
-
+        textDist = findViewById(R.id.textDistance);
+        textDist.setText(String.format("Distance: %.1f miles", distance));
+        textSpeed = findViewById(R.id.textSpeed);
+        textSpeed.setText(String.format("Speed: %.1f MPH", speed));
 
         strideLen = getIntent().getFloatExtra("stride", 0);
 
@@ -95,15 +92,6 @@ public class StepCountActivity extends AppCompatActivity {
             }
         });
 
-<<<<<<< HEAD
-        Button btnMockData = findViewById(R.id.btnMockDt);
-        btnMockData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((GoogleFitAdapter) fitnessService).mockDataPoint();
-            }
-        });
-=======
         Button btnEndRecord = findViewById(R.id.btnEndRecord);
         btnEndRecord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,7 +108,6 @@ public class StepCountActivity extends AppCompatActivity {
             }
         });
 
->>>>>>> 614e266e9e23a5cc98e8a6a233f5ea144f2c3ccd
         fitnessService.setup();
 
     }
@@ -142,12 +129,13 @@ public class StepCountActivity extends AppCompatActivity {
             initialSteps = stepCount;
             recordInitialStep = false;
         }
-        // steps = stepCount - initialSteps;
-        textSteps.setText(String.valueOf(steps));
+        steps = stepCount - initialSteps;
+        textSteps.setText(String.format("Steps: %d", steps));
     }
 
     public void setDistance() {
         distance = (double)(steps * strideLen) / 63360.0;
+        textDist.setText(String.format("Distance: %.1f miles", distance));
     }
 
     public void setSpeed() {
@@ -156,6 +144,7 @@ public class StepCountActivity extends AppCompatActivity {
         } else {
             speed = distance/(double)time*3600.0;
         }
+        textSpeed.setText(String.format("Speed: %.1f MPH", speed));
     }
 
     public void updateAll(long stepCount) {
