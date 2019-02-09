@@ -146,6 +146,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         }
         firstPromptHeight = false;
 
+        //plc holder daily encouragement
+        dailyEncourage();
+
         // In development, we allow users to re-enter their heights
         Button setHeightBtn = findViewById(R.id.clearBtn);
         setHeightBtn.setOnClickListener(new View.OnClickListener() {
@@ -173,6 +176,18 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
+    }
+
+    //plc-holder daily encouragement
+    public void dailyEncourage() {
+        SharedPreferences prf = getSharedPreferences("user_data",MODE_PRIVATE);
+        boolean daily = prf.getBoolean("daily_encourage",false);
+        if (!daily) {
+            Toast.makeText(this,"Welcome to Personal Best!", Toast.LENGTH_SHORT).show();
+            SharedPreferences.Editor editor = prf.edit();
+            editor.putBoolean("daily_encourage",true);
+            editor.commit();
+        }
     }
 
     public void launchStepCountActivity() {
