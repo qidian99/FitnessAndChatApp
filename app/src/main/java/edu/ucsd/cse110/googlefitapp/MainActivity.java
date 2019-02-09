@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -44,12 +45,15 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public static final long DEFAULT_GOAL = 5000L;
     public static boolean firstPromptHeight = true;
 
+    private boolean switchToActive = false;
     private long goal;
 
     private double activeDistance;
     private double activeSpeed;
-    private int activeTimeElapsed;
+    private int activeMin;
+    private int activeSec;
     private long activeSteps;
+    private float strideLength;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +70,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         String magnitude = sharedPreferences.getString("magnitude", "");
         String metric = sharedPreferences.getString("metric", "");
+        strideLength = sharedPreferences.getFloat("stride", 0);
         this.goal = sharedPreferences.getLong("goal", DEFAULT_GOAL);
-        float strideLength = sharedPreferences.getFloat("stride", 0);
 
         FitnessOptions fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -174,25 +178,28 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public void launchStepCountActivity() {
         Intent intent = new Intent(this, StepCountActivity.class);
         intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
+        intent.putExtra("stride", strideLength);
         startActivityForResult(intent, REQUEST_CODE);
+        switchToActive = true;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        activeDistance = data.getDoubleExtra("distance", 0.0);
-        activeSpeed = data.getDoubleExtra("speed", 0.0);
-        activeTimeElapsed = data.getIntExtra("time", 0);
-        activeSteps = data.getLongExtra("steps", 0);
-
-        Toast.makeText(getApplicationContext(), String.format(TMP_RESULT,
-                activeDistance, activeSpeed, activeTimeElapsed, activeSteps),
-                Toast.LENGTH_LONG).show();
-        // Toast.makeText(this,String.format("distance: %.2f, speed: %.2f", activeDistance, activeSpeed), Toast.LENGTH_LONG).show();
+        if(switchToActive) {
+            super.onActivityResult(requestCode, resultCode, data);
+            activeDistance = data.getDoubleExtra("distance", 0.0);
+            activeSpeed = data.getDoubleExtra("speed", 0.0);
+            activeMin = data.getIntExtra("min", 0);
+            activeSec = data.getIntExtra("second", 0);
+            activeSteps = data.getLongExtra("steps", 0);
+        }
 
         if(activeSteps >= this.goal) {
             showNewGoalPrompt();
         }
+
+        displayActiveData();
+
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {
@@ -215,6 +222,12 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         FragmentManager fm = getSupportFragmentManager();
         NewGoalSetter setGoalDialogFragment = NewGoalSetter.newInstance(getString(R.string.congratsPrompt), goal);
         setGoalDialogFragment.show(fm, "fragment_set_new_goal");
+    }
+
+    private void displayActiveData() {
+        FragmentManager fm = getSupportFragmentManager();
+        DataDisplayer dataDisplayer = DataDisplayer.newInstance(getString(R.string.prevSession), activeDistance, activeSpeed, activeSteps, activeMin, activeSec);
+        dataDisplayer.show(fm, "fragment_display_active_data");
     }
 
     @Override
@@ -253,4 +266,5 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         editor.putLong("goal", goal);
         editor.apply();
     }
+
 }

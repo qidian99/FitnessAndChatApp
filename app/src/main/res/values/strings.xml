@@ -27,4 +27,6 @@
     <string name="suggested">Suggested:</string>
     <string name="customed">Customed:</string>
     <string name="progressLeft">Steps Left</string>
+    <string name="prevSession">Active Data</string>
+    <string name="OK">OK</string>
 </resources>

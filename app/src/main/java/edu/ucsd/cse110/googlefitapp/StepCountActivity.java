@@ -2,13 +2,21 @@ package edu.ucsd.cse110.googlefitapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.renderscript.Element;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.result.DailyTotalResult;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -26,10 +34,13 @@ public class StepCountActivity extends AppCompatActivity {
 
     private TextView textSteps;
     private FitnessService fitnessService;
-    private long steps = 0;
-    private double distance = 0;
-    private int time = 0;
-    private double speed = 0;
+    private long steps = 1000;
+    private double distance = 0.0;
+    private int time = 20;
+    private double speed = 0.0;
+    private float strideLen;
+    private boolean recordInitialStep = true;
+    private long initialSteps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +48,10 @@ public class StepCountActivity extends AppCompatActivity {
         setContentView(R.layout.activity_step_count);
 
         Timer t = new Timer();
+        String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
+        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
+        fitnessService.updateStepCount();
+
         t.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -45,7 +60,7 @@ public class StepCountActivity extends AppCompatActivity {
                     public void run() {
                         TextView tv = (TextView)findViewById(R.id.timer_text);
                         int min = time / 60;
-                        int sec = time - min*60;
+                        int sec = time % 60;
 
                         if(sec < 10) {
                             tv.setText(String.format("%d:0%d", min, sec));
@@ -61,8 +76,9 @@ public class StepCountActivity extends AppCompatActivity {
 
         textSteps = findViewById(R.id.textSteps);
 
-        String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
-        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
+
+
+        strideLen = getIntent().getFloatExtra("stride", 0);
 
         Button btnUpdateSteps = findViewById(R.id.buttonUpdateSteps);
         btnUpdateSteps.setOnClickListener(new View.OnClickListener() {
@@ -87,16 +103,11 @@ public class StepCountActivity extends AppCompatActivity {
 
                 fitnessService.stopAsync();
                 Intent homescreen = new Intent(getApplicationContext(), MainActivity.class);
-                homescreen.putExtra("distance", distance);
-                // homescreen.putExtra("time", time);
-                if(time == 0) {
-                    speed = 0.0;
-                } else {
-                    speed = distance/(double)time;
-                }
                 homescreen.putExtra("speed", speed);
                 homescreen.putExtra("steps", steps);
-                homescreen.putExtra("time", time);
+                homescreen.putExtra("min", time/60);
+                homescreen.putExtra("second", time%60);
+                homescreen.putExtra("distance", distance);
                 setResult(RESULT_CODE, homescreen);
                 finish();
             }
@@ -119,20 +130,30 @@ public class StepCountActivity extends AppCompatActivity {
     }
 
     public void setStepCount(long stepCount) {
-        textSteps.setText(String.valueOf(stepCount));
-        if(stepCount >= 1000){
-            showEncouragement(stepCount);
+        if(recordInitialStep) {
+            initialSteps = stepCount;
+            recordInitialStep = false;
+        }
+        // steps = stepCount - initialSteps;
+        textSteps.setText(String.valueOf(steps));
+    }
+
+    public void setDistance() {
+        distance = (double)(steps * strideLen) / 63360.0;
+    }
+
+    public void setSpeed() {
+        if(time == 0) {
+            speed = 0.0;
+        } else {
+            speed = distance/(double)time*3600.0;
         }
     }
 
-    public void showEncouragement(long stepCount){
-
-        Context context = getApplicationContext();
-        CharSequence text = String.format("Good job! You're already at %d percent of the daily recommended number of steps.", (int) stepCount / 100);
-
-        int duration = Toast.LENGTH_LONG;
-
-        Toast toast = Toast.makeText(context, text, duration);
-        toast.show();
+    public void updateAll(long stepCount) {
+        setStepCount(stepCount);
+        setDistance();
+        setSpeed();
     }
+
 }

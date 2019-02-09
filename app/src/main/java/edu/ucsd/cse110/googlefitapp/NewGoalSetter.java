@@ -14,6 +14,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class NewGoalSetter extends DialogFragment {
     public NewGoalSetter() {}
@@ -75,6 +76,7 @@ public class NewGoalSetter extends DialogFragment {
                     @Override
                     public void onClick(View v) {
                         finishEnterGoal(btnSuggested.getText().toString());
+                        Toast.makeText(getContext(), "Goal Updated", Toast.LENGTH_SHORT).show();
                     }
                 });
                 btnCustomed.setOnClickListener(new View.OnClickListener() {
