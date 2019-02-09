@@ -44,12 +44,14 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public static final long DEFAULT_GOAL = 5000L;
     public static boolean firstPromptHeight = true;
 
+    private boolean switchToActive = false;
     private long goal;
 
     private double activeDistance;
     private double activeSpeed;
     private int activeTimeElapsed;
     private long activeSteps;
+    private float strideLength;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -174,7 +176,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public void launchStepCountActivity() {
         Intent intent = new Intent(this, StepCountActivity.class);
         intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
+        intent.putExtra("stride", strideLength);
         startActivityForResult(intent, REQUEST_CODE);
+        switchToActive = true;
     }
 
     @Override
