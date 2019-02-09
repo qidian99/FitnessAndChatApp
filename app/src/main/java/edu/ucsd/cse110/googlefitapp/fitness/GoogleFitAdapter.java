@@ -113,7 +113,6 @@ public class GoogleFitAdapter implements FitnessService {
                 cancel(true);
             } else {
                 //call update steps here
-                System.out.println("hi mom");
                 updateStepCount();
             }
         }
