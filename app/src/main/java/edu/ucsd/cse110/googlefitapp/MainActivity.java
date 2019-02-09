@@ -55,6 +55,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private long activeSteps;
     private float strideLength;
 
+    private long currDisplaySteps;
+    private Encouragement encourage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +75,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         String metric = sharedPreferences.getString("metric", "");
         strideLength = sharedPreferences.getFloat("stride", 0);
         this.goal = sharedPreferences.getLong("goal", DEFAULT_GOAL);
+        /* Encouragement
+         - set to show every app startup
+         - can be made only daily (NEED TO IMPLEMENT)*/
+        encourage = new Encouragement(this, false);
 
         FitnessOptions fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -109,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                                 @Override
                                 public void onSuccess(DataSet dataSet) {
                                     if (dataSet.isEmpty()) {
-                                        int stepCountDelta = 950;
+                                        int stepCountDelta = 2500;
                                         Calendar cal = Calendar.getInstance();
                                         Date now = new Date();
                                         cal.setTime(now);
@@ -130,6 +137,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                                     SharedPreferences pref = getSharedPreferences("user_data", MODE_PRIVATE);
                                     long stepLeft = goal - total > 0 ? goal - total : 0;
                                     stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
+
+                                    /* Passive encouragement - for now shows when app opened */
+                                    currDisplaySteps = total;
+                                    encourage.getPassiveEncouragement(currDisplaySteps,goal);
                                 }
                             })
                     .addOnFailureListener(
@@ -145,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         }
         firstPromptHeight = false;
+
 
         // In development, we allow users to re-enter their heights
         Button setHeightBtn = findViewById(R.id.clearBtn);
@@ -217,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         CustomGoalSetter setGoalDialogFragment = CustomGoalSetter.newInstance(getString(R.string.setGoalPrompt));
         setGoalDialogFragment.show(fm, "fragment_set_goal");
     }
-    
+
     private void showNewGoalPrompt() {
         FragmentManager fm = getSupportFragmentManager();
         NewGoalSetter setGoalDialogFragment = NewGoalSetter.newInstance(getString(R.string.congratsPrompt), goal);
