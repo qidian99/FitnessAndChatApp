@@ -29,4 +29,7 @@
     <string name="progressLeft">Steps Left</string>
     <string name="prevSession">Active Data</string>
     <string name="OK">OK</string>
+    <string name="time_elapsed">time elapsed</string>
+    <string name="speed">speed</string>
+    <string name="distance">distance</string>
 </resources>
