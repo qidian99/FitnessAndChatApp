@@ -8,12 +8,15 @@ import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.request.DataUpdateRequest;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -28,11 +31,15 @@ import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 public class GoogleFitAdapter implements FitnessService {
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "GoogleFitAdapter";
+//    GoogleSignInOptionsExtension fitnessOptions =
+//            FitnessOptions.builder()
+//                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+//                    .build();
 
     boolean isCancelled = false;
 
     private StepCountActivity activity;
-
+    private int step = 0;
     public GoogleFitAdapter(StepCountActivity activity) {
         this.activity = activity;
     }
@@ -41,7 +48,9 @@ public class GoogleFitAdapter implements FitnessService {
     public void setup() {
         FitnessOptions fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
                 .build();
 
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
@@ -150,7 +159,7 @@ public class GoogleFitAdapter implements FitnessService {
                             @Override
                             public void onSuccess(DataSet dataSet) {
                                 Log.d(TAG, dataSet.toString());
-                                long total =
+                                int total =
                                         dataSet.isEmpty()
                                                 ? 0
                                                 : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
@@ -199,14 +208,15 @@ public class GoogleFitAdapter implements FitnessService {
     }
 
     public void mockDataPoint(){
-        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
-        Fitness.getHistoryClient(activity, lastSignedInAccount)
+        final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
+
+        Fitness.getHistoryClient(activity, gsa)
                 .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
                 .addOnSuccessListener(
                         new OnSuccessListener<DataSet>() {
                             @Override
                             public void onSuccess(DataSet dataSet) {
-                                System.out.println(dataSet.isEmpty());
+                                System.out.println("begin mock data" + dataSet.isEmpty());
                                 if(dataSet.isEmpty()) {
                                     int stepCountDelta = 950;
                                     Calendar cal = Calendar.getInstance();
@@ -224,17 +234,35 @@ public class GoogleFitAdapter implements FitnessService {
                                     System.out.println("Added!  ");
                                     Log.d(TAG, dataSet.toString());
 
-                                    Task<Void> response = Fitness.getHistoryClient(activity, GoogleSignIn.getLastSignedInAccount(activity)).insertData(dataSet);
+                                    Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet);
                                     System.out.println(response.isSuccessful());
-                                    // Then, use DataUpdateRequest.Builder() to create a new data update request, and use the HistoryClient.updateData method to make the request.
-//                                    DataUpdateRequest request = new DataUpdateRequest.Builder()
-//                                            .setDataSet(dataSet)
-//                                            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-//                                            .build();
-//
-//                                    Task<Void> response = Fitness.getHistoryClient(activity, GoogleSignIn.getLastSignedInAccount(activity)).updateData(request);
-//                                    System.out.println(response.isSuccessful());
+                                } else {
+                                    step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + 50;
+                                    dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).setInt(step);
+                                    Log.d(TAG, "Total steps: " + step);
+                                    Log.d(TAG, "Total steps: " + dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
+
+                                    // Create a data source
+                                    DataSource dataSource =
+                                            new DataSource.Builder()
+                                                    .setAppPackageName(activity)
+                                                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                                                    .setStreamName(TAG + " - step count")
+                                                    .setType(DataSource.TYPE_RAW)
+                                                    .build();
+                                    DataSet dataSet2 = DataSet.create(dataSource);
+                                    DataPoint dataPoint =
+                                            dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS),dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+                                    dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
+                                    dataSet2.add(dataPoint);
+                                    DataUpdateRequest request = new DataUpdateRequest.Builder()
+                                            .setDataSet(dataSet2)
+                                            .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS) ,dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS )
+                                            .build();
+
+                                    Task<Void> response = Fitness.getHistoryClient(activity, GoogleSignIn.getLastSignedInAccount(activity)).updateData(request);
                                 }
+                                updateStepCount();
                             }
                         })
                 .addOnFailureListener(
