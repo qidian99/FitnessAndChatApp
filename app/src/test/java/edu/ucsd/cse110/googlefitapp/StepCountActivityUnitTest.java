@@ -46,21 +46,6 @@ public class StepCountActivityUnitTest {
         nextStepCount = 1337;
     }
 
-    @Test
-    public void testUpdateStepsButton() {
-        assertEquals("steps will be shown here", textSteps.getText().toString());
-        btnUpdateSteps.performClick();
-        assertEquals("1337", textSteps.getText().toString());
-    }
-
-    @Test
-    public void testLastToast() {
-        btnUpdateSteps.performClick();
-        assertTrue(ShadowToast.showedToast("Good job! You're already at 13 percent of the daily recommended number of steps."));
-        Toast lastToast = ShadowToast.getLatestToast();
-        assertEquals(lastToast.getDuration(), Toast.LENGTH_LONG);
-    }
-
     private class TestFitnessService implements FitnessService {
         private static final String TAG = "[TestFitnessService]: ";
         private StepCountActivity stepCountActivity;
