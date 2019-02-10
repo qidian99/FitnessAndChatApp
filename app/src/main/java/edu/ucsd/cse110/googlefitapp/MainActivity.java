@@ -176,6 +176,15 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
+        // Go to the bar chart activity.
+        Button goToWeekly = findViewById(R.id.weeklyButton);
+        goToWeekly.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, WeeklyStats.class));
+            }
+        });
+
         // Start an active session
         Button btnGoToSteps = findViewById(R.id.startBtn);
         btnGoToSteps.setOnClickListener(new View.OnClickListener() {
@@ -184,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                 launchStepCountActivity();
             }
         });
+
 
     }
 
