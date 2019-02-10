@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     private boolean isCancelled = false;
     private long currentSteps;
+    private boolean goalReached = false;
 
     private double activeDistance;
     private double activeSpeed;
@@ -128,9 +129,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         }
         TextView goalText = findViewById(R.id.textGoal);
         goalText.setText(String.format(SHOW_GOAL, currentGoal));
-
-        //get last number of steps that the app recorded
-
 
 
         // Update step
@@ -310,6 +308,13 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
                                     /* Passive encouragement - for now shows when app opened */
                                     encourage.getEncourgementOnLiveUpdate(total, before, goal);
+
+                                    //asks the user only once
+                                    if((total >= goal) && !goalReached) {
+                                        showNewGoalPrompt();
+                                        goalReached = true;
+
+                                    }
                                 }
                             })
                     .addOnFailureListener(
@@ -417,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         setGoalDialogFragment.show(fm, "fragment_set_goal");
     }
 
-    private void showNewGoalPrompt() {
+    public void showNewGoalPrompt() {
         FragmentManager fm = getSupportFragmentManager();
         NewGoalSetter setGoalDialogFragment = NewGoalSetter.newInstance(getString(R.string.congratsPrompt), goal);
         setGoalDialogFragment.show(fm, "fragment_set_new_goal");
@@ -463,6 +468,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         this.goal = goal;
 
         encourage.resetAllEncourgements();
+        goalReached = false;
+
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong("goal", goal);

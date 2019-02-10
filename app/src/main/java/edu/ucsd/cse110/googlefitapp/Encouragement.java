@@ -99,7 +99,7 @@ public class Encouragement {
             closeSent = true;
         }
         else if (goal <= updateSteps && goal >= beforeUpdateSteps && !doneSent) {
-            Toast.makeText(activity, "我觉得Joshua很漂亮 You've reached your goal!!!!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "我觉得Joshua是漂亮的男人 You've reached your goal!!!!",Toast.LENGTH_SHORT).show();
 
             doneSent = true;
         }
