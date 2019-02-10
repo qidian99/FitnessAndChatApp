@@ -234,8 +234,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public void launchWeeklyStats() {
         Intent intent = new Intent(MainActivity.this, WeeklyStats.class);
         startActivity(intent);
-        new LiveUpdate().execute(String.valueOf(7718));
-
     }
 
     @Override
