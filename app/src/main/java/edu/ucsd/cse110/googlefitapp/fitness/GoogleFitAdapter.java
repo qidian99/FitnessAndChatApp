@@ -1,5 +1,6 @@
 package edu.ucsd.cse110.googlefitapp.fitness;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -25,6 +26,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import edu.ucsd.cse110.googlefitapp.Encouragement;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 
@@ -37,12 +39,15 @@ public class GoogleFitAdapter implements FitnessService {
 //                    .build();
 
     boolean isCancelled = false;
+    private Encouragement encouragement;
 
-    private StepCountActivity activity;
+    protected Activity activity;
     private int step = 0;
-    public GoogleFitAdapter(StepCountActivity activity) {
+    protected int totalSteps = 0;
+    public GoogleFitAdapter(Activity activity) {
         this.activity = activity;
     }
+
 
 
     public void setup() {
@@ -60,12 +65,14 @@ public class GoogleFitAdapter implements FitnessService {
                     GoogleSignIn.getLastSignedInAccount(activity),
                     fitnessOptions);
         } else {
+            encouragement = new Encouragement(activity, true);
             updateStepCount();
+
             startRecording();
 
             //create the async task here to refresh every five seconds
             //after every 7 seconds refresh the total step count 7718 is "Bill" upside down
-            new CountToTenAsyncTask().execute(String.valueOf(7718));
+            new CountToTenAsyncTask().execute(String.valueOf(2000));
 
 
         }
@@ -73,6 +80,12 @@ public class GoogleFitAdapter implements FitnessService {
 
     public void stopAsync() {
         isCancelled = true;
+
+    }
+
+    public void startAsync() {
+        isCancelled = false;
+
 
     }
 
@@ -165,7 +178,10 @@ public class GoogleFitAdapter implements FitnessService {
                                                 ? 0
                                                 : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
 
-                                activity.updateAll(total);
+                                totalSteps = total;
+
+                                updateActivity();
+                                //activity.updateAll(total);
                                 Log.d(TAG, "Total steps: " + total);
                             }
                         })
@@ -176,6 +192,8 @@ public class GoogleFitAdapter implements FitnessService {
                                 Log.d(TAG, "There was a problem getting the step count.", e);
                             }
                         });
+
+
     }
 
     public void getStepCount(final TextView stepText){
@@ -278,4 +296,11 @@ public class GoogleFitAdapter implements FitnessService {
     public int getRequestCode() {
         return GOOGLE_FIT_PERMISSIONS_REQUEST_CODE;
     }
+
+    @Override
+    public void updateActivity() {
+
+
+    }
+
 }

@@ -79,5 +79,17 @@ public class StepCountActivityUnitTest {
         public void stopAsync() {
             //TODO : this needs to be done for the test for the refresh every 7 seconds
         }
+
+        @Override
+        public void updateActivity() {
+            //TODO : this needs to be done for the test for the refresh every 7 seconds
+
+        }
+
+        @Override
+        public void startAsync() {
+            //TODO : this needs to be done for the test for the refresh every 7 seconds
+
+        }
     }
 }

@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
+import edu.ucsd.cse110.googlefitapp.fitness.MainAdapter;
+import edu.ucsd.cse110.googlefitapp.fitness.StepCounterAdapter;
 
 public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, CustomGoalSetter.GoalPrompterListener {
     private String fitnessServiceKey = "GOOGLE_FIT";
@@ -65,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private long currDisplaySteps;
     private Encouragement encourage;
 
+    private FitnessService fitnessService;
+
 
     //this is only ran when we run the app again (given it is not deleted from the "recent" apps)
     @Override
@@ -81,8 +85,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         long total = getCurrentSteps();
         encourage.getEncourgementOnLiveUpdate(total, beforeSteps, goal);
 
-        isCancelled = false;
-        new LiveUpdate().execute(String.valueOf(7718));
+        fitnessService.startAsync();
+        fitnessService.setup();
 
         Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
 
@@ -102,7 +106,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
             @Override
             public FitnessService create(StepCountActivity stepCountActivity) {
-                return new GoogleFitAdapter(stepCountActivity);
+                //return new GoogleFitAdapter(stepCountActivity);
+                return new StepCounterAdapter(stepCountActivity, stepCountActivity);
             }
         });
 
@@ -149,52 +154,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         //this is called to retrieve the before steps when the app is opened for the first time
         final Long beforeSteps = getLastStepCount();
 
-
-        if (GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
-            Fitness.getHistoryClient(this, lastSignedInAccount)
-                    .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
-                    .addOnSuccessListener(
-                            new OnSuccessListener<DataSet>() {
-                                @Override
-                                public void onSuccess(DataSet dataSet) {
-                                    if (dataSet.isEmpty()) {
-                                        int stepCountDelta = 2500;
-                                        Calendar cal = Calendar.getInstance();
-                                        Date now = new Date();
-                                        cal.setTime(now);
-                                        long endTime = cal.getTimeInMillis();
-                                        cal.add(Calendar.HOUR_OF_DAY, -1);
-                                        long startTime = cal.getTimeInMillis();
-                                        DataPoint dataPoint =
-                                                dataSet.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
-                                        dataPoint.getValue(Field.FIELD_STEPS).setInt(stepCountDelta);
-                                        dataSet.add(dataPoint);
-                                    }
-
-                                    long total =
-                                            dataSet.isEmpty()
-                                                    ? 0
-                                                    : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
-
-                                    currentSteps = total;
-
-                                    stepText.setText(String.format(SHOW_STEP, total));
-                                    SharedPreferences pref = getSharedPreferences("user_data", MODE_PRIVATE);
-                                    long stepLeft = goal - total > 0 ? goal - total : 0;
-                                    stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
-
-                                    /* Passive encouragement - for now shows when app opened */
-                                    encourage.getEncourgementOnLiveUpdate(total, beforeSteps, goal);
-
-                                }
-                            })
-                    .addOnFailureListener(
-                            new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                }
-                            });
-        }
+        fitnessService = new MainAdapter(this, this);
+        fitnessService.updateStepCount();
+        fitnessService.setup();
 
         if(strideLength == 0){
             showHeightPrompt();
@@ -266,11 +228,31 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         editor.putLong("Before", before);
         editor.apply();
 
+        //stops the main async
         isCancelled = true;
 
         Toast.makeText(this, "stopped main ", Toast.LENGTH_SHORT).show();
 
+        fitnessService.stopAsync();
 
+
+    }
+
+    public void updateAll(int total) {
+        final TextView stepText = findViewById(R.id.textStepsMain);
+        final TextView stepsLeft = findViewById(R.id.stepsLeft);
+
+        long before = currentSteps;
+
+
+        stepText.setText(String.format(SHOW_STEP, total));
+        SharedPreferences pref = getSharedPreferences("user_data", MODE_PRIVATE);
+        long stepLeft = goal - total > 0 ? goal - total : 0;
+        stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
+
+        currentSteps = total;
+
+        encourage.getEncourgementOnLiveUpdate(currentSteps, before, goal);
 
     }
     private Long getLastStepCount() {
@@ -284,74 +266,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         return beforeSteps;
 
     }
-    private void updateStepCount() {
 
-        //the first encouragement will come after the first refresh of the live feedback
-        final Long beforeSteps = getLastStepCount();
-
-        final TextView stepText = findViewById(R.id.textStepsMain);
-        final TextView stepsLeft = findViewById(R.id.stepsLeft);
-
-        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(this);
-
-            Fitness.getHistoryClient(this, lastSignedInAccount)
-                    .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
-                    .addOnSuccessListener(
-                            new OnSuccessListener<DataSet>() {
-                                @Override
-                                public void onSuccess(DataSet dataSet) {
-                                    if (dataSet.isEmpty()) {
-                                        int stepCountDelta = 2500;
-                                        Calendar cal = Calendar.getInstance();
-                                        Date now = new Date();
-                                        cal.setTime(now);
-                                        long endTime = cal.getTimeInMillis();
-                                        cal.add(Calendar.HOUR_OF_DAY, -1);
-                                        long startTime = cal.getTimeInMillis();
-                                        DataPoint dataPoint =
-                                                dataSet.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
-                                        dataPoint.getValue(Field.FIELD_STEPS).setInt(stepCountDelta);
-                                        dataSet.add(dataPoint);
-                                    }
-
-                                    long total =
-                                            dataSet.isEmpty()
-                                                    ? 0
-                                                    : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
-
-                                    currentSteps = total;
-
-                                    //get the steps that were there on the UI before we got the new steps
-//                                    String beforeStepText = String.valueOf(stepText.getText());
-//                                    String[] separatedStrings = beforeStepText.split(" ");
-//                                    Long before = Long.valueOf(separatedStrings[3]);
-                                    long before = getCurrentSteps();
-
-
-                                    stepText.setText(String.format(SHOW_STEP, total));
-                                    SharedPreferences pref = getSharedPreferences("user_data", MODE_PRIVATE);
-                                    long stepLeft = goal - total > 0 ? goal - total : 0;
-                                    stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
-
-                                    /* Passive encouragement - for now shows when app opened */
-                                    encourage.getEncourgementOnLiveUpdate(total, before, goal);
-
-                                    //asks the user only once
-                                    if((total >= goal) && !goalReached) {
-                                        showNewGoalPrompt();
-                                        goalReached = true;
-
-                                    }
-                                }
-                            })
-                    .addOnFailureListener(
-                            new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                }
-                            });
-
-    }
 
     private long getCurrentSteps() {
         final TextView stepText = findViewById(R.id.textStepsMain);
@@ -362,51 +277,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         Long before = Long.valueOf(separatedStrings[3]);
         return before;
     }
-    private class LiveUpdate extends AsyncTask<String, String, Void> {
-
-        private String resp;
-        ProgressDialog progressDialog;
-
-        @Override
-        protected Void doInBackground(String... sleepTime) {
-            while(!isCancelled) {
-
-                try {
-
-                    Thread.sleep(Integer.valueOf(sleepTime[0]));
-                    publishProgress();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected void onProgressUpdate(String... text) {
-
-            if (isCancelled) {
-                cancel(true);
-            } else {
-                //call update steps here
-                System.out.println("MAIN HAS REFRESSHEEDDD MAIN HAS REFRESHED");
-
-                updateStepCount();
-            }
-        }
-    }
-
-
 
     public void launchStepCountActivity() {
         Intent intent = new Intent(this, StepCountActivity.class);
