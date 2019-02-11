@@ -221,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
+
         // Start an active session
         Button btnGoToSteps = findViewById(R.id.startBtn);
         btnGoToSteps.setOnClickListener(new View.OnClickListener() {
@@ -230,8 +231,20 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
-        new LiveUpdate().execute(String.valueOf(7718));
+        // Go to the bar chart activity.
+        Button goToWeekly = findViewById(R.id.weeklyButton);
+        goToWeekly.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchWeeklyStats();
+            }
+        });
 
+    }
+
+    public void launchWeeklyStats() {
+        Intent intent = new Intent(MainActivity.this, WeeklyStats.class);
+        startActivity(intent);
     }
 
     @Override
