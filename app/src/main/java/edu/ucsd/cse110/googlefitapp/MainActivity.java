@@ -219,6 +219,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
+
         // Start an active session
         Button btnGoToSteps = findViewById(R.id.startBtn);
         btnGoToSteps.setOnClickListener(new View.OnClickListener() {

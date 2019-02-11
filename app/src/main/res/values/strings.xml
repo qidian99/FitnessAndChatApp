@@ -5,6 +5,7 @@
     <string name="heightPrompt">Please Enter Your Height</string>
     <string name="confirm">Done</string>
     <string name="cancel">Cancel</string>
+    <string name="back">Back</string>
     <string name="metric_prompt">Select a metric:</string>
     <string-array name="metric">
         <item>cm</item>
