@@ -81,12 +81,22 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         long total = getCurrentSteps();
         encourage.getEncourgementOnLiveUpdate(total, beforeSteps, goal);
 
+        isCancelled = false;
+        new LiveUpdate().execute(String.valueOf(7718));
+
+        Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
+
+
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+//        Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
 
 
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
@@ -138,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         //this is called to retrieve the before steps when the app is opened for the first time
         final Long beforeSteps = getLastStepCount();
+
 
         if (GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
             Fitness.getHistoryClient(this, lastSignedInAccount)
@@ -255,6 +266,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         editor.putLong("Before", before);
         editor.apply();
 
+        isCancelled = true;
+
+        Toast.makeText(this, "stopped main ", Toast.LENGTH_SHORT).show();
 
 
 
@@ -385,6 +399,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                 cancel(true);
             } else {
                 //call update steps here
+                System.out.println("MAIN HAS REFRESSHEEDDD MAIN HAS REFRESHED");
+
                 updateStepCount();
             }
         }
