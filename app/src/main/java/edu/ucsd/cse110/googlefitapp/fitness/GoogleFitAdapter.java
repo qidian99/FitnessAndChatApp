@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import edu.ucsd.cse110.googlefitapp.Encouragement;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 
@@ -38,6 +39,7 @@ public class GoogleFitAdapter implements FitnessService {
 //                    .build();
 
     boolean isCancelled = false;
+    private Encouragement encouragement;
 
     protected Activity activity;
     private int step = 0;
@@ -63,7 +65,9 @@ public class GoogleFitAdapter implements FitnessService {
                     GoogleSignIn.getLastSignedInAccount(activity),
                     fitnessOptions);
         } else {
+            encouragement = new Encouragement(activity, true);
             updateStepCount();
+
             startRecording();
 
             //create the async task here to refresh every five seconds
@@ -175,6 +179,7 @@ public class GoogleFitAdapter implements FitnessService {
                                                 : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
 
                                 totalSteps = total;
+
                                 updateActivity();
                                 //activity.updateAll(total);
                                 Log.d(TAG, "Total steps: " + total);
@@ -187,6 +192,8 @@ public class GoogleFitAdapter implements FitnessService {
                                 Log.d(TAG, "There was a problem getting the step count.", e);
                             }
                         });
+
+
     }
 
     public void getStepCount(final TextView stepText){
