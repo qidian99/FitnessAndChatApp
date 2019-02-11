@@ -45,6 +45,13 @@ public class StepCountActivity extends AppCompatActivity {
     private long initialSteps;
 
     @Override
+    protected void onRestart() {
+        super.onRestart();
+
+        fitnessService.startAsync();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_step_count);

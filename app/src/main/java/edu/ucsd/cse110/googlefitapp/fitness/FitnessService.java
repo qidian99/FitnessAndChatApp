@@ -5,4 +5,6 @@ public interface FitnessService {
     void setup();
     void updateStepCount();
     void stopAsync();
+    void updateActivity();
+    void startAsync();
 }
