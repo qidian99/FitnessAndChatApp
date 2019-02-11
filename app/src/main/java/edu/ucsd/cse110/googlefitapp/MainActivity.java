@@ -242,11 +242,18 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         final TextView stepText = findViewById(R.id.textStepsMain);
         final TextView stepsLeft = findViewById(R.id.stepsLeft);
 
+        long before = currentSteps;
+
 
         stepText.setText(String.format(SHOW_STEP, total));
         SharedPreferences pref = getSharedPreferences("user_data", MODE_PRIVATE);
         long stepLeft = goal - total > 0 ? goal - total : 0;
         stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
+
+        currentSteps = total;
+
+        encourage.getEncourgementOnLiveUpdate(currentSteps, before, goal);
+
     }
     private Long getLastStepCount() {
 
