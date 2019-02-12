@@ -138,5 +138,20 @@ public class MainActivityEspressoTest {
             System.out.println(TAG + "updateStepCount");
 //            stepCountActivity.setStepCount(1337);
         }
+
+        @Override
+        public void stopAsync() {
+
+        }
+
+        @Override
+        public void updateActivity() {
+
+        }
+
+        @Override
+        public void startAsync() {
+
+        }
     }
 }

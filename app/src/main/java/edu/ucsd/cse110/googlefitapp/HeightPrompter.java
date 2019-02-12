@@ -51,6 +51,12 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        if(MainActivity.firstTimeUser) {
+            setCancelable(false);
+        } else {
+            setCancelable(true);
+        }
+
         centText = (EditText) view.findViewById(R.id.cent_height);
         ftText = (EditText) view.findViewById(R.id.ft_height);
         inchText = (EditText) view.findViewById(R.id.inch_height);
@@ -88,27 +94,17 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
             }
         });
 
-        if(MainActivity.firstPromptHeight) {
-            setCancelable(false);
-        } else {
-            setCancelable(true);
-        }
-
         // Show soft keyboard
         this.window = getDialog().getWindow();
         centText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                                               @Override
-                                               public void onFocusChange(View v, boolean hasFocus) {
-                                                   if (hasFocus) {
-                                                       window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                                                   }
-                                               }
-                                           });
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                    }
+            }
+         });
         centText.requestFocus();
-
-//        getDialog().getWindow().setSoftInputMode(
-//                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-
     }
 
     @Override
