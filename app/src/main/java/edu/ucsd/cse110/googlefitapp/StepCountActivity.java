@@ -47,7 +47,6 @@ public class StepCountActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-
         fitnessService.startAsync();
     }
 
