@@ -17,5 +17,4 @@ public class StepCounterAdapter extends GoogleFitAdapter {
 
     }
 
-
 }
