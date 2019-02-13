@@ -82,9 +82,7 @@ public class Encouragement {
         long quarter = (goal/4);
         long ninetyPercent = (goal * 9/10);
 
-
-
-        System.out.println("HI MOMOMMMMMM MOMOMMMMMMMOMOMMMMMMMOMOMMMMMMMOMOMMMMMMMOMOMMMMMMMOMOMMMMMMMOMOMMMMMMMOMOMMMMMM : " + half);
+        System.out.println("live update " + half);
         System.out.println(updateSteps);
         System.out.println(beforeUpdateSteps);
 
@@ -102,7 +100,7 @@ public class Encouragement {
             closeSent = true;
         }
         else if (goal <= updateSteps && goal >= beforeUpdateSteps && !doneSent) {
-            Toast.makeText(activity, "我觉得Joshua是漂亮的男人 You've reached your goal!!!!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "我觉得Joshua是帅气的男人 You've reached your goal!!!!",Toast.LENGTH_SHORT).show();
 
             doneSent = true;
         }
