@@ -41,22 +41,23 @@ import android.widget.Toast;
 
 @RunWith(RobolectricTestRunner.class)
 public class HeightPrompterTest {
-    DialogFragment dialogFragment;
+    private static final String TEST_SERVICE = "TEST_SERVICE";
+    private Button btnStartRecord;
+    private DialogFragment dialogFragment;
+    private MainActivity activity;
 
     @Before
-    public void setUp() {
-        MainActivity activity = Robolectric.setupActivity(MainActivity.class);
+    public void setUp() throws Exception {
+        activity = Robolectric.setupActivity(MainActivity.class);
+        btnStartRecord = activity.findViewById(R.id.startBtn);
+    }
+
+    @Test
+    public void firstHeightIsShownAndCannotCancel() {
+        btnStartRecord.performClick();
         dialogFragment = (DialogFragment) activity.getSupportFragmentManager()
                 .findFragmentByTag("fragment_prompt_height");
-    }
-
-    @Test
-    public void dialogFragmentIsShownToTheUser() {
         assertNotNull(dialogFragment);
-    }
-
-    @Test
-    public void firstHeightCannotCancel() {
         assertFalse(dialogFragment.isCancelable());
     }
 }
