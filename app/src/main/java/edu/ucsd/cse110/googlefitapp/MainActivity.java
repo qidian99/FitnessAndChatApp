@@ -26,6 +26,8 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -61,13 +63,15 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private double activeSpeed;
     private int activeMin;
     private int activeSec;
-    private long activeSteps;
+    private long activeSteps = 0;
     private float strideLength;
 
     private long currDisplaySteps;
     private Encouragement encourage;
 
     private FitnessService fitnessService;
+    private Calendar calendar = Calendar.getInstance();
+    private long[] weeklyData = new long[14];
 
 
     //this is only ran when we run the app again (given it is not deleted from the "recent" apps)
@@ -77,9 +81,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         final TextView stepText = findViewById(R.id.textStepsMain);
 
-
         final Long beforeSteps = getLastStepCount();
-
 
         //TODO : can add the encourgement here at the beginning of the app
         long total = getCurrentSteps();
@@ -89,8 +91,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         fitnessService.setup();
 
         Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
-
-
     }
 
     @Override
@@ -206,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     public void launchWeeklyStats() {
         Intent intent = new Intent(MainActivity.this, WeeklyStats.class);
+        intent.putExtra("weeklyData", weeklyData);
         startActivity(intent);
     }
 
@@ -214,6 +215,22 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         super.onStop();
 
         System.out.println("HI MOMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM");
+
+        Date date = calendar.getTime();
+        String time = new SimpleDateFormat("HH:mm:ss").format(date);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int min = calendar.get(Calendar.MINUTE);
+        int sec = calendar.get(Calendar.SECOND);
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+
+        System.out.println(time);
+
+        if(hour != 0 && min != 0 && sec != 0 ) {
+            // SharedPreferences sharedPref = getSharedPreferences("weekly_records", MODE_PRIVATE);
+            System.out.println("updated ----------- ");
+            weeklyData[day - 1] = getCurrentSteps();
+        }
+
         SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
@@ -234,7 +251,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         Toast.makeText(this, "stopped main ", Toast.LENGTH_SHORT).show();
 
         fitnessService.stopAsync();
-
 
     }
 
@@ -260,22 +276,19 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         }
 
     }
+
     private Long getLastStepCount() {
 
         SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
 
         Long beforeSteps = sharedPreferences.getLong("Before", 0);
 
-
-
         return beforeSteps;
 
     }
 
-
     private long getCurrentSteps() {
         final TextView stepText = findViewById(R.id.textStepsMain);
-
 
         String beforeStepText = String.valueOf(stepText.getText());
         String[] separatedStrings = beforeStepText.split(" ");
@@ -300,14 +313,28 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             activeMin = data.getIntExtra("min", 0);
             activeSec = data.getIntExtra("second", 0);
             activeSteps = data.getLongExtra("steps", 0);
+            displayActiveData();
         }
 
         if(activeSteps >= this.goal) {
             showNewGoalPrompt();
         }
 
-        displayActiveData();
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        if(day == Calendar.SATURDAY) {
+            weeklyData = new long[14];
+        }
 
+        weeklyData[day + 6] += activeSteps;
+
+        /*
+        SharedPreferences sharedPref = getSharedPreferences("weekly_records", MODE_PRIVATE);
+        long totalActiveSteps = sharedPref.getLong(String.valueOf(day), 0);
+
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putLong(String.valueOf(day), totalActiveSteps+activeSteps);
+        editor.apply();
+        */
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {

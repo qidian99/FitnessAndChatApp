@@ -1,5 +1,6 @@
 package edu.ucsd.cse110.googlefitapp;
 
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +9,7 @@ import android.widget.Button;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -21,6 +23,7 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.tasks.Task;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -31,10 +34,15 @@ import static java.text.DateFormat.getDateInstance;
 
 public class WeeklyStats extends AppCompatActivity {
 
+    private long[] weeklyData = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private long goal = 100;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weekly_stats);
+
+        weeklyData = getIntent().getLongArrayExtra("weeklyData");
 
         BarChart barChart;
 
@@ -89,16 +97,15 @@ public class WeeklyStats extends AppCompatActivity {
         }
         */
 
-        ArrayList<BarEntry> barEntries = new ArrayList<>();
-        barEntries.add(new BarEntry(11f, 0));
-        barEntries.add(new BarEntry(14f, 1));
-        barEntries.add(new BarEntry(15f, 2));
-        barEntries.add(new BarEntry(20f, 3));
-        barEntries.add(new BarEntry(19f, 4));
-        barEntries.add(new BarEntry(13f, 5));
-        barEntries.add(new BarEntry(15f, 6));
+        ArrayList<BarEntry> barEntries = new ArrayList<BarEntry>();
+
+        for(int i = 0; i < weeklyData.length/2; i++) {
+            barEntries.add(new BarEntry(new float[]{weeklyData[i], weeklyData[i+7]}, i));
+        }
 
         BarDataSet barDataSet = new BarDataSet(barEntries, "Steps");
+        barDataSet.setStackLabels(new String[]{"intentional steps", "incidental steps"});
+        barDataSet.setColors(new int[]{Color.rgb(204, 229, 255), Color.rgb(255, 204, 204)});
 
         ArrayList<String> days = new ArrayList<>();
         days.add("Sun");
@@ -112,9 +119,12 @@ public class WeeklyStats extends AppCompatActivity {
         BarData barData = new BarData(days, barDataSet);
         barChart.setData(barData);
 
-        barChart.animateY(5000);
+        barChart.animateY(2000);
 
-
+        LimitLine l = new LimitLine(goal);
+        barChart.getAxisLeft().addLimitLine(l);
+        LimitLine l2 = new LimitLine(50);
+        barChart.getAxisLeft().addLimitLine(l2);
 
         Button button = findViewById(R.id.backToHome);
         button.setOnClickListener(new View.OnClickListener() {
@@ -125,4 +135,5 @@ public class WeeklyStats extends AppCompatActivity {
         });
 
     }
+
 }
