@@ -48,7 +48,13 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public static final String SHOW_STEP = "Your have taken %d steps.";
     public static final String TMP_RESULT = "distance: %.2f, speed: %.2f, time: %d, steps: %d";
     public static final String SHOW_STEPS_LEFT = "You have %d steps left.";
-
+    public static final String SHARED_PREFERENCE_NAME = "user_data";
+    public static final String KEY_MAGNITUDE = "magnitude";
+    public static final String KEY_METRIC = "metric";
+    public static final String KEY_GOAL = "goal";
+    public static final String KEY_HEIGHT = "height";
+    public static final String KEY_BEFORE = "Before";
+    public static final String KEY_STRIDE = "stride";
     public static final long DEFAULT_GOAL = 5000L;
     public static boolean firstTimeUser = true;
 
@@ -107,13 +113,14 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                 return new StepCounterAdapter(stepCountActivity, stepCountActivity);
             }
         });
+      
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+        String magnitude = sharedPreferences.getString(KEY_MAGNITUDE, "");
+        String metric = sharedPreferences.getString(KEY_METRIC, "");
+        strideLength = sharedPreferences.getFloat(KEY_STRIDE, 0);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
-        String magnitude = sharedPreferences.getString("magnitude", "");
-        String metric = sharedPreferences.getString("metric", "");
-        strideLength = sharedPreferences.getFloat("stride", 0);
         firstTimeUser = strideLength == 0 || GoogleSignIn.getLastSignedInAccount(this) == null;
-        this.goal = sharedPreferences.getLong("goal", DEFAULT_GOAL);
+        this.goal = sharedPreferences.getLong(KEY_GOAL, DEFAULT_GOAL);
         /* Encouragement
          - set to show every app startup
          - can be made only daily (NEED TO IMPLEMENT)*/
@@ -124,10 +131,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                 .build();
 
         // Update goal
-        long currentGoal = sharedPreferences.getLong("goal", -1);
+        long currentGoal = sharedPreferences.getLong(KEY_GOAL, -1);
         if( currentGoal == -1 ){
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putLong("goal", DEFAULT_GOAL);
+            editor.putLong(KEY_GOAL, DEFAULT_GOAL);
             editor.apply();
             currentGoal = DEFAULT_GOAL;
         }
@@ -217,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             if(separatedStrings.length >= 3) {
                 Long before = Long.valueOf(separatedStrings[3]);
 
-                editor.putLong("Before", before);
+                editor.putLong(KEY_BEFORE, before);
                 editor.apply();
 
                 //stops the main async
@@ -252,13 +259,14 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         long before = currentSteps;
 
         stepText.setText(String.format(SHOW_STEP, total));
-        SharedPreferences pref = getSharedPreferences("user_data", MODE_PRIVATE);
+        SharedPreferences pref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         long stepLeft = goal - total > 0 ? goal - total : 0;
         stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
 
         currentSteps = total;
 
-        encourage.getEncourgementOnLiveUpdate(currentSteps, before, goal);
+//        encourage.getEncourgementOnLiveUpdate(currentSteps, before, goal);
+        encourage.getDailyEncouragement(currentSteps,goal,this);
 
         if(currentSteps >= goal && !goalReached) {
             goalReached = true;
@@ -386,10 +394,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     @Override
     public void onFinishEditDialog(String[] inputText) {
-        SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("magnitude", inputText[0]);
-        editor.putString("metric", inputText[1]);
+        editor.putString(KEY_MAGNITUDE, inputText[0]);
+        editor.putString(KEY_METRIC, inputText[1]);
 
         // Case 1: use centimeter as metric
         if(Integer.parseInt(inputText[0]) == 0 ){
@@ -399,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         else {
             strideLength = (float) ((Integer.parseInt(inputText[1])*12 + Integer.parseInt(inputText[2])) * 0.413);
         }
-        editor.putFloat("stride", strideLength);
+        editor.putFloat(KEY_STRIDE, strideLength);
         firstTimeUser = strideLength == 0 || GoogleSignIn.getLastSignedInAccount(this) == null;
         editor.apply();
 
@@ -419,9 +427,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         encourage.resetAllEncourgements();
         goalReached = false;
 
-        SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong("goal", goal);
+        editor.putLong(KEY_GOAL, goal);
         editor.apply();
     }
 }

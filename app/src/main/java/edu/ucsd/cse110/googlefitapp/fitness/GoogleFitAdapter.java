@@ -245,15 +245,25 @@ public class GoogleFitAdapter implements FitnessService {
                                     cal.add(Calendar.HOUR_OF_DAY, -1);
                                     long startTime = cal.getTimeInMillis();
 
-
+                                    DataSource dataSource =
+                                            new DataSource.Builder()
+                                                    .setAppPackageName(activity)
+                                                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                                                    .setStreamName(TAG + " - step count")
+                                                    .setType(DataSource.TYPE_RAW)
+                                                    .build();
+                                    DataSet dataSet2 = DataSet.create(dataSource);
                                     DataPoint dataPoint =
-                                            dataSet.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
+                                            dataSet2.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(stepCountDelta);
-                                    dataSet.add(dataPoint);
+                                    step = stepCountDelta;
+                                    dataSet2.add(dataPoint);
+
+
                                     System.out.println("Added!  ");
                                     Log.d(TAG, dataSet.toString());
 
-                                    Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet);
+                                    Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
                                     System.out.println(response.isSuccessful());
                                 } else {
                                     step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + 50;
