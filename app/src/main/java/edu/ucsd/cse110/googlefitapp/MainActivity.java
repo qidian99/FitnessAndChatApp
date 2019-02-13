@@ -240,7 +240,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         currentSteps = total;
 
-        encourage.getEncourgementOnLiveUpdate(currentSteps, before, goal);
+//        encourage.getEncourgementOnLiveUpdate(currentSteps, before, goal);
+        encourage.getDailyEncouragement(currentSteps,goal,this);
 
         if(currentSteps >= goal && !goalReached) {
             goalReached = true;
