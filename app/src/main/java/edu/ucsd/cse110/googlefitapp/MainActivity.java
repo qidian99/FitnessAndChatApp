@@ -75,14 +75,15 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     @Override
     protected void onRestart() {
         super.onRestart();
-        fitnessService.setup();
-        if(!firstTimeUser) {
+        if(GoogleSignIn.getLastSignedInAccount(this) != null) {
+            System.out.println("Get here on restart");
             final TextView stepText = findViewById(R.id.textStepsMain);
             final Long beforeSteps = getLastStepCount();
             //TODO : can add the encourgement here at the beginning of the app
             long total = getCurrentSteps();
             encourage.getEncourgementOnLiveUpdate(total, beforeSteps, goal);
             fitnessService.startAsync();
+            fitnessService.setup();
             Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
         }
     }
@@ -103,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         String magnitude = sharedPreferences.getString("magnitude", "");
         String metric = sharedPreferences.getString("metric", "");
         strideLength = sharedPreferences.getFloat("stride", 0);
-        firstTimeUser = strideLength == 0;
+        firstTimeUser = strideLength == 0 || GoogleSignIn.getLastSignedInAccount(this) == null;
         this.goal = sharedPreferences.getLong("goal", DEFAULT_GOAL);
         /* Encouragement
          - set to show every app startup
@@ -175,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         });
 
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
+            Toast.makeText(this, "You must login with Google to use this app", Toast.LENGTH_SHORT).show();
             GoogleSignIn.requestPermissions(
                     this, // your activity
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
@@ -191,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     @Override
     protected void onStop() {
         super.onStop();
-        if(!firstTimeUser) {
+        if(GoogleSignIn.getLastSignedInAccount(this) != null) {
             System.out.println("HI MOMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM");
             SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -340,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             strideLength = (float) ((Integer.parseInt(inputText[1])*12 + Integer.parseInt(inputText[2])) * 0.413);
         }
         editor.putFloat("stride", strideLength);
-        firstTimeUser = strideLength == 0;
+        firstTimeUser = strideLength == 0 || GoogleSignIn.getLastSignedInAccount(this) == null;
         editor.apply();
 
         Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT).show();
