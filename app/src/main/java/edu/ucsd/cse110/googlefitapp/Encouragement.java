@@ -17,7 +17,7 @@ public class Encouragement {
     private static final int CLOSE_MSG = 2;
     private Activity activity;
     private static final String PREF = "encouragement";
-    private int startHour = 20;
+    private int startHour = 19;
     private boolean quarterSent = false;
     private boolean halfSent = false;
     private boolean closeSent = false;
@@ -145,7 +145,7 @@ public class Encouragement {
     }
 
     public void getDailyEncouragement(long current, long goal, Context context) {
-        if (currentTime() < startHour && current < goal) {
+        if (currentTime() > startHour && current < goal) {
             SharedPreferences pref = context.getSharedPreferences(PREF,Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = pref.edit();
             int previousDay = pref.getInt("previous_day",-1);
