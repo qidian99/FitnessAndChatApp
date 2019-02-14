@@ -156,19 +156,15 @@ public class StepCountActivity extends AppCompatActivity {
     public void setStepCount(long stepCount) {
         SharedPreferences sharedPref = getSharedPreferences("stepCountData", MODE_PRIVATE);
         recordInitialStep = sharedPref.getBoolean("recordInitialStep", true);
-        System.out.println("---------------------"+ recordInitialStep);
 
         if(recordInitialStep) {
             SharedPreferences.Editor editor = sharedPref.edit();
-            // initialSteps = stepCount;
             editor.putLong("initialSteps", stepCount);
             editor.putBoolean("recordInitialStep", false);
             editor.apply();
-            // recordInitialStep = false;
         }
 
         initialSteps = sharedPref.getLong("initialSteps", stepCount);
-        System.out.println("---------------------"+initialSteps);
         steps = stepCount - initialSteps;
         textSteps.setText(String.format("Steps: %d", steps));
     }

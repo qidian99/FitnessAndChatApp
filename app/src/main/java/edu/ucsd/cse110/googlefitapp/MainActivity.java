@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     private boolean isCancelled = false;
     private long currentSteps;
-    private boolean goalReached = false;
+    private boolean goalChangable = false;
 
     private double activeDistance;
     private double activeSpeed;
@@ -98,6 +98,15 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             fitnessService.startAsync();
             fitnessService.setup();
             Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
+
+            SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+            int today = calendar.get(Calendar.DAY_OF_WEEK);
+            int day = sharedPreferences.getInt("day", -1);
+
+            if(day != today) {
+                goalChangable = true;
+                sharedPreferences.edit().putInt("day", today).apply();
+            }
         }
     }
 
@@ -198,6 +207,14 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                     GoogleSignIn.getLastSignedInAccount(this),
                     fitnessOptions);
         }
+
+        int today = calendar.get(Calendar.DAY_OF_WEEK);
+        int day = sharedPreferences.getInt("day", -1);
+
+        if(day != today) {
+            goalChangable = true;
+            sharedPreferences.edit().putInt("day", today).apply();
+        }
     }
 
     public void launchWeeklyStats() {
@@ -241,7 +258,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Date date = calendar.getTime();
         // String time = new SimpleDateFormat("HH:mm:ss").format(date);
         int day = calendar.get(Calendar.DAY_OF_WEEK);
-        // SharedPreferences sharedPref = getSharedPreferences("weekly_records", MODE_PRIVATE);
 
         SharedPreferences sharedPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -249,9 +265,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         editor.putLong(String.valueOf(day), getCurrentSteps());
         editor.putLong("goal", goal);
         editor.apply();
-
-        //weeklyData[day - 1] = getCurrentSteps();
-        //weeklyData[weeklyData.length - 1] = goal;
 
         final TextView stepText = findViewById(R.id.textStepsMain);
         final TextView stepsLeft = findViewById(R.id.stepsLeft);
@@ -264,15 +277,12 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
 
         currentSteps = total;
-
-//        encourage.getEncourgementOnLiveUpdate(currentSteps, before, goal);
         encourage.getDailyEncouragement(currentSteps,goal,this);
 
-        if(currentSteps >= goal && !goalReached) {
-            goalReached = true;
+        if(currentSteps >= goal && goalChangable) {
+            goalChangable = false;
             showNewGoalPrompt();
         }
-
     }
 
     private Long getLastStepCount() {
@@ -323,17 +333,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             displayActiveData();
         }
 
-        if(activeSteps >= this.goal) {
+        if(activeSteps >= this.goal && goalChangable) {
+            goalChangable = false;
             showNewGoalPrompt();
         }
-
-        /*
-        int day = calendar.get(Calendar.DAY_OF_WEEK);
-        if(day == Calendar.SATURDAY) {
-            weeklyData = new long[15];
-        }
-        weeklyData[day + 6] += activeSteps;
-        */
 
         int day = calendar.get(Calendar.DAY_OF_WEEK);
 
@@ -384,6 +387,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         FragmentManager fm = getSupportFragmentManager();
         NewGoalSetter setGoalDialogFragment = NewGoalSetter.newInstance(getString(R.string.congratsPrompt), goal);
         setGoalDialogFragment.show(fm, "fragment_set_new_goal");
+        goalChangable = false;
     }
 
     private void displayActiveData() {
@@ -425,7 +429,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         this.goal = goal;
 
         encourage.resetAllEncourgements();
-        goalReached = false;
 
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
