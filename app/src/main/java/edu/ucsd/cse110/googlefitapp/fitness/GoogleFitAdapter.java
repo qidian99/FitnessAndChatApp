@@ -85,7 +85,7 @@ public class GoogleFitAdapter implements FitnessService {
 
     public void startAsync() {
         isCancelled = false;
-
+        new CountToTenAsyncTask().execute(String.valueOf(2000));
 
     }
 

@@ -16,6 +16,5 @@ public class MainAdapter extends GoogleFitAdapter {
     @Override
     public void updateActivity() {
         mainActivity.updateAll(totalSteps);
-
     }
 }
