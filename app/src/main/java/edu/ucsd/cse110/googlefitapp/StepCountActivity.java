@@ -50,7 +50,10 @@ public class StepCountActivity extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         fitnessService.startAsync();
+
+
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
