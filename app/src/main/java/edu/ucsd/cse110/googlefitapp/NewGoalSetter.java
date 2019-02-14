@@ -45,7 +45,6 @@ public class NewGoalSetter extends DialogFragment {
         return v;
     }
 
-
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

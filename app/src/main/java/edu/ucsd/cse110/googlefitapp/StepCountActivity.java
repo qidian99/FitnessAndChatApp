@@ -2,8 +2,10 @@ package edu.ucsd.cse110.googlefitapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.health.SystemHealthManager;
 import android.renderscript.Element;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -48,12 +50,20 @@ public class StepCountActivity extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         fitnessService.startAsync();
+
+
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_step_count);
+
+        SharedPreferences sharedPref = getSharedPreferences("stepCountData", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean("recordInitialStep", true);
+        editor.apply();
 
         Timer t = new Timer();
         String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
@@ -147,10 +157,17 @@ public class StepCountActivity extends AppCompatActivity {
     }
 
     public void setStepCount(long stepCount) {
+        SharedPreferences sharedPref = getSharedPreferences("stepCountData", MODE_PRIVATE);
+        recordInitialStep = sharedPref.getBoolean("recordInitialStep", true);
+
         if(recordInitialStep) {
-            initialSteps = stepCount;
-            recordInitialStep = false;
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putLong("initialSteps", stepCount);
+            editor.putBoolean("recordInitialStep", false);
+            editor.apply();
         }
+
+        initialSteps = sharedPref.getLong("initialSteps", stepCount);
         steps = stepCount - initialSteps;
         textSteps.setText(String.format("Steps: %d", steps));
     }
@@ -174,5 +191,4 @@ public class StepCountActivity extends AppCompatActivity {
         setDistance();
         setSpeed();
     }
-
 }
