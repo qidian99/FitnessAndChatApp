@@ -76,7 +76,6 @@ public class Encouragement {
         doneSent = true;
     }
 
-
     public void getEncourgementOnLiveUpdate(long updateSteps, long beforeUpdateSteps, long goal) {
         long half = (goal/2);
         long quarter = (goal/4);
@@ -104,8 +103,6 @@ public class Encouragement {
 
             doneSent = true;
         }
-
-
     }
 
     private String determineActiveMessage(long current, long goal) {
