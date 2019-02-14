@@ -75,7 +75,7 @@ public class WeeklyStats extends AppCompatActivity {
             barEntries.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i-1));
         }
 
-        BarDataSet barDataSet = new BarDataSet(barEntries, "Steps");
+        BarDataSet barDataSet = new BarDataSet(barEntries, "");
         barDataSet.setStackLabels(new String[]{"intentional steps", "incidental steps"});
         barDataSet.setColors(new int[]{Color.rgb(204, 229, 255), Color.rgb(255, 204, 204)});
 
