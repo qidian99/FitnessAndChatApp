@@ -78,7 +78,7 @@ public class StepCountActivity extends AppCompatActivity {
                     public void run() {
                         TextView tv = (TextView)findViewById(R.id.timer_text);
                         int min = time / 60;
-                        int sec = time - min*60;
+                        int sec = time % 60;
 
                         if(sec < 10) {
                             tv.setText(String.format("Time: %d:0%d", min, sec));
@@ -108,6 +108,14 @@ public class StepCountActivity extends AppCompatActivity {
             }
         });
 
+        Button btnMockData = findViewById(R.id.btnMockDt);
+        btnMockData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((GoogleFitAdapter) fitnessService).mockDataPoint();
+            }
+        });
+
         Button btnEndRecord = findViewById(R.id.btnEndRecord);
         btnEndRecord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,7 +125,8 @@ public class StepCountActivity extends AppCompatActivity {
                 Intent homescreen = new Intent(getApplicationContext(), MainActivity.class);
                 homescreen.putExtra("speed", speed);
                 homescreen.putExtra("steps", steps);
-                homescreen.putExtra("time", time);
+                homescreen.putExtra("min", time/60);
+                homescreen.putExtra("second", time%60);
                 homescreen.putExtra("distance", distance);
                 setResult(RESULT_CODE, homescreen);
                 finish();
@@ -181,16 +190,5 @@ public class StepCountActivity extends AppCompatActivity {
         setStepCount(stepCount);
         setDistance();
         setSpeed();
-    }
-    
-    public void showEncouragement(long stepCount){
-
-        Context context = getApplicationContext();
-        CharSequence text = String.format("Good job! You're already at %d percent of the daily recommended number of steps.", (int) stepCount / 100);
-
-        int duration = Toast.LENGTH_LONG;
-
-        Toast toast = Toast.makeText(context, text, duration);
-        toast.show();
     }
 }

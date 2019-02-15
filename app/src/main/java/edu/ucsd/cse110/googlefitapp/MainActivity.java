@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     @Override
     protected void onRestart() {
         super.onRestart();
-
         if(GoogleSignIn.getLastSignedInAccount(this) != null) {
             fitnessService.startAsync();
             fitnessService.setup();
@@ -137,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         String magnitude = sharedPreferences.getString(KEY_MAGNITUDE, "");
         String metric = sharedPreferences.getString(KEY_METRIC, "");
         strideLength = sharedPreferences.getFloat(KEY_STRIDE, 0);
+
         firstTimeUser = strideLength == 0 || GoogleSignIn.getLastSignedInAccount(this) == null;
         this.goal = sharedPreferences.getInt(KEY_GOAL, DEFAULT_GOAL);
         /* Encouragement
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                 showHeightPrompt();
             }
         });
-        
+
         // Users can customize their goals
         Button setGoalBtn = findViewById(R.id.btnSetGoal);
         setGoalBtn.setOnClickListener(new View.OnClickListener() {
@@ -212,7 +212,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             sharedPreferences.edit().putInt("day", today).apply();
         }
     }
-
 
     public void launchWeeklyStats() {
         Intent intent = new Intent(MainActivity.this, WeeklyStats.class);
@@ -375,6 +374,12 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         NewGoalSetter setGoalDialogFragment = NewGoalSetter.newInstance(getString(R.string.congratsPrompt), goal);
         setGoalDialogFragment.show(fm, "fragment_set_new_goal");
         goalChangable = false;
+    }
+
+    private void displayActiveData() {
+        FragmentManager fm = getSupportFragmentManager();
+        DataDisplayer dataDisplayer = DataDisplayer.newInstance(getString(R.string.prevSession), activeDistance, activeSpeed, activeSteps, activeMin, activeSec);
+        dataDisplayer.show(fm, "fragment_display_active_data");
     }
 
     @Override
