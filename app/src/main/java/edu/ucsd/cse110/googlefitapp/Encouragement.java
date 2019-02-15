@@ -149,7 +149,7 @@ public class Encouragement {
             if ( today != previousDay) {
                 Toast.makeText(activity,determinePassiveMessage(current,goal),Toast.LENGTH_SHORT).show();
                 editor.putInt("previous_day",today);
-                editor.commit();
+                editor.apply();
             }
 //            else {
 //                Toast.makeText(activity,Integer.toString(today) + Integer.toString(previousDay),Toast.LENGTH_SHORT).show();
