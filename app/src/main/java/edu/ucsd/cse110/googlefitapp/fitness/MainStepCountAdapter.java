@@ -1,6 +1,5 @@
 package edu.ucsd.cse110.googlefitapp.fitness;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -18,7 +17,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import edu.ucsd.cse110.googlefitapp.MainActivity;
-import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 
 public class MainStepCountAdapter implements FitnessService {
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
@@ -119,7 +117,7 @@ public class MainStepCountAdapter implements FitnessService {
     @Override
     public void startAsync() {
         isCancelled = false;
-        new MainStepCountAdapter.CountToTenAsyncTask().execute(String.valueOf(2000));
+        new UpdateStepAsyncTask().execute(String.valueOf(2000));
     }
 
     @Override
@@ -133,7 +131,7 @@ public class MainStepCountAdapter implements FitnessService {
         return GOOGLE_FIT_PERMISSIONS_REQUEST_CODE;
     }
 
-    private class CountToTenAsyncTask extends AsyncTask<String, String, Void> {
+    private class UpdateStepAsyncTask extends AsyncTask<String, String, Void> {
 
         private String resp;
         ProgressDialog progressDialog;
@@ -170,8 +168,6 @@ public class MainStepCountAdapter implements FitnessService {
                 cancel(true);
             } else {
                 //call update steps here
-                System.out.println("SEVEN SECONDS PASSED REFRESH PERIOD RESTARTED");
-
                 updateStepCount();
             }
         }
