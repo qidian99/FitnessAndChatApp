@@ -21,7 +21,7 @@ import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 public class MainStepCountAdapter implements FitnessService {
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "GoogleFitAdapter";
-
+    private FitnessOptions fitnessOptions;
     private MainActivity activity;
 
     public MainStepCountAdapter(MainActivity activity) {
@@ -30,10 +30,12 @@ public class MainStepCountAdapter implements FitnessService {
 
 
     public void setup() {
-        FitnessOptions fitnessOptions = FitnessOptions.builder()
-                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .build();
+        if( fitnessOptions == null ) {
+            fitnessOptions = FitnessOptions.builder()
+                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                    .build();
+        }
 
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
             Toast.makeText(activity, "You must login with Google to use this app", Toast.LENGTH_SHORT).show();
@@ -44,10 +46,6 @@ public class MainStepCountAdapter implements FitnessService {
                     fitnessOptions);
         } else {
             updateStepCount();
-            // TODO: for recording unintentional walks, please modify the following method to handle
-            // 1. data storage
-            // 2. background recordingClient setting
-            // 3. statistics update
             startRecording();
         }
     }
@@ -116,13 +114,13 @@ public class MainStepCountAdapter implements FitnessService {
     }
 
     @Override
-    public void updateActivity() {
+    public void startAsync() {
 
     }
 
     @Override
-    public void startAsync() {
-
+    public boolean hasPermission() {
+        return GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions);
     }
 
 
