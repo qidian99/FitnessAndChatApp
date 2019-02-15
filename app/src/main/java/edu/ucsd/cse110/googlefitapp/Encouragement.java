@@ -14,6 +14,13 @@ public class Encouragement {
     private static final int CLOSE_MSG = 2;
     private Activity activity;
 
+
+    private boolean quarterSent = false;
+    private boolean halfSent = false;
+    private boolean closeSent = false;
+    private boolean doneSent = false;
+
+
     private String[] msgs =
             {"You are on your way. Keep it up!",
             "You are halfway to your goal!",
@@ -51,10 +58,53 @@ public class Encouragement {
         }
     }
 
+
+
     public void getPassiveEncouragement(long current, long goal) {
         if (current < goal) {
             Toast.makeText(activity,determinePassiveMessage(current,goal),Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void resetAllEncourgements() {
+        halfSent = false;
+        quarterSent = true;
+        closeSent = true;
+        doneSent = true;
+    }
+
+
+    public void getEncourgementOnLiveUpdate(long updateSteps, long beforeUpdateSteps, long goal) {
+        long half = (goal/2);
+        long quarter = (goal/4);
+        long ninetyPercent = (goal * 9/10);
+
+
+
+        System.out.println("HI MOMOMMMMMM MOMOMMMMMMMOMOMMMMMMMOMOMMMMMMMOMOMMMMMMMOMOMMMMMMMOMOMMMMMMMOMOMMMMMMMOMOMMMMMM : " + half);
+        System.out.println(updateSteps);
+        System.out.println(beforeUpdateSteps);
+
+        //this means that on the iteration between updates, you reached a milestone of the goal
+        if(half <= updateSteps && half >= beforeUpdateSteps && !halfSent) {
+            Toast.makeText(activity, msgs[HALFWAY_MSG],Toast.LENGTH_SHORT).show();
+            halfSent = true;
+        }
+        else if (quarter <= updateSteps && quarter >= beforeUpdateSteps && !quarterSent) {
+            Toast.makeText(activity, msgs[QUARTER_MSG],Toast.LENGTH_SHORT).show();
+            quarterSent = true;
+        }
+        else if (ninetyPercent <= updateSteps && ninetyPercent >= beforeUpdateSteps && !closeSent) {
+            Toast.makeText(activity, msgs[CLOSE_MSG],Toast.LENGTH_SHORT).show();
+            closeSent = true;
+        }
+        else if (goal <= updateSteps && goal >= beforeUpdateSteps && !doneSent) {
+            Toast.makeText(activity, "我觉得Joshua是漂亮的男人 You've reached your goal!!!!",Toast.LENGTH_SHORT).show();
+
+            doneSent = true;
+        }
+
+
     }
 
     private String determineActiveMessage(long current, long goal) {
