@@ -15,10 +15,18 @@
         android:layout_marginTop="50dp"
         android:text="update steps" />
 
+    <Button
+        android:id="@+id/btnMockDt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="Mock DataPoint" />
+
     <TextView
         android:id="@+id/textSteps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
         android:text="steps will be shown here" />
 
 </LinearLayout>
