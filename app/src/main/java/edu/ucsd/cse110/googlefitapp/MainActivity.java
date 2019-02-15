@@ -12,7 +12,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.fitness.FitnessOptions;
 
 import java.util.Calendar;
 
@@ -24,7 +23,6 @@ import edu.ucsd.cse110.googlefitapp.fitness.MainStepCountAdapter;
 public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, CustomGoalSetter.GoalPrompterListener {
     private String fitnessServiceKey = "GOOGLE_FIT";
     public static final String MAIN_SERVICE = "MAIN_SERVICE";
-    private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private static final int REQUEST_CODE = 1000;
 
     public static final String SHOW_STRIDE = "Your estimated stride length is %.2f\"";
@@ -53,10 +51,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private double activeSpeed;
     private int activeMin;
     private int activeSec;
-    private long activeSteps = 0;
+    private int activeSteps = 0;
     private float strideLength;
 
-    private long currDisplaySteps;
     private Encouragement encourage;
 
     private FitnessService fitnessService;
@@ -279,27 +276,29 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         return beforeSteps;
     }
 
-    private long getCurrentSteps() {
+    private int getCurrentSteps() {
         final TextView stepText = findViewById(R.id.textStepsMain);
         String beforeStepText = String.valueOf(stepText.getText());
         String[] separatedStrings = beforeStepText.split(" ");
-        Long before = 0L;
+        int before = 0;
         if(separatedStrings.length >= 3) {
-            before = Long.valueOf(separatedStrings[3]);
+            before = Integer.valueOf(separatedStrings[3]);
         }
         return before;
     }
 
     public void launchStepCountActivity() {
-        if(strideLength == 0) {
+        if(!fitnessService.hasPermission()){
+            fitnessService.setup();
+        } else if(strideLength == 0) {
             showHeightPrompt();
+        } else {
+            Intent intent = new Intent(this, StepCountActivity.class);
+            intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
+            intent.putExtra("stride", strideLength);
+            startActivityForResult(intent, REQUEST_CODE);
+            switchToActive = true;
         }
-
-        Intent intent = new Intent(this, StepCountActivity.class);
-        intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
-        intent.putExtra("stride", strideLength);
-        startActivityForResult(intent, REQUEST_CODE);
-        switchToActive = true;
 
     }
 
@@ -311,7 +310,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             activeSpeed = data.getDoubleExtra("speed", 0.0);
             activeMin = data.getIntExtra("min", 0);
             activeSec = data.getIntExtra("second", 0);
-            activeSteps = data.getLongExtra("steps", 0);
+            activeSteps = data.getIntExtra("steps", 0);
             displayActiveData();
         }
 
@@ -320,12 +319,14 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             showNewGoalPrompt();
         }
 
+        updateAll(getCurrentSteps() + activeSteps);
+
         int day = calendar.get(Calendar.DAY_OF_WEEK);
 
         SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
         SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
 
-        long currentActiveSteps = 0;
+        long currentActiveSteps;
 
         if(day == Calendar.SATURDAY) {
             if (notCleared) {
@@ -340,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         currentActiveSteps = stepPref.getLong(String.valueOf(day + 7), 0);
         SharedPreferences.Editor editor = stepPref.edit();
-        editor.putLong(String.valueOf(day+7), currentActiveSteps+activeSteps);
+        editor.putLong(String.valueOf(day + 7), currentActiveSteps + activeSteps);
         editor.apply();
 
         double currentActiveSpeed = weeklySpeed[day - 1];
@@ -399,6 +400,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT).show();
         Toast.makeText(this, String.format(SHOW_STRIDE, strideLength), Toast.LENGTH_LONG).show();
+
+        if(!firstTimeUser){
+            launchStepCountActivity();
+        }
     }
 
     //when we are done with the new goal
