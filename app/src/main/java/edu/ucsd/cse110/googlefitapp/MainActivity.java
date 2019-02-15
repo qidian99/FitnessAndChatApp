@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -29,10 +28,9 @@ import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
-import edu.ucsd.cse110.googlefitapp.fitness.GoalSetter;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
 
-public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, GoalSetter.GoalPrompterListener {
+public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, CustomGoalSetter.GoalPrompterListener {
     private String fitnessServiceKey = "GOOGLE_FIT";
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private static final int REQUEST_CODE = 1000;
@@ -41,11 +39,13 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public static final String SHOW_GOAL = "Your current goal is %d steps.";
     public static final String SHOW_STEP = "Your have taken %d steps.";
     public static final String TMP_RESULT = "distance: %.2f, speed: %.2f, time: %d, steps: %d";
+    public static final String SHOW_STEPS_LEFT = "You have %d steps left.";
 
     public static final long DEFAULT_GOAL = 5000L;
     public static boolean firstPromptHeight = true;
 
     private boolean switchToActive = false;
+    private long goal;
 
     private double activeDistance;
     private double activeSpeed;
@@ -68,7 +68,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         String magnitude = sharedPreferences.getString("magnitude", "");
         String metric = sharedPreferences.getString("metric", "");
-        strideLength = sharedPreferences.getFloat("stride", 0);
+        this.goal = sharedPreferences.getLong("goal", DEFAULT_GOAL);
+        float strideLength = sharedPreferences.getFloat("stride", 0);
 
         FitnessOptions fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -97,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Update step
         GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(this);
         final TextView stepText = findViewById(R.id.textStepsMain);
+        final TextView stepsLeft = findViewById(R.id.stepsLeft);
         if (GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
             Fitness.getHistoryClient(this, lastSignedInAccount)
                     .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
@@ -123,6 +125,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                                                     ? 0
                                                     : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
                                     stepText.setText(String.format(SHOW_STEP, total));
+                                    SharedPreferences pref = getSharedPreferences("user_data", MODE_PRIVATE);
+                                    long currGoal = pref.getLong("goal", -1);
+                                    stepsLeft.setText(String.format(SHOW_STEPS_LEFT, currGoal - total));
                                 }
                             })
                     .addOnFailureListener(
@@ -153,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         setGoalBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showNewGoalPrompt();
+                showCustomGoalPrompt();
             }
         });
 
@@ -178,16 +183,19 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(switchToActive) {
-            super.onActivityResult(requestCode, resultCode, data);
-            activeDistance = data.getDoubleExtra("distance", 0.0);
-            activeSpeed = data.getDoubleExtra("speed", 0.0);
-            activeTimeElapsed = data.getIntExtra("time", 0);
-            activeSteps = data.getLongExtra("steps", 0);
+        super.onActivityResult(requestCode, resultCode, data);
+        activeDistance = data.getDoubleExtra("distance", 0.0);
+        activeSpeed = data.getDoubleExtra("speed", 0.0);
+        activeTimeElapsed = data.getIntExtra("time", 0);
+        activeSteps = data.getLongExtra("steps", 0);
 
-            Toast.makeText(getApplicationContext(), String.format(TMP_RESULT,
-                    activeDistance, activeSpeed, activeTimeElapsed, activeSteps),
-                    Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), String.format(TMP_RESULT,
+                activeDistance, activeSpeed, activeTimeElapsed, activeSteps),
+                Toast.LENGTH_LONG).show();
+        // Toast.makeText(this,String.format("distance: %.2f, speed: %.2f", activeDistance, activeSpeed), Toast.LENGTH_LONG).show();
+
+        if(activeSteps >= this.goal) {
+            showNewGoalPrompt();
         }
     }
 
@@ -201,10 +209,16 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         editNameDialogFragment.show(fm, "fragment_prompt_height");
     }
 
+    private void showCustomGoalPrompt() {
+        FragmentManager fm = getSupportFragmentManager();
+        CustomGoalSetter setGoalDialogFragment = CustomGoalSetter.newInstance(getString(R.string.setGoalPrompt));
+        setGoalDialogFragment.show(fm, "fragment_set_goal");
+    }
+    
     private void showNewGoalPrompt() {
         FragmentManager fm = getSupportFragmentManager();
-        GoalSetter setGoalDialogFragment = GoalSetter.newInstance(getString(R.string.setGoalPrompt));
-        setGoalDialogFragment.show(fm, "fragment_set_goal");
+        NewGoalSetter setGoalDialogFragment = NewGoalSetter.newInstance(getString(R.string.congratsPrompt), goal);
+        setGoalDialogFragment.show(fm, "fragment_set_new_goal");
     }
 
     @Override
@@ -237,6 +251,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         goalText.setText(String.format(SHOW_GOAL, goal));
 
         // Save new goal
+        this.goal = goal;
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong("goal", goal);

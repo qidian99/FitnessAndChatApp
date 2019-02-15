@@ -34,6 +34,7 @@ public class StepCountActivity extends AppCompatActivity {
 
     private TextView textSteps;
     private FitnessService fitnessService;
+<<<<<<< HEAD
     private long steps = 1000;
     private double distance = 0.0;
     private int time = 20;
@@ -41,6 +42,12 @@ public class StepCountActivity extends AppCompatActivity {
     private float strideLen;
     private boolean recordInitialStep = true;
     private long initialSteps;
+=======
+    private long steps = 0;
+    private double distance = 0;
+    private int time = 0;
+    private double speed = 0;
+>>>>>>> cf928c07312c5db8206dd187818ab279ba58f07d
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +108,8 @@ public class StepCountActivity extends AppCompatActivity {
         btnEndRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                fitnessService.stopAsync();
                 Intent homescreen = new Intent(getApplicationContext(), MainActivity.class);
                 homescreen.putExtra("speed", speed);
                 homescreen.putExtra("steps", steps);
