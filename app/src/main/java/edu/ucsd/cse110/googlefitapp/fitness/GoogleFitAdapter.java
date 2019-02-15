@@ -41,11 +41,11 @@ public class GoogleFitAdapter implements FitnessService {
     boolean isCancelled = false;
     private Encouragement encouragement;
 
-    protected Activity activity;
+    protected StepCountActivity stepCountActivity;
     private int step = 0;
     protected int totalSteps = 0;
-    public GoogleFitAdapter(Activity activity) {
-        this.activity = activity;
+    public GoogleFitAdapter(StepCountActivity activity) {
+        this.stepCountActivity = activity;
     }
 
 
@@ -58,14 +58,14 @@ public class GoogleFitAdapter implements FitnessService {
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
                 .build();
 
-        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
+        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(stepCountActivity), fitnessOptions)) {
             GoogleSignIn.requestPermissions(
-                    activity, // your activity
+                    stepCountActivity, // your activity
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(activity),
+                    GoogleSignIn.getLastSignedInAccount(stepCountActivity),
                     fitnessOptions);
         } else {
-            encouragement = new Encouragement(activity, true);
+            encouragement = new Encouragement(stepCountActivity, true);
             updateStepCount();
 
             startRecording();
@@ -88,6 +88,12 @@ public class GoogleFitAdapter implements FitnessService {
         new CountToTenAsyncTask().execute(String.valueOf(2000));
 
     }
+
+    @Override
+    public boolean hasPermission() {
+        return false;
+    }
+
 
     private class CountToTenAsyncTask extends AsyncTask<String, String, Void> {
 
@@ -134,12 +140,12 @@ public class GoogleFitAdapter implements FitnessService {
     }
 
     private void startRecording() {
-        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(stepCountActivity);
         if (lastSignedInAccount == null) {
             return;
         }
 
-        Fitness.getRecordingClient(activity, GoogleSignIn.getLastSignedInAccount(activity))
+        Fitness.getRecordingClient(stepCountActivity, GoogleSignIn.getLastSignedInAccount(stepCountActivity))
                 .subscribe(DataType.TYPE_STEP_COUNT_CUMULATIVE)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -161,12 +167,12 @@ public class GoogleFitAdapter implements FitnessService {
      * current timezone.
      */
     public void updateStepCount() {
-        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(stepCountActivity);
         if (lastSignedInAccount == null) {
             return;
         }
 
-        Fitness.getHistoryClient(activity, lastSignedInAccount)
+        Fitness.getHistoryClient(stepCountActivity, lastSignedInAccount)
                 .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
                 .addOnSuccessListener(
                         new OnSuccessListener<DataSet>() {
@@ -180,8 +186,7 @@ public class GoogleFitAdapter implements FitnessService {
 
                                 totalSteps = total;
 
-                                updateActivity();
-                                //activity.updateAll(total);
+                                stepCountActivity.updateAll(total);
                                 Log.d(TAG, "Total steps: " + total);
                             }
                         })
@@ -197,12 +202,12 @@ public class GoogleFitAdapter implements FitnessService {
     }
 
     public void getStepCount(final TextView stepText){
-        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(stepCountActivity);
         if (lastSignedInAccount == null) {
             return;
         }
 
-        Fitness.getHistoryClient(activity, lastSignedInAccount)
+        Fitness.getHistoryClient(stepCountActivity, lastSignedInAccount)
                 .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
                 .addOnSuccessListener(
                         new OnSuccessListener<DataSet>() {
@@ -227,9 +232,9 @@ public class GoogleFitAdapter implements FitnessService {
     }
 
     public void mockDataPoint(){
-        final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
+        final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(stepCountActivity);
 
-        Fitness.getHistoryClient(activity, gsa)
+        Fitness.getHistoryClient(stepCountActivity, gsa)
                 .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
                 .addOnSuccessListener(
                         new OnSuccessListener<DataSet>() {
@@ -247,7 +252,7 @@ public class GoogleFitAdapter implements FitnessService {
 
                                     DataSource dataSource =
                                             new DataSource.Builder()
-                                                    .setAppPackageName(activity)
+                                                    .setAppPackageName(stepCountActivity)
                                                     .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
                                                     .setStreamName(TAG + " - step count")
                                                     .setType(DataSource.TYPE_RAW)
@@ -263,7 +268,7 @@ public class GoogleFitAdapter implements FitnessService {
                                     System.out.println("Added!  ");
                                     Log.d(TAG, dataSet.toString());
 
-                                    Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
+                                    Task<Void> response = Fitness.getHistoryClient(stepCountActivity, gsa).insertData(dataSet2);
                                     System.out.println(response.isSuccessful());
                                 } else {
                                     step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + 50;
@@ -274,7 +279,7 @@ public class GoogleFitAdapter implements FitnessService {
                                     // Create a data source
                                     DataSource dataSource =
                                             new DataSource.Builder()
-                                                    .setAppPackageName(activity)
+                                                    .setAppPackageName(stepCountActivity)
                                                     .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
                                                     .setStreamName(TAG + " - step count")
                                                     .setType(DataSource.TYPE_RAW)
@@ -289,7 +294,7 @@ public class GoogleFitAdapter implements FitnessService {
                                             .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS) ,dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS )
                                             .build();
 
-                                    Task<Void> response = Fitness.getHistoryClient(activity, GoogleSignIn.getLastSignedInAccount(activity)).updateData(request);
+                                    Task<Void> response = Fitness.getHistoryClient(stepCountActivity, GoogleSignIn.getLastSignedInAccount(stepCountActivity)).updateData(request);
                                 }
                                 updateStepCount();
                             }
@@ -305,12 +310,6 @@ public class GoogleFitAdapter implements FitnessService {
     @Override
     public int getRequestCode() {
         return GOOGLE_FIT_PERMISSIONS_REQUEST_CODE;
-    }
-
-    @Override
-    public void updateActivity() {
-
-
     }
 
 }

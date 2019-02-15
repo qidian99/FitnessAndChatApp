@@ -41,7 +41,7 @@ public class WeeklyStats extends AppCompatActivity {
 
     private double[] distance;
     private double[] speed;
-    private long goal;
+    private int goal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +52,7 @@ public class WeeklyStats extends AppCompatActivity {
         speed = getIntent().getDoubleArrayExtra("weeklySpeed");
 
         SharedPreferences sharedPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
-        goal = sharedPref.getLong("goal", 0);
+        goal = sharedPref.getInt("goal", 0);
 
         final BarChart barChart;
 
@@ -114,8 +114,8 @@ public class WeeklyStats extends AppCompatActivity {
         ArrayList<BarEntry> barEntries = new ArrayList<BarEntry>();
 
         for(int i = 1; i <= 7; i++) {
-            long activeSteps = sharedPref.getLong(String.valueOf(i + 7), 0);
-            long inactiveSteps = sharedPref.getLong(String.valueOf(i), 0) - activeSteps;
+            int activeSteps = sharedPref.getInt(String.valueOf(i + 7), 0);
+            int inactiveSteps = sharedPref.getInt(String.valueOf(i), 0) - activeSteps;
 
             barEntries.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i-1));
         }

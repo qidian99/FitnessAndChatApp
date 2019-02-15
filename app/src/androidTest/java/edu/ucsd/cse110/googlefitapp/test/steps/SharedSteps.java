@@ -1,15 +1,14 @@
 package edu.ucsd.cse110.googlefitapp.test.steps;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
+import android.content.Intent;
 import android.support.test.espresso.intent.Intents;
+import android.support.test.espresso.matcher.RootMatchers;
+import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import cucumber.api.PendingException;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
@@ -18,19 +17,32 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.R;
+import edu.ucsd.cse110.googlefitapp.StepCountActivity;
+import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
+import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import gherkin.cli.Main;
 
+import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withSpinnerText;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static edu.ucsd.cse110.googlefitapp.MainActivity.SHARED_PREFERENCE_NAME;
+import static junit.framework.TestCase.assertEquals;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.IsAnything.anything;
+import static org.hamcrest.core.StringContains.containsString;
 
 public class SharedSteps {
+    private static final String TEST_SERVICE_MAIN_ACTIVITY = "TEST_SERVICE_MAIN_ACTIVITY";
+    private static final String TEST_SERVICE_STEP_ACTIVITY = "TEST_SERVICE_STEP_ACTIVITY";
 
     private ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity
             .class);
@@ -42,9 +54,39 @@ public class SharedSteps {
 
     @Before
     public void setup() {
+        FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+            @Override
+            public FitnessService create(StepCountActivity stepCountActivity) {
+                return null;
+            }
+
+            @Override
+            public FitnessService create(MainActivity mainActivity) {
+                return new TestMainFitnessService(mainActivity);
+            }
+        });
+        FitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+            @Override
+            public FitnessService create(StepCountActivity stepCountActivity) {
+                return null;
+            }
+
+            @Override
+            public FitnessService create(MainActivity mainActivity) {
+                return null;
+            }
+        });
+
+        Intent intent = new Intent();
+        intent.putExtra("TEST", true);
+        intent.putExtra("TEST_SERVICE_MAIN", TEST_SERVICE_MAIN_ACTIVITY);
+        intent.putExtra("TEST_SERVICE_STEP_COUNT", TEST_SERVICE_STEP_ACTIVITY);
+        mActivityTestRule.launchActivity(intent);
+        mActivityTestRule.getActivity().setFitnessServiceKey(TEST_SERVICE_STEP_ACTIVITY);
+
         Intents.init();
-        nameIdMap.put("first", "number_1");
-        nameIdMap.put("second", "number_2");
+//        nameIdMap.put("first", "number_1");
+//        nameIdMap.put("second", "number_2");
     }
 
     @After
@@ -54,137 +96,157 @@ public class SharedSteps {
     }
 
     public void restartApp() {
-        InstrumentationRegistry.getTargetContext()
-                .getSharedPreferences(
-                        SHARED_PREFERENCE_NAME,
-                        Context.MODE_PRIVATE)
-                .edit()
-                .remove(MainActivity.KEY_HEIGHT)
-                .remove(MainActivity.KEY_METRIC)
-                .remove(MainActivity.KEY_MAGNITUDE)
-                .remove(MainActivity.KEY_STRIDE)
-                .remove(MainActivity.KEY_BEFORE)
-                .remove(MainActivity.KEY_GOAL)
-                .apply();
+//        InstrumentationRegistry.getTargetContext()
+//                .getSharedPreferences(
+//                        SHARED_PREFERENCE_NAME,
+//                        Context.MODE_PRIVATE)
+//                .edit()
+//                .remove(MainActivity.KEY_HEIGHT)
+//                .remove(MainActivity.KEY_METRIC)
+//                .remove(MainActivity.KEY_MAGNITUDE)
+//                .remove(MainActivity.KEY_STRIDE)
+//                .remove(MainActivity.KEY_BEFORE)
+//                .remove(MainActivity.KEY_GOAL)
+//                .apply();
     }
 
     @Given("^Sarah has successfully downloaded the app$")
     public void sarahHasSuccessfullyDownloadedTheApp() throws Throwable {
-        // Should clear any shared preference and restart the app if necessary to make it
-        // act like newly downloaded app
-        restartApp();
-        mActivityTestRule.launchActivity(null);
         assertThat(mActivityTestRule.getActivity(), notNullValue());
     }
 
     @And("^she has accepted all the permissions$")
-    public void sheHasAcceptedAllThePermissions() throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
-    }
+    public void sheHasAcceptedAllThePermissions() throws Throwable {}
 
     @And("^she uses feet and inches for her height$")
-    public void sheUsesFeetAndInchesForHerHeight() throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
-    }
+    public void sheUsesFeetAndInchesForHerHeight() throws Throwable {}
 
     @When("^the application asks for her height, she$")
     public void theApplicationAsksForHerHeightShe() throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+        onView(withId(R.id.clearBtn))
+                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
+        onView(withId(R.id.clearBtn)).perform(click());
     }
 
     @Then("^chooses the feet and inches option in the drop-down menu$")
     public void choosesTheFeetAndInchesOptionInTheDropDownMenu() throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+        // Make sure a dialog show up
+        onView(withText(R.string.heightPrompt))
+        .inRoot(isDialog()) // <---
+        .check(matches(isDisplayed()));
+
+        // Choose feet and inches
+        onView(withId(R.id.metricSpinner)).perform(click());
+        onData(anything()).inRoot(RootMatchers.isPlatformPopup()).atPosition(1).perform(click());
+
+        onView(withId(R.id.metricSpinner)).check(matches(withSpinnerText(containsString("ft"))));
+        onView(withId(R.id.cent_height))
+                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.GONE))));
+        onView(withId(R.id.ft_height))
+                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
+        onView(withId(R.id.inch_height))
+                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
     }
 
     @And("^inputs (\\d+) in the first textbox and (\\d+) in the second textbox$")
     public void inputsInTheFirstTextboxAndInTheSecondTextbox(int arg0, int arg1) throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+        onView(withId(R.id.ft_height)).perform(typeText(String.valueOf(arg0)));
+        onView(withId(R.id.inch_height)).perform(typeText(String.valueOf(arg1)));
     }
 
     @When("^she presses the “Done” button$")
     public void shePressesTheDoneButton() throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+        onView(withId(R.id.posBtn)).perform(click());
     }
 
     @Then("^she is taken to the home screen.$")
     public void sheIsTakenToTheHomeScreen() throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+        // Make sure the dialog disappear
+//        onView(withText(R.string.heightPrompt))
+//                .inRoot(isDialog()) // <---
+//                .check(matches(not(isDisplayed())));
     }
 
+    private class TestMainFitnessService implements FitnessService {
+        private static final String TAG = "[TestMainFitnessService]: ";
+        private MainActivity mainActivity;
+
+        public TestMainFitnessService(MainActivity mainActivity) {
+            this.mainActivity = mainActivity;
+        }
+
+        @Override
+        public int getRequestCode() {
+            return 0;
+        }
+
+        @Override
+        public void setup() {
+            System.out.println(TAG + "setup");
+        }
+
+        @Override
+        public void updateStepCount() {
+            System.out.println(TAG + "update all texts");
+            mainActivity.updateAll(1000);
+        }
+
+        @Override
+        public void stopAsync() {
+
+        }
 
 
+        @Override
+        public void startAsync() {
 
-    /*@Before
-    public void setup() {
-        Intents.init();
-        nameIdMap.put("first", "number_1");
-        nameIdMap.put("second", "number_2");
-    }
+        }
 
-    @After
-    public void tearDown() {
-        mActivityTestRule.getActivity().finish();
-        Intents.release();
-    }
-
-    @Given("a main activity")z
-    public void aMainActivity() {
-        System.out.println("STARTING MAINACTIVITY");
-        mActivityTestRule.launchActivity(null);
-        assertThat(mActivityTestRule.getActivity(), notNullValue());
-    }
-
-    public static int getLayoutIdFromString(String resName) {
-        try {
-            Field idField = R.id.class.getDeclaredField(resName);
-            return idField.getInt(idField);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return -1;
+        @Override
+        public boolean hasPermission() {
+            return true;
         }
     }
 
-    @When("^the user enters (\\d+) in the (.*) text field$")
-    public void theUserEntersANumberInTheEdittextFieldWithId(int number, String id) throws Throwable {
-        int layoutId = getLayoutIdFromString(nameIdMap.get(id));
-        onView(withId(layoutId))
-                .check(matches(isDisplayed()))
-                .perform(typeText("" + number));
+    private class TestStepCountFitnessService implements FitnessService {
+        private static final String TAG = "[TestStepCountFitnessService]: ";
+        private StepCountActivity stepCountActivity;
+
+        public TestStepCountFitnessService(StepCountActivity stepCountActivity) {
+            this.stepCountActivity = stepCountActivity;
+        }
+
+        @Override
+        public int getRequestCode() {
+            return 0;
+        }
+
+        @Override
+        public void setup() {
+            System.out.println(TAG + "setup");
+        }
+
+        @Override
+        public void updateStepCount() {
+            System.out.println(TAG + "updateStepCount");
+            stepCountActivity.setStepCount(1000);
+        }
+
+        @Override
+        public void stopAsync() {
+
+        }
+
+
+        @Override
+        public void startAsync() {
+
+        }
+
+        @Override
+        public boolean hasPermission() {
+            return true;
+        }
     }
 
-    @And("^the user clicks the plus button$")
-    public void theUserClicksThePlusButton() throws Throwable {
-        onView(withId(R.id.btn_plus))
-                .check(matches(isDisplayed()))
-                .perform(click());
-    }
-
-    @And("^the user clicks the minus button$")
-    public void theUserClicksTheMinusButton() throws Throwable {
-        onView(withId(R.id.btn_minus))
-                .check(matches(isDisplayed()))
-                .perform(click());
-    }
-
-    @Then("^the answer is 579$")
-    public void theAnswerIs() throws Throwable {
-        onView(withId(R.id.answer))
-                .check(matches(isDisplayed()))
-                .check(matches(withText("579")));
-    }
-
-    @Then("^the answer is 222$")
-    public void theMinusAnswerIs() throws Throwable {
-        onView(withId(R.id.answer))
-                .check(matches(isDisplayed()))
-                .check(matches(withText("222")));
-    }*/
 }
