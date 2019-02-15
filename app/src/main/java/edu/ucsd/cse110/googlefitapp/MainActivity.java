@@ -398,15 +398,15 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             strideLength = (float) ((Integer.parseInt(inputText[1])*12 + Integer.parseInt(inputText[2])) * 0.413);
         }
         editor.putFloat(KEY_STRIDE, strideLength);
-        firstTimeUser = strideLength == 0 || GoogleSignIn.getLastSignedInAccount(this) == null;
         editor.apply();
 
         Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT).show();
         Toast.makeText(this, String.format(SHOW_STRIDE, strideLength), Toast.LENGTH_LONG).show();
 
-        if(!firstTimeUser){
-            launchStepCountActivity();
-        }
+//        if(firstTimeUser){
+//            firstTimeUser = false;
+//            launchStepCountActivity();
+//        }
     }
 
     //when we are done with the new goal

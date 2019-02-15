@@ -121,7 +121,7 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
             try {
                 height = Integer.parseInt(centText.getText().toString());
                 // Check for invalid input
-                if (height < 0 || height > 1000) {
+                if (height <= 0 || height > 1000) {
                     throw new Exception("Invalid input");
                 }
             } catch (Exception e) {
@@ -156,7 +156,7 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
                 height = Integer.parseInt(ftText.getText().toString());
                 height2 = Integer.parseInt(inchText.getText().toString());
                 // Check for invalid input
-                if (height < 0 || height > 50 || height2 < 0 || height2 >= 12) {
+                if (height <= 0 || height > 50 || height2 <= 0 || height2 >= 12) {
                     throw new Exception("Invalid input");
                 }
             } catch (Exception e) {
