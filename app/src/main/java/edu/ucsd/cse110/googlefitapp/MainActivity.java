@@ -94,31 +94,41 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        FitnessServiceFactory.put(MAIN_SERVICE, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return null;
-            }
+        // For testing
+        if(getIntent().getBooleanExtra("TEST", false)){
+            String mainServiceKey = getIntent().getStringExtra("TEST_SERVICE_MAIN");
+            String stepCountServiceKey = getIntent().getStringExtra("TEST_SERVICE_STEP_COUNT");
+            fitnessService = FitnessServiceFactory.create(mainServiceKey, this);
+            setFitnessServiceKey(stepCountServiceKey);
+        } else { // Normal setup
 
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return new MainStepCountAdapter(mainActivity);
-            }
-        });
+            FitnessServiceFactory.put(MAIN_SERVICE, new FitnessServiceFactory.BluePrint() {
+                @Override
+                public FitnessService create(StepCountActivity stepCountActivity) {
+                    return null;
+                }
 
-        FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return new GoogleFitAdapter(stepCountActivity);
-            }
+                @Override
+                public FitnessService create(MainActivity mainActivity) {
+                    return new MainStepCountAdapter(mainActivity);
+                }
+            });
 
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return null;
-            }
-        });
+            FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
+                @Override
+                public FitnessService create(StepCountActivity stepCountActivity) {
+                    return new GoogleFitAdapter(stepCountActivity);
+                }
 
-        fitnessService = FitnessServiceFactory.create(MAIN_SERVICE, this);
+                @Override
+                public FitnessService create(MainActivity mainActivity) {
+                    return null;
+                }
+            });
+
+            fitnessService = FitnessServiceFactory.create(MAIN_SERVICE, this);
+        }
+
         fitnessService.setup();
 
 
