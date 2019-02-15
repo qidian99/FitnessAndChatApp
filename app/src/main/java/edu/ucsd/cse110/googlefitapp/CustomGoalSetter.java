@@ -18,7 +18,7 @@ import android.widget.TextView;
 
 public class CustomGoalSetter extends DialogFragment implements TextView.OnEditorActionListener {
     public interface GoalPrompterListener {
-        void onFinishEditDialog(long goal);
+        void onFinishEditDialog(int goal);
     }
 
 
@@ -89,7 +89,7 @@ public class CustomGoalSetter extends DialogFragment implements TextView.OnEdito
     public boolean finishEnterGoal() {
         // Return input text back to activity through the implemented listener
         GoalPrompterListener listener = (GoalPrompterListener) getActivity();
-        long goal;
+        int goal;
 
         try {
             goal = Integer.parseInt(newGoalTxt.getText().toString());

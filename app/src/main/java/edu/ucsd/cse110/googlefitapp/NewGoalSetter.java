@@ -98,7 +98,7 @@ public class NewGoalSetter extends DialogFragment {
     public boolean finishEnterGoal(String goalStr) {
         // Return input text back to activity through the implemented listener
         CustomGoalSetter.GoalPrompterListener listener = (CustomGoalSetter.GoalPrompterListener) getActivity();
-        long goal;
+        int goal;
 
         try {
             goal = Integer.parseInt(goalStr);

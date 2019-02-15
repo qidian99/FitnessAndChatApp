@@ -19,7 +19,7 @@ import android.widget.Toast;
 public class DataDisplayer extends DialogFragment {
     double distance;
     double speed;
-    long steps;
+    int steps;
     int sec;
     int min;
 
@@ -31,7 +31,7 @@ public class DataDisplayer extends DialogFragment {
     public DataDisplayer() {}
 
     @SuppressLint("ValidFragment")
-    public DataDisplayer(double distance, double speed, long steps, int min, int sec) {
+    public DataDisplayer(double distance, double speed, int steps, int min, int sec) {
         this.distance = distance;
         this.speed = speed;
         this.steps = steps;
@@ -41,7 +41,7 @@ public class DataDisplayer extends DialogFragment {
 
     private Window window;
 
-    public static DataDisplayer newInstance(String title, double distance, double speed, long steps, int min, int sec) {
+    public static DataDisplayer newInstance(String title, double distance, double speed, int steps, int min, int sec) {
         DataDisplayer frag = new DataDisplayer(distance, speed, steps, min, sec);
         Bundle args = new Bundle();
         args.putString("title", title);
