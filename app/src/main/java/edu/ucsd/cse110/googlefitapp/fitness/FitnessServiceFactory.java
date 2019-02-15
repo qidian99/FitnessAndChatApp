@@ -5,6 +5,7 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 
 public class FitnessServiceFactory {
@@ -22,7 +23,13 @@ public class FitnessServiceFactory {
         return blueprints.get(key).create(stepCountActivity);
     }
 
+    public static FitnessService create(String key, MainActivity mainActivity) {
+        Log.i(TAG, String.format("creating FitnessService with key %s", key));
+        return blueprints.get(key).create(mainActivity);
+    }
+
     public interface BluePrint {
         FitnessService create(StepCountActivity stepCountActivity);
+        FitnessService create(MainActivity mainActivity);
     }
 }

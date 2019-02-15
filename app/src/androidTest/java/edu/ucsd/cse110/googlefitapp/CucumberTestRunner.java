@@ -15,7 +15,7 @@ public class CucumberTestRunner extends MonitoringInstrumentation {
         //note you can put those in CucumberOptions also
         bundle.putString("features", "features");
         bundle.putString("glue", "edu.ucsd.cse110.googlefitapp.test.steps");
-        bundle.putString("tags", "~@skipAndroid");
+//        bundle.putString("tags", "~@skipAndroid");
         this.cucumberInstrumentationCore.create(bundle);
         start();
     }
