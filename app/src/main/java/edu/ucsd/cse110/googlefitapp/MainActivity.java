@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private double activeSpeed;
     private int activeMin;
     private int activeSec;
-    private long activeSteps = 0;
+    private int activeSteps = 0;
     private float strideLength;
 
     private Encouragement encourage;
@@ -276,13 +276,13 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         return beforeSteps;
     }
 
-    private long getCurrentSteps() {
+    private int getCurrentSteps() {
         final TextView stepText = findViewById(R.id.textStepsMain);
         String beforeStepText = String.valueOf(stepText.getText());
         String[] separatedStrings = beforeStepText.split(" ");
-        Long before = 0L;
+        int before = 0;
         if(separatedStrings.length >= 3) {
-            before = Long.valueOf(separatedStrings[3]);
+            before = Integer.valueOf(separatedStrings[3]);
         }
         return before;
     }
@@ -310,7 +310,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             activeSpeed = data.getDoubleExtra("speed", 0.0);
             activeMin = data.getIntExtra("min", 0);
             activeSec = data.getIntExtra("second", 0);
-            activeSteps = data.getLongExtra("steps", 0);
+            activeSteps = data.getIntExtra("steps", 0);
             displayActiveData();
         }
 
@@ -319,12 +319,14 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             showNewGoalPrompt();
         }
 
+        updateAll(getCurrentSteps() + activeSteps);
+
         int day = calendar.get(Calendar.DAY_OF_WEEK);
 
         SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
         SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
 
-        long currentActiveSteps = 0;
+        long currentActiveSteps;
 
         if(day == Calendar.SATURDAY) {
             if (notCleared) {
@@ -339,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         currentActiveSteps = stepPref.getLong(String.valueOf(day + 7), 0);
         SharedPreferences.Editor editor = stepPref.edit();
-        editor.putLong(String.valueOf(day+7), currentActiveSteps+activeSteps);
+        editor.putLong(String.valueOf(day + 7), currentActiveSteps + activeSteps);
         editor.apply();
 
         double currentActiveSpeed = weeklySpeed[day - 1];

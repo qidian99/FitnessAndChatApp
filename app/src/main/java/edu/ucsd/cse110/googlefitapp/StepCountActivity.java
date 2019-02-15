@@ -38,13 +38,13 @@ public class StepCountActivity extends AppCompatActivity {
     private TextView textDist;
     private TextView textSpeed;
     private FitnessService fitnessService;
-    private long steps = 0;
+    private int steps = 0;
     private double distance = 0.0;
     private int time = 0;
     private double speed = 0.0;
     private float strideLen;
     private boolean recordInitialStep = true;
-    private long initialSteps;
+    private int initialSteps;
 
     @Override
     protected void onRestart() {
@@ -156,18 +156,18 @@ public class StepCountActivity extends AppCompatActivity {
         }
     }
 
-    public void setStepCount(long stepCount) {
+    public void setStepCount(int stepCount) {
         SharedPreferences sharedPref = getSharedPreferences("stepCountData", MODE_PRIVATE);
         recordInitialStep = sharedPref.getBoolean("recordInitialStep", true);
 
         if(recordInitialStep) {
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putLong("initialSteps", stepCount);
+            editor.putInt("initialSteps", stepCount);
             editor.putBoolean("recordInitialStep", false);
             editor.apply();
         }
 
-        initialSteps = sharedPref.getLong("initialSteps", stepCount);
+        initialSteps = sharedPref.getInt("initialSteps", stepCount);
         steps = stepCount - initialSteps;
         textSteps.setText(String.format("Steps: %d", steps));
     }
@@ -186,7 +186,7 @@ public class StepCountActivity extends AppCompatActivity {
         textSpeed.setText(String.format("Speed: %.1f MPH", speed));
     }
 
-    public void updateAll(long stepCount) {
+    public void updateAll(int stepCount) {
         setStepCount(stepCount);
         setDistance();
         setSpeed();
