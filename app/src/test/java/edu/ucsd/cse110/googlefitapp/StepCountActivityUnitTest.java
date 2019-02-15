@@ -30,7 +30,7 @@ public class StepCountActivityUnitTest {
 
     @Before
     public void setUp() throws Exception {
-        /*FitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
+        FitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
             @Override
             public FitnessService create(StepCountActivity stepCountActivity) {
                 return new TestFitnessService(stepCountActivity);
@@ -43,7 +43,7 @@ public class StepCountActivityUnitTest {
 
         textSteps = activity.findViewById(R.id.textSteps);
         btnUpdateSteps = activity.findViewById(R.id.startBtn);
-        nextStepCount = 1337;*/
+        nextStepCount = 1337;
     }
 
     @Test

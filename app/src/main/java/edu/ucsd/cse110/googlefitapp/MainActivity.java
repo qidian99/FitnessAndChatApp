@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public static final String SHOW_STEPS_LEFT = "You have %d steps left.";
 
     public static final long DEFAULT_GOAL = 5000L;
-    public static boolean firstPromptHeight = true;
+    public static boolean firstTimeUser = true;
 
     private boolean switchToActive = false;
     private long goal;
@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private int activeTimeElapsed;
     private long activeSteps;
     private float strideLength;
+    private FitnessOptions fitnessOptions;
 
     private long currDisplaySteps;
     private Encouragement encourage;
@@ -72,35 +73,23 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     @Override
     protected void onRestart() {
         super.onRestart();
-
-        final TextView stepText = findViewById(R.id.textStepsMain);
-
-
-        final Long beforeSteps = getLastStepCount();
-
-
-        //TODO : can add the encourgement here at the beginning of the app
-        long total = getCurrentSteps();
-        encourage.getEncourgementOnLiveUpdate(total, beforeSteps, goal);
-
-        fitnessService.startAsync();
         fitnessService.setup();
-
-        Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
-
-
+        if(!firstTimeUser) {
+            final TextView stepText = findViewById(R.id.textStepsMain);
+            final Long beforeSteps = getLastStepCount();
+            //TODO : can add the encourgement here at the beginning of the app
+            long total = getCurrentSteps();
+            encourage.getEncourgementOnLiveUpdate(total, beforeSteps, goal);
+            fitnessService.startAsync();
+            Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
 //        Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
-
-
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
             @Override
             public FitnessService create(StepCountActivity stepCountActivity) {
@@ -108,29 +97,21 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                 return new StepCounterAdapter(stepCountActivity, stepCountActivity);
             }
         });
-
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         String magnitude = sharedPreferences.getString("magnitude", "");
         String metric = sharedPreferences.getString("metric", "");
+        strideLength = sharedPreferences.getFloat("stride", 0);
+        firstTimeUser = strideLength == 0;
         this.goal = sharedPreferences.getLong("goal", DEFAULT_GOAL);
         float strideLength = sharedPreferences.getFloat("stride", 0);
         /* Encouragement
          - set to show every app startup
          - can be made only daily (NEED TO IMPLEMENT)*/
         encourage = new Encouragement(this, false);
-
-        FitnessOptions fitnessOptions = FitnessOptions.builder()
+        fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                 .build();
-
-        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
-            GoogleSignIn.requestPermissions(
-                    this, // your activity
-                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(this),
-                    fitnessOptions);
-        }
 
         // Update goal
         long currentGoal = sharedPreferences.getLong("goal", -1);
@@ -143,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         TextView goalText = findViewById(R.id.textGoal);
         goalText.setText(String.format(SHOW_GOAL, currentGoal));
 
-
         // Update step
         GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(this);
         final TextView stepText = findViewById(R.id.textStepsMain);
@@ -155,13 +135,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         fitnessService = new MainAdapter(this, this);
         fitnessService.updateStepCount();
         fitnessService.setup();
-
-        if(strideLength == 0){
-            showHeightPrompt();
-
-        }
-        firstPromptHeight = false;
-
 
         // In development, we allow users to re-enter their heights
         Button setHeightBtn = findViewById(R.id.clearBtn);
@@ -191,37 +164,54 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
-        new LiveUpdate().execute(String.valueOf(7718));
+        // Go to the bar chart activity.
+        Button goToWeekly = findViewById(R.id.weeklyButton);
+        goToWeekly.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchWeeklyStats();
+            }
+        });
+
+        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
+            GoogleSignIn.requestPermissions(
+                    this, // your activity
+                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                    GoogleSignIn.getLastSignedInAccount(this),
+                    fitnessOptions);
+        }
+    }
 
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        if(!firstTimeUser) {
+            System.out.println("HI MOMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM");
+            SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        System.out.println("HI MOMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM");
-        SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+            final TextView stepText = findViewById(R.id.textStepsMain);
 
-        final TextView stepText = findViewById(R.id.textStepsMain);
-
-        //get the steps that were there on the UI before we got the new steps
-        String beforeStepText = String.valueOf(stepText.getText());
-        String[] separatedStrings = beforeStepText.split(" ");
-        Long before = Long.valueOf(separatedStrings[3]);
-
-
-        editor.putLong("Before", before);
-        editor.apply();
-
-        //stops the main async
-        isCancelled = true;
-
-        Toast.makeText(this, "stopped main ", Toast.LENGTH_SHORT).show();
-
-        fitnessService.stopAsync();
+            //get the steps that were there on the UI before we got the new steps
+            String beforeStepText = String.valueOf(stepText.getText());
+            String[] separatedStrings = beforeStepText.split(" ");
+            if(separatedStrings.length >= 3) {
+                Long before = Long.valueOf(separatedStrings[3]);
 
 
+                editor.putLong("Before", before);
+                editor.apply();
+
+                //stops the main async
+                isCancelled = true;
+
+                Toast.makeText(this, "stopped main ", Toast.LENGTH_SHORT).show();
+
+                fitnessService.stopAsync();
+            }
+        }
     }
 
     public void updateAll(int total) {
@@ -246,35 +236,42 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         }
 
     }
+
     private Long getLastStepCount() {
-
         SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
-
         Long beforeSteps = sharedPreferences.getLong("Before", 0);
-
-
-
         return beforeSteps;
-
     }
 
 
     private long getCurrentSteps() {
         final TextView stepText = findViewById(R.id.textStepsMain);
-
-
         String beforeStepText = String.valueOf(stepText.getText());
         String[] separatedStrings = beforeStepText.split(" ");
-        Long before = Long.valueOf(separatedStrings[3]);
+        Long before = 0L;
+        if(separatedStrings.length >= 3) {
+            before = Long.valueOf(separatedStrings[3]);
+        }
         return before;
     }
 
     public void launchStepCountActivity() {
-        Intent intent = new Intent(this, StepCountActivity.class);
-        intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
-        intent.putExtra("stride", strideLength);
-        startActivityForResult(intent, REQUEST_CODE);
-        switchToActive = true;
+        if(strideLength == 0) {
+            showHeightPrompt();
+        } else if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
+            Toast.makeText(this, "You must login with Google to use this app", Toast.LENGTH_SHORT).show();
+            GoogleSignIn.requestPermissions(
+                    this, // your activity
+                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                    GoogleSignIn.getLastSignedInAccount(this),
+                    fitnessOptions);
+        } else {
+            Intent intent = new Intent(this, StepCountActivity.class);
+            intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
+            intent.putExtra("stride", strideLength);
+            startActivityForResult(intent, REQUEST_CODE);
+            switchToActive = true;
+        }
     }
 
     @Override
@@ -289,10 +286,20 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                 activeDistance, activeSpeed, activeTimeElapsed, activeSteps),
                 Toast.LENGTH_LONG).show();
         // Toast.makeText(this,String.format("distance: %.2f, speed: %.2f", activeDistance, activeSpeed), Toast.LENGTH_LONG).show();
+        if(switchToActive) {
+            super.onActivityResult(requestCode, resultCode, data);
+            activeDistance = data.getDoubleExtra("distance", 0.0);
+            activeSpeed = data.getDoubleExtra("speed", 0.0);
+            activeMin = data.getIntExtra("min", 0);
+            activeSec = data.getIntExtra("second", 0);
+            activeSteps = data.getLongExtra("steps", 0);
+            displayActiveData();
+        }
 
         if(activeSteps >= this.goal) {
             showNewGoalPrompt();
         }
+
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {
@@ -324,8 +331,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         editor.putString("magnitude", inputText[0]);
         editor.putString("metric", inputText[1]);
 
-        // Estimate stride length, in inches
-        float strideLength = 0;
         // Case 1: use centimeter as metric
         if(Integer.parseInt(inputText[0]) == 0 ){
             strideLength = (float) (Integer.parseInt(inputText[1]) / 2.54 * 0.413);
@@ -335,6 +340,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             strideLength = (float) ((Integer.parseInt(inputText[1])*12 + Integer.parseInt(inputText[2])) * 0.413);
         }
         editor.putFloat("stride", strideLength);
+        firstTimeUser = strideLength == 0;
         editor.apply();
 
         Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT).show();
