@@ -71,7 +71,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     private FitnessService fitnessService;
     private Calendar calendar = Calendar.getInstance();
-    private long[] weeklyData = new long[14];
+    private long[] weeklyData = new long[15];
+    private double[] weeklyDistance = new double[7];
+    private double[] weeklySpeed = new double[7];
 
 
     //this is only ran when we run the app again (given it is not deleted from the "recent" apps)
@@ -104,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                 return new StepCounterAdapter(stepCountActivity, stepCountActivity);
             }
         });
+
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
         String magnitude = sharedPreferences.getString("magnitude", "");
         String metric = sharedPreferences.getString("metric", "");
@@ -190,13 +193,12 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         }
     }
 
-<<<<<<< HEAD
-=======
+
     public void launchWeeklyStats() {
         Intent intent = new Intent(MainActivity.this, WeeklyStats.class);
-        intent.putExtra("weeklyData", weeklyData);
+        intent.putExtra("weeklySpeed", weeklySpeed);
+        intent.putExtra("weeklyDistance", weeklyDistance);
         startActivity(intent);
->>>>>>> ca65d51... graph first version
     }
 
     @Override
@@ -204,40 +206,11 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         super.onStop();
         if(GoogleSignIn.getLastSignedInAccount(this) != null) {
             System.out.println("HI MOMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM");
+
             SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
 
-<<<<<<< HEAD
-        System.out.println("HI MOMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM");
-
-        Date date = calendar.getTime();
-        String time = new SimpleDateFormat("HH:mm:ss").format(date);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int min = calendar.get(Calendar.MINUTE);
-        int sec = calendar.get(Calendar.SECOND);
-        int day = calendar.get(Calendar.DAY_OF_WEEK);
-
-        System.out.println(time);
-
-        if(hour != 0 && min != 0 && sec != 0 ) {
-            // SharedPreferences sharedPref = getSharedPreferences("weekly_records", MODE_PRIVATE);
-            System.out.println("updated ----------- ");
-            weeklyData[day - 1] = getCurrentSteps();
-        }
-
-        SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        final TextView stepText = findViewById(R.id.textStepsMain);
-
-        //get the steps that were there on the UI before we got the new steps
-        String beforeStepText = String.valueOf(stepText.getText());
-        String[] separatedStrings = beforeStepText.split(" ");
-        Long before = Long.valueOf(separatedStrings[3]);
-
-=======
             final TextView stepText = findViewById(R.id.textStepsMain);
->>>>>>> 09d22ec40cc2745c533f49e2a3e6c5d12dfa7929
 
             //get the steps that were there on the UI before we got the new steps
             String beforeStepText = String.valueOf(stepText.getText());
@@ -245,29 +218,39 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             if(separatedStrings.length >= 3) {
                 Long before = Long.valueOf(separatedStrings[3]);
 
-
                 editor.putLong("Before", before);
                 editor.apply();
 
                 //stops the main async
                 isCancelled = true;
 
-<<<<<<< HEAD
-=======
                 Toast.makeText(this, "stopped main ", Toast.LENGTH_SHORT).show();
 
                 fitnessService.stopAsync();
             }
         }
->>>>>>> 09d22ec40cc2745c533f49e2a3e6c5d12dfa7929
     }
 
     public void updateAll(int total) {
+        // Date date = calendar.getTime();
+        // String time = new SimpleDateFormat("HH:mm:ss").format(date);
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        // SharedPreferences sharedPref = getSharedPreferences("weekly_records", MODE_PRIVATE);
+
+        SharedPreferences sharedPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+
+        editor.putLong(String.valueOf(day), getCurrentSteps());
+        editor.putLong("goal", goal);
+        editor.apply();
+
+        //weeklyData[day - 1] = getCurrentSteps();
+        //weeklyData[weeklyData.length - 1] = goal;
+
         final TextView stepText = findViewById(R.id.textStepsMain);
         final TextView stepsLeft = findViewById(R.id.stepsLeft);
 
         long before = currentSteps;
-
 
         stepText.setText(String.format(SHOW_STEP, total));
         SharedPreferences pref = getSharedPreferences("user_data", MODE_PRIVATE);
@@ -284,28 +267,16 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         }
 
     }
-<<<<<<< HEAD
 
-    private Long getLastStepCount() {
-=======
->>>>>>> 09d22ec40cc2745c533f49e2a3e6c5d12dfa7929
 
     private Long getLastStepCount() {
         SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
         Long beforeSteps = sharedPreferences.getLong("Before", 0);
-<<<<<<< HEAD
-
-=======
->>>>>>> 09d22ec40cc2745c533f49e2a3e6c5d12dfa7929
         return beforeSteps;
     }
 
     private long getCurrentSteps() {
         final TextView stepText = findViewById(R.id.textStepsMain);
-<<<<<<< HEAD
-
-=======
->>>>>>> 09d22ec40cc2745c533f49e2a3e6c5d12dfa7929
         String beforeStepText = String.valueOf(stepText.getText());
         String[] separatedStrings = beforeStepText.split(" ");
         Long before = 0L;
@@ -336,8 +307,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-<<<<<<< HEAD
-=======
         super.onActivityResult(requestCode, resultCode, data);
         activeDistance = data.getDoubleExtra("distance", 0.0);
         activeSpeed = data.getDoubleExtra("speed", 0.0);
@@ -348,7 +317,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
                 activeDistance, activeSpeed, activeTimeElapsed, activeSteps),
                 Toast.LENGTH_LONG).show();
         // Toast.makeText(this,String.format("distance: %.2f, speed: %.2f", activeDistance, activeSpeed), Toast.LENGTH_LONG).show();
->>>>>>> 09d22ec40cc2745c533f49e2a3e6c5d12dfa7929
         if(switchToActive) {
             super.onActivityResult(requestCode, resultCode, data);
             activeDistance = data.getDoubleExtra("distance", 0.0);
@@ -363,24 +331,36 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             showNewGoalPrompt();
         }
 
-<<<<<<< HEAD
+        /*
         int day = calendar.get(Calendar.DAY_OF_WEEK);
         if(day == Calendar.SATURDAY) {
-            weeklyData = new long[14];
+            weeklyData = new long[15];
+        }
+        weeklyData[day + 6] += activeSteps;
+        */
+
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+
+        SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+        SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
+
+        long currentActiveSteps = 0;
+
+        if(day == Calendar.SATURDAY) {
+            stepPref.edit().clear().apply();
+            weeklyDistance = new double[7];
+            weeklySpeed = new double[7];
         }
 
-        weeklyData[day + 6] += activeSteps;
-
-        /*
-        SharedPreferences sharedPref = getSharedPreferences("weekly_records", MODE_PRIVATE);
-        long totalActiveSteps = sharedPref.getLong(String.valueOf(day), 0);
-
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putLong(String.valueOf(day), totalActiveSteps+activeSteps);
+        currentActiveSteps = stepPref.getLong(String.valueOf(day + 7), 0);
+        SharedPreferences.Editor editor = stepPref.edit();
+        editor.putLong(String.valueOf(day+7), currentActiveSteps+activeSteps);
         editor.apply();
-        */
-=======
->>>>>>> 09d22ec40cc2745c533f49e2a3e6c5d12dfa7929
+
+        double currentActiveSpeed = weeklySpeed[day - 1];
+        weeklySpeed[day - 1] = (currentActiveSpeed + activeSpeed)/2.0;
+
+        weeklyDistance[day - 1] += activeDistance;
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {
