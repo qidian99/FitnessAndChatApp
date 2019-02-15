@@ -69,14 +69,14 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     protected void onRestart() {
         super.onRestart();
         if(GoogleSignIn.getLastSignedInAccount(this) != null) {
-            final TextView stepText = findViewById(R.id.textStepsMain);
-            final int beforeSteps = getLastStepCount();
-            //TODO : can add the encourgement here at the beginning of the app
-            int total = getCurrentSteps();
-            encourage.getEncourgementOnLiveUpdate(total, beforeSteps, goal);
             fitnessService.startAsync();
             fitnessService.setup();
-            //Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
+
+            final TextView stepText = findViewById(R.id.textStepsMain);
+            final int beforeSteps = getLastStepCount();
+
+            int total = getCurrentSteps();
+            encourage.getEncourgementOnLiveUpdate(total, beforeSteps, goal);
 
             SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
             int today = calendar.get(Calendar.DAY_OF_WEEK);
@@ -251,13 +251,12 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         final TextView stepText = findViewById(R.id.textStepsMain);
         final TextView stepsLeft = findViewById(R.id.stepsLeft);
 
-        int before = currentSteps;
+        currentSteps = total;
         int stepLeft = goal - total > 0 ? goal - total : 0;
 
         stepText.setText(String.format(SHOW_STEP, total));
         stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
 
-        currentSteps = total;
         encourage.getDailyEncouragement(currentSteps,goal,this);
 
         if(currentSteps >= goal && goalChangable) {
@@ -273,14 +272,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     }
 
     private int getCurrentSteps() {
-        final TextView stepText = findViewById(R.id.textStepsMain);
-        String beforeStepText = String.valueOf(stepText.getText());
-        String[] separatedStrings = beforeStepText.split(" ");
-        int before = 0;
-        if(separatedStrings.length >= 3) {
-            before = Integer.valueOf(separatedStrings[3]);
-        }
-        return before;
+        return currentSteps;
     }
 
     public void launchStepCountActivity() {
@@ -300,6 +292,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // User pressed the return button on their device -- no extras on intent
+        if(data == null)
+            return;
+
         // Firstly it fetches active data from StepCountActivity
         if(switchToActive) {
             super.onActivityResult(requestCode, resultCode, data);
