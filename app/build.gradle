@@ -8,16 +8,27 @@ android {
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "edu.ucsd.cse110.googlefitapp.CucumberTestRunner"
+        testInstrumentationRunner getTestRunner()
+//        testInstrumentationRunner getTestRunner()
 //        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
     buildTypes {
+        debug {
+            buildConfigField 'String', 'TEST_TAGS', '"' + getTestTags() + '"'
+            buildConfigField 'String', 'TEST_SCENARIO', '"' + getTestScenario() + '"'
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
     android {
         lintOptions {
             abortOnError false
@@ -31,6 +42,12 @@ android {
     sourceSets {
         main {
             assets.srcDirs = ['src/main/assets']
+            java.srcDirs = ['src/main/java']
+        }
+
+        androidTest {
+            assets.srcDirs = ['src/androidTest/assets']
+            java.srcDirs = ['src/androidTest/java']
         }
     }
 }
@@ -56,12 +73,12 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:4.1'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.2'
-    androidTestImplementation 'com.android.support.test:rules:1.0.2'
+    androidTestImplementation 'com.android.support:support-annotations:27.1.1'
     androidTestImplementation 'io.cucumber:cucumber-android:4.2.2'
     androidTestImplementation 'io.cucumber:cucumber-picocontainer:4.2.2'
-    androidTestImplementation 'com.android.support:support-annotations:27.1.1'
 
 }
 
@@ -69,4 +86,12 @@ def getTestRunner() {
     project.hasProperty('cucumber') ?
             "edu.ucsd.cse110.googlefitapp.CucumberTestRunner" :
             "android.support.test.runner.AndroidJUnitRunner"
+}
+
+def getTestTags(){
+    project.getProperties().get('tags') ?: ''
+}
+
+def getTestScenario(){
+    project.getProperties().get('scenario') ?: ''
 }

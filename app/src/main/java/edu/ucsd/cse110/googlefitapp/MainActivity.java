@@ -1,15 +1,10 @@
 package edu.ucsd.cse110.googlefitapp;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -17,29 +12,18 @@ import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
-import com.google.android.gms.fitness.data.DataPoint;
-import com.google.android.gms.fitness.data.DataSet;
-import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.data.Field;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
-import edu.ucsd.cse110.googlefitapp.fitness.MainAdapter;
-import edu.ucsd.cse110.googlefitapp.fitness.StepCounterAdapter;
+import edu.ucsd.cse110.googlefitapp.fitness.MainStepCountAdapter;
 
 public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, CustomGoalSetter.GoalPrompterListener {
     private String fitnessServiceKey = "GOOGLE_FIT";
+    public static final String MAIN_SERVICE = "MAIN_SERVICE";
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private static final int REQUEST_CODE = 1000;
 
@@ -71,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private int activeSec;
     private long activeSteps = 0;
     private float strideLength;
-    private FitnessOptions fitnessOptions;
 
     private long currDisplaySteps;
     private Encouragement encourage;
@@ -114,15 +97,35 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        Toast.makeText(this, "started main ", Toast.LENGTH_SHORT).show();
+
+        FitnessServiceFactory.put(MAIN_SERVICE, new FitnessServiceFactory.BluePrint() {
+            @Override
+            public FitnessService create(StepCountActivity stepCountActivity) {
+                return null;
+            }
+
+            @Override
+            public FitnessService create(MainActivity mainActivity) {
+                return new MainStepCountAdapter(mainActivity);
+            }
+        });
+
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
             @Override
             public FitnessService create(StepCountActivity stepCountActivity) {
-                //return new GoogleFitAdapter(stepCountActivity);
-                return new StepCounterAdapter(stepCountActivity, stepCountActivity);
+                return new GoogleFitAdapter(stepCountActivity);
+            }
+
+            @Override
+            public FitnessService create(MainActivity mainActivity) {
+                return null;
             }
         });
-      
+
+        fitnessService = FitnessServiceFactory.create(MAIN_SERVICE, this);
+        fitnessService.setup();
+
+
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         String magnitude = sharedPreferences.getString(KEY_MAGNITUDE, "");
         String metric = sharedPreferences.getString(KEY_METRIC, "");
@@ -134,10 +137,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
          - set to show every app startup
          - can be made only daily (NEED TO IMPLEMENT)*/
         encourage = new Encouragement(this, false);
-        fitnessOptions = FitnessOptions.builder()
-                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .build();
+
 
         // Update goal
         long currentGoal = sharedPreferences.getLong(KEY_GOAL, -1);
@@ -157,10 +157,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         //this is called to retrieve the before steps when the app is opened for the first time
         final Long beforeSteps = getLastStepCount();
-
-        fitnessService = new MainAdapter(this, this);
-        fitnessService.updateStepCount();
-        fitnessService.setup();
 
         // In development, we allow users to re-enter their heights
         Button setHeightBtn = findViewById(R.id.clearBtn);
@@ -199,14 +195,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
-        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
-            Toast.makeText(this, "You must login with Google to use this app", Toast.LENGTH_SHORT).show();
-            GoogleSignIn.requestPermissions(
-                    this, // your activity
-                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(this),
-                    fitnessOptions);
-        }
 
         int today = calendar.get(Calendar.DAY_OF_WEEK);
         int day = sharedPreferences.getInt("day", -1);
@@ -305,20 +293,14 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public void launchStepCountActivity() {
         if(strideLength == 0) {
             showHeightPrompt();
-        } else if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
-            Toast.makeText(this, "You must login with Google to use this app", Toast.LENGTH_SHORT).show();
-            GoogleSignIn.requestPermissions(
-                    this, // your activity
-                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(this),
-                    fitnessOptions);
-        } else {
-            Intent intent = new Intent(this, StepCountActivity.class);
-            intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
-            intent.putExtra("stride", strideLength);
-            startActivityForResult(intent, REQUEST_CODE);
-            switchToActive = true;
         }
+
+        Intent intent = new Intent(this, StepCountActivity.class);
+        intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
+        intent.putExtra("stride", strideLength);
+        startActivityForResult(intent, REQUEST_CODE);
+        switchToActive = true;
+
     }
 
     @Override
