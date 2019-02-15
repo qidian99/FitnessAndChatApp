@@ -51,11 +51,7 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if(MainActivity.firstTimeUser) {
-            setCancelable(false);
-        } else {
-            setCancelable(true);
-        }
+        setCancelable(true);
 
         centText = (EditText) view.findViewById(R.id.cent_height);
         ftText = (EditText) view.findViewById(R.id.ft_height);
