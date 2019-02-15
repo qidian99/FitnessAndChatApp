@@ -1,6 +1,8 @@
 package edu.ucsd.cse110.googlefitapp.fitness;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
@@ -21,8 +23,9 @@ import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 public class MainStepCountAdapter implements FitnessService {
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "GoogleFitAdapter";
-
+    private FitnessOptions fitnessOptions;
     private MainActivity activity;
+    boolean isCancelled = false;
 
     public MainStepCountAdapter(MainActivity activity) {
         this.activity = activity;
@@ -30,10 +33,12 @@ public class MainStepCountAdapter implements FitnessService {
 
 
     public void setup() {
-        FitnessOptions fitnessOptions = FitnessOptions.builder()
-                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .build();
+        if( fitnessOptions == null ) {
+            fitnessOptions = FitnessOptions.builder()
+                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                    .build();
+        }
 
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
             Toast.makeText(activity, "You must login with Google to use this app", Toast.LENGTH_SHORT).show();
@@ -44,10 +49,6 @@ public class MainStepCountAdapter implements FitnessService {
                     fitnessOptions);
         } else {
             updateStepCount();
-            // TODO: for recording unintentional walks, please modify the following method to handle
-            // 1. data storage
-            // 2. background recordingClient setting
-            // 3. statistics update
             startRecording();
         }
     }
@@ -112,22 +113,67 @@ public class MainStepCountAdapter implements FitnessService {
 
     @Override
     public void stopAsync() {
-
-    }
-
-    @Override
-    public void updateActivity() {
-
+        isCancelled = true;
     }
 
     @Override
     public void startAsync() {
+        isCancelled = false;
+        new MainStepCountAdapter.CountToTenAsyncTask().execute(String.valueOf(2000));
+    }
 
+    @Override
+    public boolean hasPermission() {
+        return GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions);
     }
 
 
     @Override
     public int getRequestCode() {
         return GOOGLE_FIT_PERMISSIONS_REQUEST_CODE;
+    }
+
+    private class CountToTenAsyncTask extends AsyncTask<String, String, Void> {
+
+        private String resp;
+        ProgressDialog progressDialog;
+
+        @Override
+        protected Void doInBackground(String... sleepTime) {
+            while(!isCancelled) {
+
+                try {
+
+                    Thread.sleep(Integer.valueOf(sleepTime[0]));
+                    publishProgress();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onProgressUpdate(String... text) {
+
+            if (isCancelled) {
+                cancel(true);
+            } else {
+                //call update steps here
+                System.out.println("SEVEN SECONDS PASSED REFRESH PERIOD RESTARTED");
+
+                updateStepCount();
+            }
+        }
     }
 }
