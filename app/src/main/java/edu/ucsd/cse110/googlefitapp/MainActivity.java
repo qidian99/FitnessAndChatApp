@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private long[] weeklyData = new long[15];
     private double[] weeklyDistance = new double[7];
     private double[] weeklySpeed = new double[7];
+    private boolean notCleared = true;
 
 
     //this is only ran when we run the app again (given it is not deleted from the "recent" apps)
@@ -347,9 +348,14 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         long currentActiveSteps = 0;
 
         if(day == Calendar.SATURDAY) {
-            stepPref.edit().clear().apply();
-            weeklyDistance = new double[7];
-            weeklySpeed = new double[7];
+            if (notCleared) {
+                notCleared = false;
+                stepPref.edit().clear().apply();
+                weeklyDistance = new double[7];
+                weeklySpeed = new double[7];
+            }
+        } else {
+            notCleared = true;
         }
 
         currentActiveSteps = stepPref.getLong(String.valueOf(day + 7), 0);
