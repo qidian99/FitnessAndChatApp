@@ -89,6 +89,12 @@ public class GoogleFitAdapter implements FitnessService {
 
     }
 
+    @Override
+    public boolean hasPermission() {
+        return false;
+    }
+
+
     private class CountToTenAsyncTask extends AsyncTask<String, String, Void> {
 
         private String resp;
@@ -304,12 +310,6 @@ public class GoogleFitAdapter implements FitnessService {
     @Override
     public int getRequestCode() {
         return GOOGLE_FIT_PERMISSIONS_REQUEST_CODE;
-    }
-
-    @Override
-    public void updateActivity() {
-
-
     }
 
 }
