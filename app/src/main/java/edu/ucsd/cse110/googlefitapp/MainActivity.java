@@ -12,7 +12,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.fitness.FitnessOptions;
 
 import java.util.Calendar;
 
@@ -24,7 +23,6 @@ import edu.ucsd.cse110.googlefitapp.fitness.MainStepCountAdapter;
 public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, CustomGoalSetter.GoalPrompterListener {
     private String fitnessServiceKey = "GOOGLE_FIT";
     public static final String MAIN_SERVICE = "MAIN_SERVICE";
-    private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private static final int REQUEST_CODE = 1000;
 
     public static final String SHOW_STRIDE = "Your estimated stride length is %.2f\"";
@@ -56,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private long activeSteps = 0;
     private float strideLength;
 
-    private long currDisplaySteps;
     private Encouragement encourage;
 
     private FitnessService fitnessService;
@@ -291,15 +288,17 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     }
 
     public void launchStepCountActivity() {
-        if(strideLength == 0) {
+        if(!fitnessService.hasPermission()){
+            fitnessService.setup();
+        } else if(strideLength == 0) {
             showHeightPrompt();
+        } else {
+            Intent intent = new Intent(this, StepCountActivity.class);
+            intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
+            intent.putExtra("stride", strideLength);
+            startActivityForResult(intent, REQUEST_CODE);
+            switchToActive = true;
         }
-
-        Intent intent = new Intent(this, StepCountActivity.class);
-        intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
-        intent.putExtra("stride", strideLength);
-        startActivityForResult(intent, REQUEST_CODE);
-        switchToActive = true;
 
     }
 
@@ -399,6 +398,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT).show();
         Toast.makeText(this, String.format(SHOW_STRIDE, strideLength), Toast.LENGTH_LONG).show();
+
+        if(!firstTimeUser){
+            launchStepCountActivity();
+        }
     }
 
     //when we are done with the new goal
