@@ -84,5 +84,10 @@ public class StepCountActivityUnitTest {
             System.out.println(TAG + "updateStepCount");
             stepCountActivity.setStepCount(nextStepCount);
         }
+
+        @Override
+        public void stopAsync() {
+            //TODO : this needs to be done for the test for the refresh every 7 seconds
+        }
     }
 }
