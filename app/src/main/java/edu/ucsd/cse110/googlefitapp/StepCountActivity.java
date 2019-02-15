@@ -40,6 +40,7 @@ public class StepCountActivity extends AppCompatActivity {
             }
         });
 
+<<<<<<< HEAD
         Button btnMockData = findViewById(R.id.btnMockDt);
         btnMockData.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,6 +48,16 @@ public class StepCountActivity extends AppCompatActivity {
                 ((GoogleFitAdapter) fitnessService).mockDataPoint();
             }
         });
+=======
+        Button btnEndRecord = findViewById(R.id.btnEndRecord);
+        btnEndRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+>>>>>>> 614e266e9e23a5cc98e8a6a233f5ea144f2c3ccd
         fitnessService.setup();
 
     }
