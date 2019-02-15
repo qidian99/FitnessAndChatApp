@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private String fitnessServiceKey = "GOOGLE_FIT";
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
 
-    public static final String SHOW_STRIDE = "Your estimated stride length is %.2f inches.";
+    public static final String SHOW_STRIDE = "Your estimated stride length is %.2f\"";
     public static final String SHOW_GOAL = "Your current goal is %d steps.";
     public static final String SHOW_STEP = "Your have taken %d steps.";
 
@@ -123,13 +123,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         if(strideLength == 0){
             showHeightPrompt();
-            firstPromptHeight = false;
 
-        } else {
-            firstPromptHeight = false;
-            TextView textHeight = findViewById(R.id.textHeight);
-            textHeight.setText(String.format(SHOW_STRIDE, strideLength));
         }
+        firstPromptHeight = false;
 
         // In development, we allow users to re-enter their heights
         Button setHeightBtn = findViewById(R.id.clearBtn);
@@ -184,9 +180,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     @Override
     public void onFinishEditDialog(String[] inputText) {
-        TextView textHeight = findViewById(R.id.textHeight);
         SharedPreferences sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE);
-        SharedPreferences.Editor editor =   sharedPreferences.edit();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("magnitude", inputText[0]);
         editor.putString("metric", inputText[1]);
 
@@ -203,9 +198,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         editor.putFloat("stride", strideLength);
         editor.apply();
 
-        textHeight.setText(String.format(SHOW_STRIDE, strideLength));
-
-        Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT);
+        Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, String.format(SHOW_STRIDE, strideLength), Toast.LENGTH_LONG).show();
     }
 
     @Override
