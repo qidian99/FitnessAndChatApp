@@ -284,22 +284,23 @@ public class MainStepCountAdapter implements FitnessService {
                                     Log.d(TAG, "Total steps: " + dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
 
                                     // Create a data source
-                                    DataSource dataSource =
-                                            new DataSource.Builder()
-                                                    .setAppPackageName(APP_PACKAGE_NAME)
-                                                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
-                                                    .setStreamName(TAG + " - step count")
-                                                    .setType(DataSource.TYPE_RAW)
-                                                    .build();
+//                                    DataSource dataSource =
+////                                            new DataSource.Builder()
+////                                                    .setAppPackageName(APP_PACKAGE_NAME)
+////                                                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+////                                                    .setStreamName(TAG + " - step count")
+////                                                    .setType(DataSource.TYPE_RAW)
+////                                                    .build();
+                                    DataSource dataSource = dataSet.getDataSource();
                                     DataSet dataSet2 = DataSet.create(dataSource);
                                     DataPoint dataPoint =
-                                            dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+                                            dataSet2.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
                                     dataSet2.add(dataPoint);
                                     Log.d(TAG, "Newly created dataset: " + dataSet2);
                                     DataUpdateRequest request = new DataUpdateRequest.Builder()
                                             .setDataSet(dataSet2)
-                                            .setTimeInterval(dataSet2.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet2.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
+                                            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
                                             .build();
 
                                     Task<Void> response = Fitness.getHistoryClient(activity, GoogleSignIn.getLastSignedInAccount(activity)).updateData(request);
