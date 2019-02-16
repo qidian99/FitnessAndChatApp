@@ -1,6 +1,7 @@
 package edu.ucsd.cse110.googlefitapp.fitness;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -16,6 +17,8 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.util.Calendar;
+
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 
 public class MainStepCountAdapter implements FitnessService {
@@ -23,7 +26,9 @@ public class MainStepCountAdapter implements FitnessService {
     private final String TAG = "GoogleFitAdapter";
     private FitnessOptions fitnessOptions;
     private MainActivity activity;
+    private int totalStep;
     boolean isCancelled = false;
+    private Calendar calendar = Calendar.getInstance();
 
     public MainStepCountAdapter(MainActivity activity) {
         this.activity = activity;
@@ -96,6 +101,7 @@ public class MainStepCountAdapter implements FitnessService {
                                                 ? 0
                                                 : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
 
+                                totalStep = total;
                                 activity.updateAll(total);
                                 Log.d(TAG, "Total steps: " + total);
                             }
@@ -167,8 +173,33 @@ public class MainStepCountAdapter implements FitnessService {
             if (isCancelled) {
                 cancel(true);
             } else {
+                int today = calendar.get(Calendar.DAY_OF_WEEK);
+                int day = activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE).getInt("day", -1);
+
+                if(day != today) {
+                    activity.setGoalChangeable(true);
+                    activity.setCanShowHalfEncour(true);
+                    activity.setCanShowOverPrevEncour(true);
+                    activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE).edit().putInt("day", today).apply();
+                }
+
                 //call update steps here
                 updateStepCount();
+                if(totalStep > activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
+                        Context.MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) && activity.getGoalChangeable()){
+                    activity.showNewGoalPrompt();
+                }
+
+                if(totalStep > activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
+                        Context.MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) / 2 && activity.getCanShowHalfEncour()){
+                    activity.showAchieveHalfEncouragement();
+                }
+
+                int yesterday = today - 1 >= 0 ? today - 1 : 6;
+                if(totalStep > activity.getSharedPreferences("weekly_steps",
+                        Context.MODE_PRIVATE).getInt(String.valueOf(yesterday), 0) + 1000 && activity.getCanShowOverPrevEncour()) {
+                    activity.showOverPrevEncouragement();
+                }
             }
         }
     }

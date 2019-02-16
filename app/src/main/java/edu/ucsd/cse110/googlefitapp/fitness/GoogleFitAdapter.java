@@ -1,6 +1,5 @@
 package edu.ucsd.cse110.googlefitapp.fitness;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -9,7 +8,6 @@ import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataPoint;
@@ -26,7 +24,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import edu.ucsd.cse110.googlefitapp.Encouragement;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 
@@ -39,7 +36,6 @@ public class GoogleFitAdapter implements FitnessService {
 //                    .build();
 
     boolean isCancelled = false;
-    private Encouragement encouragement;
 
     protected StepCountActivity stepCountActivity;
     private int step = 0;
@@ -65,7 +61,6 @@ public class GoogleFitAdapter implements FitnessService {
                     GoogleSignIn.getLastSignedInAccount(stepCountActivity),
                     fitnessOptions);
         } else {
-            encouragement = new Encouragement(stepCountActivity, true);
             updateStepCount();
 
             startRecording();
