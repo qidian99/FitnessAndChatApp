@@ -2,6 +2,7 @@ package edu.ucsd.cse110.googlefitapp;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -66,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private Calendar calendar = Calendar.getInstance();
     private double[] weeklyDistance = new double[7];
     private double[] weeklySpeed = new double[7];
+    private double[] weeklyInactiveSteps = new double[7];
+    private double[] weeklyActiveSteps = new double[7];
     private boolean notCleared = true;
 
 
@@ -488,4 +491,13 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public void onFinishEditDialog(int[] inputStep) {
         fitnessService.addInactiveSteps(inputStep[0]);
     }
+
+    public void setCalendar(Calendar calendar) {
+        this.calendar = calendar;
+    }
+
+    public void mockCalendar(View view){
+        System.out.println(fitnessService.getLast7DaysSteps(weeklyInactiveSteps, weeklyActiveSteps, Calendar.getInstance()));
+    }
+
 }

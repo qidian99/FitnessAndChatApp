@@ -85,7 +85,8 @@ public class StepCountActivity extends AppCompatActivity {
                         } else {
                             tv.setText(String.format("%d:%d", min, sec));
                         }
-
+                        setDistance();
+                        setSpeed();
                         time += 1;
                     }
                 });
