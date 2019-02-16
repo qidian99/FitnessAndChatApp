@@ -81,9 +81,9 @@ public class StepCountActivity extends AppCompatActivity {
                         int sec = time % 60;
 
                         if(sec < 10) {
-                            tv.setText(String.format("Time: %d:0%d", min, sec));
+                            tv.setText(String.format("%d:0%d", min, sec));
                         } else {
-                            tv.setText(String.format("Time: %d:%d", min, sec));
+                            tv.setText(String.format("%d:%d", min, sec));
                         }
 
                         time += 1;
@@ -94,9 +94,9 @@ public class StepCountActivity extends AppCompatActivity {
 
         textSteps = findViewById(R.id.textSteps);
         textDist = findViewById(R.id.textDistance);
-        textDist.setText(String.format("Distance: %.1f miles", distance));
+        textDist.setText(String.format("%.1f miles", distance));
         textSpeed = findViewById(R.id.textSpeed);
-        textSpeed.setText(String.format("Speed: %.1f MPH", speed));
+        textSpeed.setText(String.format("%.1f MPH", speed));
 
         strideLen = getIntent().getFloatExtra("stride", 0);
 
@@ -169,12 +169,12 @@ public class StepCountActivity extends AppCompatActivity {
 
         initialSteps = sharedPref.getInt("initialSteps", stepCount);
         steps = stepCount - initialSteps;
-        textSteps.setText(String.format("Steps: %d", steps));
+        textSteps.setText(String.format("%d", steps));
     }
 
     public void setDistance() {
         distance = (double)(steps * strideLen) / 63360.0;
-        textDist.setText(String.format("Distance: %.1f miles", distance));
+        textDist.setText(String.format("%.1f miles", distance));
     }
 
     public void setSpeed() {
@@ -183,7 +183,7 @@ public class StepCountActivity extends AppCompatActivity {
         } else {
             speed = distance/(double)time*3600.0;
         }
-        textSpeed.setText(String.format("Speed: %.1f MPH", speed));
+        textSpeed.setText(String.format("%.1f MPH", speed));
     }
 
     public void updateAll(int stepCount) {

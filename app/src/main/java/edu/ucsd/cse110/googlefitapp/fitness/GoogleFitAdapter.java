@@ -89,6 +89,17 @@ public class GoogleFitAdapter implements FitnessService {
         return false;
     }
 
+    @Override
+    public void addInactiveSteps(int extraStep) {
+
+    }
+
+
+    @Override
+    public void addActiveSteps(int step) {
+
+    }
+
 
     private class CountToTenAsyncTask extends AsyncTask<String, String, Void> {
 
@@ -196,36 +207,6 @@ public class GoogleFitAdapter implements FitnessService {
 
     }
 
-    public void getStepCount(final TextView stepText){
-        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(stepCountActivity);
-        if (lastSignedInAccount == null) {
-            return;
-        }
-
-        Fitness.getHistoryClient(stepCountActivity, lastSignedInAccount)
-                .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
-                .addOnSuccessListener(
-                        new OnSuccessListener<DataSet>() {
-                            @Override
-                            public void onSuccess(DataSet dataSet) {
-                                Log.d(TAG, dataSet.toString());
-                                long total =
-                                        dataSet.isEmpty()
-                                                ? 0
-                                                : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
-                                stepText.setText(String.format(MainActivity.SHOW_STEP, total));
-                                Log.d(TAG, "Total steps: " + total);
-                            }
-                        })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.d(TAG, "There was a problem getting the step count.", e);
-                            }
-                        });
-    }
-
     public void mockDataPoint(){
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(stepCountActivity);
 
@@ -237,7 +218,7 @@ public class GoogleFitAdapter implements FitnessService {
                             public void onSuccess(DataSet dataSet) {
                                 System.out.println("begin mock data" + dataSet.isEmpty());
                                 if(dataSet.isEmpty()) {
-                                    int stepCountDelta = 950;
+                                    int stepCountDelta = 500;
                                     Calendar cal = Calendar.getInstance();
                                     Date now = new Date();
                                     cal.setTime(now);
@@ -266,7 +247,7 @@ public class GoogleFitAdapter implements FitnessService {
                                     Task<Void> response = Fitness.getHistoryClient(stepCountActivity, gsa).insertData(dataSet2);
                                     System.out.println(response.isSuccessful());
                                 } else {
-                                    step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + 50;
+                                    step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + 500;
                                     dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).setInt(step);
                                     Log.d(TAG, "Total steps: " + step);
                                     Log.d(TAG, "Total steps: " + dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());

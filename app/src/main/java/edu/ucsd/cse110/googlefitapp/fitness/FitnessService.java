@@ -7,4 +7,6 @@ public interface FitnessService {
     void stopAsync();
     void startAsync();
     boolean hasPermission();
+    void addInactiveSteps(int extraStep);
+    void addActiveSteps(int step);
 }
