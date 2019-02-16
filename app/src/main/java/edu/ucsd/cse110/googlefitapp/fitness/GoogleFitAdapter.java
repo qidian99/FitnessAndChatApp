@@ -267,7 +267,7 @@ public class GoogleFitAdapter implements FitnessService {
                                     Date now = new Date();
                                     cal.setTime(now);
                                     long endTime = cal.getTimeInMillis();
-                                    cal.add(Calendar.SECOND, -1);
+                                    cal.add(Calendar.HOUR_OF_DAY, -1);
                                     long startTime = cal.getTimeInMillis();
 
                                     DataSource dataSource =
@@ -283,10 +283,7 @@ public class GoogleFitAdapter implements FitnessService {
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(stepCountDelta);
                                     step = stepCountDelta;
                                     dataSet2.add(dataPoint);
-
-
-                                    System.out.println("Added!  ");
-                                    Log.d(TAG, dataSet.toString());
+                                    Log.d(TAG, "Newly created dataset: " + dataSet2);
 
                                     Task<Void> response = Fitness.getHistoryClient(stepCountActivity, gsa).insertData(dataSet2);
                                     System.out.println(response.isSuccessful());
@@ -309,6 +306,8 @@ public class GoogleFitAdapter implements FitnessService {
                                             dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS),dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
                                     dataSet2.add(dataPoint);
+                                    Log.d(TAG, "Newly created dataset: " + dataSet2);
+
                                     DataUpdateRequest request = new DataUpdateRequest.Builder()
                                             .setDataSet(dataSet2)
                                             .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS) ,dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS )

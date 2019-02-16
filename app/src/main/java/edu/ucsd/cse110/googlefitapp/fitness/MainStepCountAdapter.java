@@ -60,77 +60,76 @@ public class MainStepCountAdapter implements FitnessService {
 
 
     public void setup() {
-        if (fitnessOptions == null) {
-            fitnessOptions = FitnessOptions.builder()
-                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-                    .build();
+        fitnessOptions = FitnessOptions.builder()
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+                .build();
 
-            if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
-                Toast.makeText(activity, "Authorization is needed to use this app", Toast.LENGTH_SHORT).show();
-                GoogleSignIn.requestPermissions(
-                        activity, // your activity
-                        GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                        GoogleSignIn.getLastSignedInAccount(activity),
-                        fitnessOptions);
-            } else {
-                updateStepCount();
-                startRecording();
+        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
+            Toast.makeText(activity, "Authorization is needed to use this app", Toast.LENGTH_SHORT).show();
+            GoogleSignIn.requestPermissions(
+                    activity, // your activity
+                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                    GoogleSignIn.getLastSignedInAccount(activity),
+                    fitnessOptions);
+        } else {
+            updateStepCount();
+            startRecording();
 
 
-                Thread reqThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            // We will create a custom data type, namely active data for this particular app
-                            // 1. Build a request to create a new data type
-                            DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
-                                    // The prefix of your data type name must match your app's package name
-                                    .setName(ACTIVE_DT_NAME)
-                                    // Add some custom fields, both int and float
-                                    .addField("active data", Field.FORMAT_INT32)
-                                    // Add some common fields
-                                    .addField(Field.FIELD_ACTIVITY)
-                                    .build();
+            Thread reqThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        // We will create a custom data type, namely active data for this particular app
+                        // 1. Build a request to create a new data type
+                        DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
+                                // The prefix of your data type name must match your app's package name
+                                .setName(ACTIVE_DT_NAME)
+                                // Add some custom fields, both int and float
+                                .addField("active data", Field.FORMAT_INT32)
+                                // Add some common fields
+                                .addField(Field.FIELD_ACTIVITY)
+                                .build();
 
-                            // 2. Invoke the Config API with:
-                            // - The Google API client object
-                            // - The create data type request
-                            GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
-                            Task<DataType> response =
-                                    Fitness.getConfigClient(activity, gsa).createCustomDataType(request);
-                            activeDataType = Tasks.await(response);
-                            if (activeDataType == null) {
-                                Task<DataType> pendingResult =
-                                        Fitness.getConfigClient(activity, gsa).readDataType(ACTIVE_DT_NAME);
-                                activeDataType = Tasks.await(pendingResult);
-                                Log.d(TAG, "Active Data Type: " + activeDataType.toString());
-                                if(activeDataType == null) throw new Exception("failed to create new data type.");
-                            }
-                        } catch (ExecutionException e) {
-                            e.printStackTrace();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        } finally {
-                            Log.println(Log.DEBUG, TAG, "Custom data type created.");
-                            fitnessOptions = FitnessOptions.builder()
-                                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-                                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-                                    .addDataType(activeDataType, FitnessOptions.ACCESS_READ)
-                                    .addDataType(activeDataType, FitnessOptions.ACCESS_WRITE)
-                                    .build();
+                        // 2. Invoke the Config API with:
+                        // - The Google API client object
+                        // - The create data type request
+                        GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
+                        Task<DataType> response =
+                                Fitness.getConfigClient(activity, gsa).createCustomDataType(request);
+                        activeDataType = Tasks.await(response);
+                        if (activeDataType == null) {
+                            Task<DataType> pendingResult =
+                                    Fitness.getConfigClient(activity, gsa).readDataType(ACTIVE_DT_NAME);
+                            activeDataType = Tasks.await(pendingResult);
+                            Log.d(TAG, "Active Data Type: " + activeDataType.toString());
+                            if(activeDataType == null) throw new Exception("failed to create new data type.");
+                        }
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        Log.println(Log.DEBUG, TAG, "Custom data type created.");
+                        fitnessOptions = FitnessOptions.builder()
+                                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+                                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+                                .addDataType(activeDataType, FitnessOptions.ACCESS_READ)
+                                .addDataType(activeDataType, FitnessOptions.ACCESS_WRITE)
+                                .build();
 
-                    }
+                }
 
-                    }
-                });
-                reqThread.start();
-            }
+                }
+            });
+            reqThread.start();
         }
+
     }
 
     private void startRecording() {
@@ -250,13 +249,14 @@ public class MainStepCountAdapter implements FitnessService {
                             public void onSuccess(DataReadResponse dataReadResponse) {
                                 DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
                                 System.out.println("Begin adding inactive data. IsEmpty: " + dataSet.isEmpty());
+                                System.out.println(dataSet);
                                 if (dataSet.isEmpty()) {
                                     int stepCountDelta = extraStep;
                                     Calendar cal = Calendar.getInstance();
                                     Date now = new Date();
                                     cal.setTime(now);
                                     long endTime = cal.getTimeInMillis();
-                                    cal.add(Calendar.SECOND, -1);
+                                    cal.add(Calendar.HOUR_OF_DAY, -1);
                                     long startTime = cal.getTimeInMillis();
 
                                     DataSource dataSource =
@@ -296,6 +296,7 @@ public class MainStepCountAdapter implements FitnessService {
                                             dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
                                     dataSet2.add(dataPoint);
+                                    Log.d(TAG, "Newly created dataset: " + dataSet2);
                                     DataUpdateRequest request = new DataUpdateRequest.Builder()
                                             .setDataSet(dataSet2)
                                             .setTimeInterval(dataSet2.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet2.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
