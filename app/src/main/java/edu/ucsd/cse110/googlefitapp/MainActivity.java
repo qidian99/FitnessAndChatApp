@@ -1,5 +1,6 @@
 package edu.ucsd.cse110.googlefitapp;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -9,12 +10,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
@@ -22,16 +25,12 @@ import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
 import edu.ucsd.cse110.googlefitapp.fitness.MainStepCountAdapter;
 
-public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, CustomGoalSetter.GoalPrompterListener, ManualStepSetter.ManualStepSetterListener {
+public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, CustomGoalSetter.GoalPrompterListener, ManualStepSetter.ManualStepSetterListener, DatePickerDialog.OnDateSetListener{
     private String fitnessServiceKey = "GOOGLE_FIT";
     public static final String MAIN_SERVICE = "MAIN_SERVICE";
     private static final int REQUEST_CODE = 1000;
 
     public static final String SHOW_STRIDE = "Your estimated stride length is %.2f\"";
-//    public static final String SHOW_GOAL = "Your current goal is %d steps.";
-//    public static final String SHOW_STEP = "Your have taken %d steps.";
-//    public static final String SHOW_STEPS_LEFT = "You have %d steps left.";
-
     public static final String TMP_RESULT = "distance: %.2f, speed: %.2f, time: %d, steps: %d";
 
     public static final String SHOW_GOAL = "%d";
@@ -64,12 +63,13 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private float strideLength;
 
     private FitnessService fitnessService;
-    private Calendar calendar = Calendar.getInstance();
     private double[] weeklyDistance = new double[7];
     private double[] weeklySpeed = new double[7];
     private double[] weeklyInactiveSteps = new double[7];
     private double[] weeklyActiveSteps = new double[7];
     private boolean notCleared = true;
+    public static Calendar calendar = StepCalendar.getInstance();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 
 //    //this is only ran when we run the app again (given it is not deleted from the "recent" apps)
@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
-        // Users can customize their goals
+        // Users can manually enter their steps
         Button setStepbtn = findViewById(R.id.btnSetStep);
         setStepbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -220,6 +220,18 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
+        // Users can roll back the date
+        Button setDateBtn = findViewById(R.id.mockCalBtn);
+        Calendar tempCal = Calendar.getInstance();
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this, MainActivity.this, tempCal.get(Calendar.YEAR),  tempCal.get(Calendar.MONTH),  tempCal.get(Calendar.DATE));
+
+        setDateBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                datePickerDialog.show();
+            }
+        });
 
         // Start an active session
         Button btnGoToSteps = findViewById(R.id.startBtn);
@@ -308,6 +320,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         stepText.setText(String.format(SHOW_STEP, total));
         stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
+
+        Log.d("MAIN", stepText.getText().toString());
+
 
         if(currentSteps >= goal && goalChangeable) {
             goalChangeable = false;
@@ -500,4 +515,13 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         System.out.println(fitnessService.getLast7DaysSteps(weeklyInactiveSteps, weeklyActiveSteps, Calendar.getInstance()));
     }
 
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+        Log.d("MAIN", "New year: " + year + ", New month: " + (month+1) + ", New date: " + dayOfMonth);
+        StepCalendar.set(year, month, dayOfMonth);
+        Calendar calendar = StepCalendar.getInstance();
+        dateFormat.setCalendar(calendar);
+        ((TextView) findViewById(R.id.textCal)).setText(dateFormat.format(calendar.getTime()));
+        fitnessService.updateStepCount();
+    }
 }

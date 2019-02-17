@@ -75,8 +75,8 @@ public class ManualStepSetter extends DialogFragment {
         try {
             step = Integer.parseInt(stepText.getText().toString());
             // Check for invalid input
-            if (step <= 0) {
-                throw new Exception("Invalid input");
+            if (step <= 0 || step > 10000) {
+                throw new Exception("Steps must be between 0(exclusive) and 10000(inclusive)");
             }
         } catch (Exception e) {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(getContext());

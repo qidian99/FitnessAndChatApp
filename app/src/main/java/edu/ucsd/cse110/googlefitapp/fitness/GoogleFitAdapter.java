@@ -262,8 +262,6 @@ public class GoogleFitAdapter implements FitnessService {
                                 if(dataSet.isEmpty()) {
                                     int stepCountDelta = 500;
                                     Calendar cal = Calendar.getInstance();
-                                    Date now = new Date();
-                                    cal.setTime(now);
                                     long endTime = cal.getTimeInMillis();
                                     cal.add(Calendar.HOUR_OF_DAY, -1);
                                     long startTime = cal.getTimeInMillis();
