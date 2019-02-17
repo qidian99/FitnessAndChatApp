@@ -28,6 +28,9 @@ public class DataDisplayer extends DialogFragment {
                                       "Distance: %.1f miles\n" +
                                       "Speed: %.1f miles/hour";
 
+    private TextView data;
+    private Button okButton;
+
     public DataDisplayer() {}
 
     @SuppressLint("ValidFragment")
@@ -60,8 +63,8 @@ public class DataDisplayer extends DialogFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        final Button okButton = view.findViewById(R.id.Okbutton);
-        final TextView data = view.findViewById(R.id.data);
+        okButton = view.findViewById(R.id.Okbutton);
+        data = view.findViewById(R.id.data);
         this.window = getDialog().getWindow();
 
         data.setText(String.format(FORMAT_STR, steps, min, sec, distance, speed));
@@ -74,4 +77,15 @@ public class DataDisplayer extends DialogFragment {
         });
     }
 
+    public String getData() {
+        return String.format(FORMAT_STR, steps, min, sec, distance, speed);
+    }
+
+    public float getDistance() {
+        return distance;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
 }
