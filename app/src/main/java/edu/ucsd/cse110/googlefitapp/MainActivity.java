@@ -346,8 +346,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Firstly it fetches active data from StepCountActivity
         if(switchToActive) {
             super.onActivityResult(requestCode, resultCode, data);
-            activeDistance = data.getDoubleExtra("distance", 0.0);
-            activeSpeed = data.getDoubleExtra("speed", 0.0);
+            activeDistance = data.getFloatExtra("distance", 0);
+            activeSpeed = data.getFloatExtra("speed", 0);
             activeMin = data.getIntExtra("min", 0);
             activeSec = data.getIntExtra("second", 0);
             activeSteps = data.getIntExtra("steps", 0);
