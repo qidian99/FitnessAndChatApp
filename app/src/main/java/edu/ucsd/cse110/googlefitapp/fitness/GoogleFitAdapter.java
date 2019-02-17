@@ -47,8 +47,6 @@ public class GoogleFitAdapter implements FitnessService {
         this.stepCountActivity = activity;
     }
 
-
-
     public void setup() {
         FitnessOptions fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -213,7 +211,7 @@ public class GoogleFitAdapter implements FitnessService {
                             @Override
                             public void onSuccess(DataReadResponse dataReadResponse) {
                                 DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
-                                Log.d(TAG, dataSet.toString());
+                                Log.d(TAG, "Aggregate step count before adding active data: " + dataSet.toString());
                                 int total =
                                         dataSet.isEmpty()
                                                 ? 0

@@ -23,6 +23,7 @@ import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.request.DataDeleteRequest;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.request.DataUpdateRequest;
@@ -35,6 +36,7 @@ import com.google.android.gms.tasks.Tasks;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -240,15 +242,19 @@ public class MainStepCountAdapter implements FitnessService {
                         .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
                                 DataType.AGGREGATE_STEP_COUNT_DELTA)
                         .bucketByTime(1, TimeUnit.DAYS)
+//                        .read(DataType.TYPE_STEP_COUNT_DELTA)
                         .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                         .build())
                 .addOnSuccessListener(
                         new OnSuccessListener<DataReadResponse>() {
                             @Override
                             public void onSuccess(DataReadResponse dataReadResponse) {
-                                DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
-                                System.out.println("Begin adding inactive data. IsEmpty: " + dataSet.isEmpty());
-                                System.out.println(dataSet);
+                                System.out.println("Begin adding inactive data.");
+                                List<Bucket> buckets = dataReadResponse.getBuckets();
+                                DataSet dataSet = buckets.get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
+                                Log.i(TAG, dataSet.toString());
+//                                Log.d(TAG, "Which branch to execute: " + (buckets.isEmpty() || (dataSet = buckets.get(0).getDataSet(DataType.TYPE_STEP_COUNT_DELTA)).isEmpty()));
+//                                if (buckets.isEmpty() || (dataSet = buckets.get(0).getDataSet(DataType.TYPE_STEP_COUNT_DELTA)).isEmpty()) {
                                 if (dataSet.isEmpty()) {
                                     int stepCountDelta = extraStep;
                                     Calendar cal = Calendar.getInstance();
@@ -269,40 +275,83 @@ public class MainStepCountAdapter implements FitnessService {
                                     DataPoint dataPoint =
                                             dataSet2.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(stepCountDelta);
-                                    step = stepCountDelta;
                                     dataSet2.add(dataPoint);
 
                                     Log.d(TAG, "Added inactive steps");
                                     Log.d(TAG, dataSet2.toString());
 
                                     Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
-                                    System.out.println(response.isSuccessful());
+                                    Log.d(TAG, ""+response.isSuccessful());
                                 } else {
-                                    step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + extraStep;
-                                    dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).setInt(step);
-                                    Log.d(TAG, "Total steps: " + dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
+                                    // Delete all data
+                                    // Set a start and end time for our data, using a start time of 1 day before this moment.
+                 // Create a delete request object, providing a data type and a time interval
+                                    DataDeleteRequest request =
+                                            new DataDeleteRequest.Builder()
+                                                    .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                                                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                                                    .build();
 
-                                    // Create a data source
-//                                    DataSource dataSource =
-////                                            new DataSource.Builder()
-////                                                    .setAppPackageName(APP_PACKAGE_NAME)
-////                                                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
-////                                                    .setStreamName(TAG + " - step count")
-////                                                    .setType(DataSource.TYPE_RAW)
-////                                                    .build();
-                                    DataSource dataSource = dataSet.getDataSource();
+// Invoke the History API with the HistoryClient object and delete request, and then
+// specify a callback that will check the result.
+                                    Fitness.getHistoryClient(activity, GoogleSignIn.getLastSignedInAccount(activity))
+                                            .deleteData(request);
+
+                                    int step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + extraStep;
+                                    Calendar cal = Calendar.getInstance();
+                                    Date now = new Date();
+                                    cal.setTime(now);
+                                    long endTime = cal.getTimeInMillis();
+                                    cal.add(Calendar.HOUR_OF_DAY, -1);
+                                    long startTime = cal.getTimeInMillis();
+
+                                    DataSource dataSource =
+                                            new DataSource.Builder()
+                                                    .setAppPackageName(APP_PACKAGE_NAME)
+                                                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                                                    .setStreamName(TAG + " - step count")
+                                                    .setType(DataSource.TYPE_RAW)
+                                                    .build();
                                     DataSet dataSet2 = DataSet.create(dataSource);
                                     DataPoint dataPoint =
                                             dataSet2.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
                                     dataSet2.add(dataPoint);
-                                    Log.d(TAG, "Newly created dataset: " + dataSet2);
-                                    DataUpdateRequest request = new DataUpdateRequest.Builder()
-                                            .setDataSet(dataSet2)
-                                            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                                            .build();
 
-                                    Task<Void> response = Fitness.getHistoryClient(activity, GoogleSignIn.getLastSignedInAccount(activity)).updateData(request);
+                                    Log.d(TAG, "Added inactive steps");
+                                    Log.d(TAG, dataSet2.toString());
+
+                                    Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
+                                    Log.d(TAG, ""+response.isSuccessful());
+//
+//
+//                                    Log.e(TAG, dataSet.toString());
+//                                    long startTime = dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS);
+//                                    long endTime = dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS);
+//                                    step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + extraStep;
+//                                    dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).setInt(step);
+//                                    Log.d(TAG, "Total steps: " + dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
+//
+//                                    // Create a data source
+//                                    DataSource dataSource =
+//                                            new DataSource.Builder()
+//                                                    .setAppPackageName(APP_PACKAGE_NAME)
+//                                                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+//                                                    .setStreamName(TAG + " - step count")
+//                                                    .setType(DataSource.TYPE_RAW)
+//                                                    .build();
+//                                    DataSet dataSet2 = DataSet.create(dataSource);
+//                                    DataPoint dataPoint =
+//                                            dataSet2.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
+//                                    dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
+//                                    dataSet2.add(dataPoint);
+//                                    Log.i(TAG, "Newly created dataset: " + dataSet2);
+//                                    DataUpdateRequest request = new DataUpdateRequest.Builder()
+//                                            .setDataSet(dataSet2)
+//                                            .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+//                                            .build();
+//
+//                                    Task<Void> response = Fitness.getHistoryClient(activity, gsa).updateData(request);
                                 }
                                 updateStepCount();
                             }
@@ -346,7 +395,7 @@ public class MainStepCountAdapter implements FitnessService {
                                     Date now = new Date();
                                     cal.setTime(now);
                                     long endTime = cal.getTimeInMillis();
-                                    cal.add(Calendar.SECOND, -1);
+//                                    cal.add(Calendar.SECOND, -1);
                                     long startTime = cal.getTimeInMillis();
 
                                     DataSource dataSource =
