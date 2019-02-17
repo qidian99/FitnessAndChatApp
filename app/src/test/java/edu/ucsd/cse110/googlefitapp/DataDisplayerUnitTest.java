@@ -1,5 +1,6 @@
 package edu.ucsd.cse110.googlefitapp;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +34,8 @@ public class DataDisplayerUnitTest {
     }
 
     @Test
-    public void testOnCreate() {
-
+    public void testTextView() {
+        DataDisplayer tmpDisplayer = DataDisplayer.newInstance("new instance", distance, speed, steps, min, sec);
+        assertNotNull(tmpDisplayer);
     }
 }
