@@ -58,7 +58,6 @@ public class MainStepCountAdapter implements FitnessService {
         this.activity = activity;
     }
 
-
     public void setup() {
         fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -330,6 +329,7 @@ public class MainStepCountAdapter implements FitnessService {
         long endTime = tempCal.getTimeInMillis();
         // Read active data
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
+
         Fitness.getHistoryClient(activity, gsa)
                 .readData(new DataReadRequest.Builder()
                         .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)

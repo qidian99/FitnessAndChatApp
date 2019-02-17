@@ -350,51 +350,51 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             activeSec = data.getIntExtra("second", 0);
             activeSteps = data.getIntExtra("steps", 0);
             displayActiveData();
+
+            // Then, store the active data into local storage
+            // Note that if the date is Saturday, a new cycle will start, so also weekly data are cleared
+            int day = calendar.get(Calendar.DAY_OF_WEEK);
+
+            clearGraph(day);
+
+            // update active steps
+            SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+            int totalActiveSteps = stepPref.getInt(String.valueOf(day + 7), 0) + activeSteps; // Store active steps
+            SharedPreferences.Editor editor = stepPref.edit();
+            editor.putInt(String.valueOf(day + 7), totalActiveSteps);
+            editor.apply();
+
+            // update avg speed and total distance
+            SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
+            float currActiveSpeed = statsPref.getFloat(String.valueOf(day), 0.0f);
+            float totalActiveDist = totalActiveSteps * strideLength / 63360.0f;
+            SharedPreferences.Editor statsEditor = statsPref.edit();
+            statsEditor.putFloat(String.valueOf(day), (currActiveSpeed + activeSpeed)/2.0f);
+            statsEditor.putFloat(String.valueOf(day+14), totalActiveDist);
+            statsEditor.apply();
+
+            if(activeSteps >= this.goal && goalChangeable) { // this.goal is steps remaining
+                goalChangeable = false; // Goal is only allowed to be set once in a week
+                showNewGoalPrompt();
+            }
+
+            if(currentSteps > getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
+                    MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) / 2 && canShowHalfEncour){
+                setCanShowHalfEncour(false);
+                showAchieveHalfEncouragement();
+            }
+
+            int yesterday = day - 1 >= 0 ? day - 1 : 6;
+            if(currentSteps > getSharedPreferences("weekly_steps",
+                    MODE_PRIVATE).getInt(String.valueOf(yesterday), 0) + 1000 && canShowOverPrevEncour) {
+                showOverPrevEncouragement();
+            }
+
+            // Finally, update total steps, and display it on UI
+            fitnessService.updateStepCount();
+            fitnessService.startAsync();
+            fitnessService.addActiveSteps(activeSteps);
         }
-
-        // Then, store the active data into local storage
-        // Note that if the date is Saturday, a new cycle will start, so also weekly data are cleared
-        int day = calendar.get(Calendar.DAY_OF_WEEK);
-
-        clearGraph(day);
-
-        // update active steps
-        SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
-        int totalActiveSteps = stepPref.getInt(String.valueOf(day + 7), 0) + activeSteps; // Store active steps
-        SharedPreferences.Editor editor = stepPref.edit();
-        editor.putInt(String.valueOf(day + 7), totalActiveSteps);
-        editor.apply();
-
-        // update avg speed and total distance
-        SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
-        float currActiveSpeed = statsPref.getFloat(String.valueOf(day), 0.0f);
-        float totalActiveDist = totalActiveSteps * strideLength / 63360.0f;
-        SharedPreferences.Editor statsEditor = statsPref.edit();
-        statsEditor.putFloat(String.valueOf(day), (currActiveSpeed + activeSpeed)/2.0f);
-        statsEditor.putFloat(String.valueOf(day+14), totalActiveDist);
-        statsEditor.apply();
-
-        if(activeSteps >= this.goal && goalChangeable) { // this.goal is steps remaining
-            goalChangeable = false; // Goal is only allowed to be set once in a week
-            showNewGoalPrompt();
-        }
-
-        if(currentSteps > getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
-                MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) / 2 && canShowHalfEncour){
-            setCanShowHalfEncour(false);
-            showAchieveHalfEncouragement();
-        }
-
-        int yesterday = day - 1 >= 0 ? day - 1 : 6;
-        if(currentSteps > getSharedPreferences("weekly_steps",
-                MODE_PRIVATE).getInt(String.valueOf(yesterday), 0) + 1000 && canShowOverPrevEncour) {
-            showOverPrevEncouragement();
-        }
-
-        // Finally, update total steps, and display it on UI
-        fitnessService.updateStepCount();
-        fitnessService.startAsync();
-        fitnessService.addActiveSteps(activeSteps);
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {
