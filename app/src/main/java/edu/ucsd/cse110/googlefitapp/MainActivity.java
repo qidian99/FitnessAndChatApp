@@ -56,8 +56,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private boolean canShowOverPrevEncour = true;
     private int currentSteps;
 
-    private double activeDistance;
-    private double activeSpeed;
+    private float activeDistance;
+    private float activeSpeed;
     private int activeMin;
     private int activeSec;
     private int activeSteps = 0;
@@ -65,12 +65,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     private FitnessService fitnessService;
     private Calendar calendar = Calendar.getInstance();
-    private double[] weeklyDistance = new double[7];
-    private double[] weeklySpeed = new double[7];
     private double[] weeklyInactiveSteps = new double[7];
     private double[] weeklyActiveSteps = new double[7];
-    private boolean notCleared = true;
-
 
 //    //this is only ran when we run the app again (given it is not deleted from the "recent" apps)
 //    @Override
@@ -105,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public boolean getGoalChangeable() {
         return this.goalChangeable;
     }
-
 
     public void setCanShowHalfEncour(boolean canShowHalfEncour) {
         this.canShowHalfEncour = canShowHalfEncour;
@@ -164,9 +159,12 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         }
 
         fitnessService.setup();
+
         fitnessService.startAsync();
 
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("graphNotCleared", true).apply();
         String magnitude = sharedPreferences.getString(KEY_MAGNITUDE, "");
         String metric = sharedPreferences.getString(KEY_METRIC, "");
         strideLength = sharedPreferences.getFloat(KEY_STRIDE, 0);
@@ -177,7 +175,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Update goal
         int currentGoal = sharedPreferences.getInt(KEY_GOAL, -1);
         if( currentGoal == -1 ){
-            SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putInt(KEY_GOAL, DEFAULT_GOAL);
             editor.apply();
             currentGoal = DEFAULT_GOAL;
@@ -241,7 +238,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
-
         int today = calendar.get(Calendar.DAY_OF_WEEK);
         int day = sharedPreferences.getInt("day", -1);
 
@@ -255,8 +251,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     public void launchWeeklyStats() {
         Intent intent = new Intent(MainActivity.this, WeeklyStats.class);
-        intent.putExtra("weeklySpeed", weeklySpeed);
-        intent.putExtra("weeklyDistance", weeklyDistance);
         startActivity(intent);
     }
 
@@ -288,17 +282,22 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 //    }
 
     public void updateAll(int total) {
-
         int day = calendar.get(Calendar.DAY_OF_WEEK);
+        clearGraph(day);
 
+        // store total steps
         SharedPreferences sharedPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
-        SharedPreferences pref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-
         editor.putInt(String.valueOf(day), total);
         editor.putInt("goal", goal);
         editor.apply();
         Log.d("MAIN", "Total steps up to now: " + total);
+
+        // store total dist
+        SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
+        SharedPreferences.Editor statsEditor = statsPref.edit();
+        statsEditor.putFloat(String.valueOf(day + 7), total * strideLength / 63360.0f);
+        statsEditor.apply();
 
         final TextView stepText = findViewById(R.id.textStepsMain);
         final TextView stepsLeft = findViewById(R.id.stepsLeft);
@@ -334,7 +333,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             switchToActive = true;
             fitnessService.stopAsync();
         }
-
     }
 
     @Override
@@ -346,8 +344,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Firstly it fetches active data from StepCountActivity
         if(switchToActive) {
             super.onActivityResult(requestCode, resultCode, data);
-            activeDistance = data.getDoubleExtra("distance", 0.0);
-            activeSpeed = data.getDoubleExtra("speed", 0.0);
+            activeDistance = data.getFloatExtra("distance", 0.0f);
+            activeSpeed = data.getFloatExtra("speed", 0.0f);
             activeMin = data.getIntExtra("min", 0);
             activeSec = data.getIntExtra("second", 0);
             activeSteps = data.getIntExtra("steps", 0);
@@ -357,28 +355,24 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Then, store the active data into local storage
         // Note that if the date is Saturday, a new cycle will start, so also weekly data are cleared
         int day = calendar.get(Calendar.DAY_OF_WEEK);
-        int currentActiveSteps;
+
+        clearGraph(day);
+
+        // update active steps
         SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
-
-        if(day == Calendar.SUNDAY) {
-            if (notCleared) {
-                notCleared = false;
-                stepPref.edit().clear().apply();
-                weeklyDistance = new double[7];
-                weeklySpeed = new double[7];
-            }
-        } else {
-            notCleared = true;
-        }
-
-        currentActiveSteps = stepPref.getInt(String.valueOf(day + 7), 0); // Store active steps
+        int totalActiveSteps = stepPref.getInt(String.valueOf(day + 7), 0) + activeSteps; // Store active steps
         SharedPreferences.Editor editor = stepPref.edit();
-        editor.putInt(String.valueOf(day + 7), currentActiveSteps + activeSteps);
+        editor.putInt(String.valueOf(day + 7), totalActiveSteps);
         editor.apply();
 
-        double currentActiveSpeed = weeklySpeed[day - 1];
-        weeklySpeed[day - 1] = (currentActiveSpeed + activeSpeed)/2.0;
-        weeklyDistance[day - 1] += activeDistance;
+        // update avg speed and total distance
+        SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
+        float currActiveSpeed = statsPref.getFloat(String.valueOf(day), 0.0f);
+        float totalActiveDist = totalActiveSteps * strideLength / 63360.0f;
+        SharedPreferences.Editor statsEditor = statsPref.edit();
+        statsEditor.putFloat(String.valueOf(day), (currActiveSpeed + activeSpeed)/2.0f);
+        statsEditor.putFloat(String.valueOf(day+14), totalActiveDist);
+        statsEditor.apply();
 
         if(activeSteps >= this.goal && goalChangeable) { // this.goal is steps remaining
             goalChangeable = false; // Goal is only allowed to be set once in a week
@@ -485,6 +479,23 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(KEY_GOAL, goal);
         editor.apply();
+    }
+
+    private void clearGraph(int day) {
+        SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+        SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
+        SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+        boolean notCleared = sharedPref.getBoolean("graphNotCleared", true);
+
+        if(day == Calendar.SUNDAY) {
+            if (notCleared) {
+                sharedPref.edit().putBoolean("graphNotCleared", false).apply();
+                stepPref.edit().clear().apply();
+                statsPref.edit().clear().apply();
+            }
+        } else {
+            sharedPref.edit().putBoolean("graphNotCleared", true).apply();
+        }
     }
 
     @Override
