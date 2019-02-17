@@ -172,7 +172,7 @@ public class StepCountActivity extends AppCompatActivity {
 
     public void setDistance() {
         distance = steps * strideLen / 63360.0f;
-        textDist.setText(String.format("Distance: %.1f miles", distance));
+        textDist.setText(String.format("%.1f miles", distance));
     }
 
     public void setSpeed() {

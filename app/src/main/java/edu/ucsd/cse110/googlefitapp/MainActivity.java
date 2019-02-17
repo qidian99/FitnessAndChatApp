@@ -168,7 +168,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         String magnitude = sharedPreferences.getString(KEY_MAGNITUDE, "");
         String metric = sharedPreferences.getString(KEY_METRIC, "");
         strideLength = sharedPreferences.getFloat(KEY_STRIDE, 0);
-        editor.putBoolean("graphNotCleared", true);
 
         firstTimeUser = strideLength == 0 || GoogleSignIn.getLastSignedInAccount(this) == null;
         this.goal = sharedPreferences.getInt(KEY_GOAL, DEFAULT_GOAL);
