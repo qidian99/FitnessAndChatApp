@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         final int beforeSteps = getLastStepCount();
 
         // In development, we allow users to re-enter their heights
-        Button setHeightBtn = findViewById(R.id.clearBtn);
+        Button setHeightBtn = findViewById(R.id.setHeightBtn);
         setHeightBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

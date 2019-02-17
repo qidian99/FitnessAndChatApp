@@ -285,9 +285,7 @@ public class GoogleFitAdapter implements FitnessService {
                                     dataSet2.add(dataPoint);
                                     Log.d(TAG, "Newly created dataset: " + dataSet2);
 
-                                    Fitness.getHistoryClient(stepCountActivity, gsa).insertData(dataSet2)
-                                            .addOnSuccessListener(res -> Log.d(TAG, "UPDATE SUCCESS" + res.toString()))
-                                            .addOnFailureListener(res -> Log.d(TAG, "UPDATE FAILURE" + res.toString()));
+                                    Fitness.getHistoryClient(stepCountActivity, gsa).insertData(dataSet2);
                                 } else {
                                     step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + 500;
                                     dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).setInt(step);
