@@ -51,9 +51,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private int goal;
 
     private boolean isCancelled = false;
-    private boolean goalChangeable = true;
-    private boolean canShowHalfEncour = true;
-    private boolean canShowOverPrevEncour = true;
+    private boolean goalChangeable = false;
+    private boolean canShowHalfEncour = false;
+    private boolean canShowOverPrevEncour = false;
     private int currentSteps;
 
     private double activeDistance;

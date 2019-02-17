@@ -46,24 +46,16 @@ public class ManualStepSetter extends DialogFragment {
 
         setCancelable(true);
 
-        stepText = (EditText) view.findViewById(R.id.num_steps);
+        stepText = view.findViewById(R.id.num_steps);
         Button posBtn = view.findViewById(R.id.stepPosBtn);
 
-        posBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finishEnterStep();
-            }
-        });
+        posBtn.setOnClickListener(v -> finishEnterStep());
 
         // Show soft keyboard
         this.window = getDialog().getWindow();
-        stepText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                }
+        stepText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
             }
         });
         stepText.requestFocus();
@@ -85,15 +77,13 @@ public class ManualStepSetter extends DialogFragment {
 
             builder1.setPositiveButton(
                     "OK",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                            stepText.setText("");
-                            stepText.clearFocus();
-                            stepText.requestFocus();
-                            window.setSoftInputMode(
-                                    WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                        }
+                    (dialog, id) -> {
+                        dialog.cancel();
+                        stepText.setText("");
+                        stepText.clearFocus();
+                        stepText.requestFocus();
+                        window.setSoftInputMode(
+                                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                     });
 
             AlertDialog alertInvalidInput = builder1.create();
