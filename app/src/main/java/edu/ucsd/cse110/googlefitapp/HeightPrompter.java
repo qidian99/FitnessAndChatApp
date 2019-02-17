@@ -3,6 +3,7 @@ package edu.ucsd.cse110.googlefitapp;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.view.KeyEvent;
@@ -18,6 +19,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.util.Objects;
+
 public class HeightPrompter extends DialogFragment implements TextView.OnEditorActionListener {
     public interface HeightPrompterListener {
         void onFinishEditDialog(String[] inputText);
@@ -31,6 +34,9 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
     public HeightPrompter() {}
 
     public static HeightPrompter newInstance(String title) {
+        if(title == null) {
+            return null;
+        }
         HeightPrompter frag = new HeightPrompter();
         Bundle args = new Bundle();
         args.putString("title", title);
@@ -39,33 +45,28 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = getActivity().getLayoutInflater().inflate(R.layout.fragment_prompt_height, container, false);
+        View v = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.fragment_prompt_height, container, false);
         getDialog().setTitle(getString(R.string.heightPrompt));
         return v;
     }
 
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         setCancelable(true);
 
-        centText = (EditText) view.findViewById(R.id.cent_height);
-        ftText = (EditText) view.findViewById(R.id.ft_height);
-        inchText = (EditText) view.findViewById(R.id.inch_height);
+        centText = view.findViewById(R.id.cent_height);
+        ftText = view.findViewById(R.id.ft_height);
+        inchText = view.findViewById(R.id.inch_height);
         spinner = view.findViewById(R.id.metricSpinner);
         centText.setOnEditorActionListener(this);
         Button posBtn = view.findViewById(R.id.posBtn);
 
-        posBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finishEnterHeight();
-            }
-        });
+        posBtn.setOnClickListener(v -> finishEnterHeight());
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -92,14 +93,11 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
 
         // Show soft keyboard
         this.window = getDialog().getWindow();
-        centText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                    }
-            }
-         });
+        centText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                }
+        });
         centText.requestFocus();
     }
 
@@ -131,15 +129,13 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
 
                 builder1.setPositiveButton(
                         "OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                                centText.setText("");
-                                centText.clearFocus();
-                                centText.requestFocus();
-                                window.setSoftInputMode(
-                                        WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                            }
+                        (dialog, id) -> {
+                            dialog.cancel();
+                            centText.setText("");
+                            centText.clearFocus();
+                            centText.requestFocus();
+                            window.setSoftInputMode(
+                                    WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                         });
 
                 AlertDialog alertInvalidInput = builder1.create();
@@ -166,14 +162,12 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
 
                 builder1.setPositiveButton(
                         "OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                                ftText.setText("");
-                                inchText.setText("");
-                                window.setSoftInputMode(
-                                        WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                            }
+                        (dialog, id) -> {
+                            dialog.cancel();
+                            ftText.setText("");
+                            inchText.setText("");
+                            window.setSoftInputMode(
+                                    WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                         });
 
                 AlertDialog alertInvalidInput = builder1.create();
