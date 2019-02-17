@@ -39,9 +39,9 @@ public class StepCountActivity extends AppCompatActivity {
     private TextView textSpeed;
     private FitnessService fitnessService;
     private int steps = 0;
-    private double distance = 0.0;
     private int time = 0;
-    private double speed = 0.0;
+    private float distance = 0.0f;
+    private float speed = 0.0f;
     private float strideLen;
     private boolean recordInitialStep = true;
     private int initialSteps;
@@ -123,8 +123,8 @@ public class StepCountActivity extends AppCompatActivity {
                 Intent homescreen = new Intent(getApplicationContext(), MainActivity.class);
                 homescreen.putExtra("speed", speed);
                 homescreen.putExtra("steps", steps);
-                homescreen.putExtra("min", time/60);
-                homescreen.putExtra("second", time%60);
+                homescreen.putExtra("min", time / 60);
+                homescreen.putExtra("second", time % 60);
                 homescreen.putExtra("distance", distance);
                 setResult(RESULT_CODE, homescreen);
                 finish();
@@ -171,15 +171,15 @@ public class StepCountActivity extends AppCompatActivity {
     }
 
     public void setDistance() {
-        distance = (double)(steps * strideLen) / 63360.0;
+        distance = steps * strideLen / 63360.0f;
         textDist.setText(String.format("%.1f miles", distance));
     }
 
     public void setSpeed() {
         if(time == 0) {
-            speed = 0.0;
+            speed = 0.0f;
         } else {
-            speed = distance/(double)time*3600.0;
+            speed = distance/(float)time * 3600.0f;
         }
         textSpeed.setText(String.format("%.1f MPH", speed));
     }
