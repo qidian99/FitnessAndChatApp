@@ -3,6 +3,7 @@
     <string name="startBtnStr">Start Recording</string>
     <string name="endBtnStr">End Recording</string>
     <string name="heightPrompt">Please Enter Your Height</string>
+    <string name="stepPrompt">Please Enter Steps Taken</string>
     <string name="confirm">Done</string>
     <string name="cancel">Cancel</string>
     <string name="back">Back</string>
@@ -12,7 +13,8 @@
         <item>ft</item>
     </string-array>
     <string name="invalidHeight">Invalid height. Please enter again.</string>
-    <string name="displaySteps">Step Taken</string>
+    <string name="invalidStep">Invalid steps. Please enter again.</string>
+    <string name="displaySteps">Steps Taken</string>
     <string name="displayGoal">Current Goal</string>
     <string name="setGoalPrompt">Set a New Step Goal</string>
     <string name="congratsPrompt">Congratulations!</string>
@@ -20,7 +22,7 @@
     <string name="invalidGoal">Please enter a valid goal.</string>
     <string name="re_enter_height">Re-enter Height</string>
     <string name="show_stride_length">Show Stride Length</string>
-    <string name="steps_will_be_shown_here">steps will be shown here</string>
+    <string name="steps_will_be_shown_here">Steps will be shown here</string>
     <string name="update_steps">update steps</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

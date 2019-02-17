@@ -48,8 +48,6 @@ public class HeightPrompterTest {
 
     @Before
     public void setUp() throws Exception {
-        activity = Robolectric.setupActivity(MainActivity.class);
-        btnStartRecord = activity.findViewById(R.id.startBtn);
     }
 
     @Test

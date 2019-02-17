@@ -2,9 +2,11 @@ package edu.ucsd.cse110.googlefitapp;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -20,22 +22,27 @@ import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
 import edu.ucsd.cse110.googlefitapp.fitness.MainStepCountAdapter;
 
-public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, CustomGoalSetter.GoalPrompterListener {
+public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener, CustomGoalSetter.GoalPrompterListener, ManualStepSetter.ManualStepSetterListener {
     private String fitnessServiceKey = "GOOGLE_FIT";
     public static final String MAIN_SERVICE = "MAIN_SERVICE";
     private static final int REQUEST_CODE = 1000;
 
     public static final String SHOW_STRIDE = "Your estimated stride length is %.2f\"";
-    public static final String SHOW_GOAL = "Your current goal is %d steps.";
-    public static final String SHOW_STEP = "Your have taken %d steps.";
+//    public static final String SHOW_GOAL = "Your current goal is %d steps.";
+//    public static final String SHOW_STEP = "Your have taken %d steps.";
+//    public static final String SHOW_STEPS_LEFT = "You have %d steps left.";
+
     public static final String TMP_RESULT = "distance: %.2f, speed: %.2f, time: %d, steps: %d";
-    public static final String SHOW_STEPS_LEFT = "You have %d steps left.";
+
+    public static final String SHOW_GOAL = "%d";
+    public static final String SHOW_STEP = "%d";
+    public static final String SHOW_STEPS_LEFT = "%d";
     public static final String SHARED_PREFERENCE_NAME = "user_data";
     public static final String KEY_MAGNITUDE = "magnitude";
     public static final String KEY_METRIC = "metric";
     public static final String KEY_GOAL = "goal";
     public static final String KEY_HEIGHT = "height";
-    public static final String KEY_BEFORE = "Before";
+    public static final String KEY_BEFORE = "before";
     public static final String KEY_STRIDE = "stride";
     public static final int DEFAULT_GOAL = 5000;
     public static boolean firstTimeUser = true;
@@ -44,8 +51,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private int goal;
 
     private boolean isCancelled = false;
+    private boolean goalChangeable = true;
+    private boolean canShowHalfEncour = true;
+    private boolean canShowOverPrevEncour = true;
     private int currentSteps;
-    private boolean goalChangable = false;
 
     private float activeDistance;
     private float activeSpeed;
@@ -54,36 +63,59 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private int activeSteps = 0;
     private float strideLength;
 
-    private Encouragement encourage;
-
     private FitnessService fitnessService;
     private Calendar calendar = Calendar.getInstance();
+    private double[] weeklyInactiveSteps = new double[7];
+    private double[] weeklyActiveSteps = new double[7];
 
-    //this is only ran when we run the app again (given it is not deleted from the "recent" apps)
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        if(GoogleSignIn.getLastSignedInAccount(this) != null) {
-            fitnessService.startAsync();
-            fitnessService.setup();
+//    //this is only ran when we run the app again (given it is not deleted from the "recent" apps)
+//    @Override
+//    protected void onRestart() {
+//        super.onRestart();
+//        if(GoogleSignIn.getLastSignedInAccount(this) != null) {
+//            fitnessService.startAsync();
+//            fitnessService.setup();
+//
+//            final TextView stepText = findViewById(R.id.textStepsMain);
+//            final int beforeSteps = getLastStepCount();
+//
+//            int total = getCurrentSteps();
+//            encourage.getEncourgementOnLiveUpdate(total, beforeSteps, goal);
+//
+//            SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+//            int today = calendar.get(Calendar.DAY_OF_WEEK);
+//            int day = sharedPreferences.getInt("day", -1);
+//
+//            if(day != today) {
+//                goalChangable = true;
+//                sharedPreferences.edit().putInt("day", today).apply();
+//            }
+//        }
+//    }
 
-            final TextView stepText = findViewById(R.id.textStepsMain);
-            final int beforeSteps = getLastStepCount();
 
-            int total = getCurrentSteps();
-            encourage.getEncourgementOnLiveUpdate(total, beforeSteps, goal);
+    public void setGoalChangeable(boolean goalChangeable) {
+        this.goalChangeable = goalChangeable;
+    }
 
-            SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("graphNotCleared", true).apply();
-            int today = calendar.get(Calendar.DAY_OF_WEEK);
-            int day = sharedPreferences.getInt("day", -1);
+    public boolean getGoalChangeable() {
+        return this.goalChangeable;
+    }
 
-            if(day != today) {
-                goalChangable = true;
-                editor.putInt("day", today).apply();
-            }
-        }
+    public void setCanShowHalfEncour(boolean canShowHalfEncour) {
+        this.canShowHalfEncour = canShowHalfEncour;
+    }
+
+    public boolean getCanShowHalfEncour() {
+        return this.canShowHalfEncour;
+    }
+
+    public void setCanShowOverPrevEncour(boolean canShowOverPrevEncour) {
+        this.canShowOverPrevEncour = canShowOverPrevEncour;
+    }
+
+    public boolean getCanShowOverPrevEncour() {
+        return this.canShowOverPrevEncour;
     }
 
     @Override
@@ -128,8 +160,11 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         fitnessService.setup();
 
+        fitnessService.startAsync();
+
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("graphNotCleared", true).apply();
         String magnitude = sharedPreferences.getString(KEY_MAGNITUDE, "");
         String metric = sharedPreferences.getString(KEY_METRIC, "");
         strideLength = sharedPreferences.getFloat(KEY_STRIDE, 0);
@@ -137,10 +172,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         firstTimeUser = strideLength == 0 || GoogleSignIn.getLastSignedInAccount(this) == null;
         this.goal = sharedPreferences.getInt(KEY_GOAL, DEFAULT_GOAL);
-        /* Encouragement
-         - set to show every app startup
-         - can be made only daily (NEED TO IMPLEMENT)*/
-        encourage = new Encouragement(this, false);
 
         // Update goal
         int currentGoal = sharedPreferences.getInt(KEY_GOAL, -1);
@@ -178,6 +209,15 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             }
         });
 
+        // Users can customize their goals
+        Button setStepbtn = findViewById(R.id.btnSetStep);
+        setStepbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCustomStepPrompt();
+            }
+        });
+
 
         // Start an active session
         Button btnGoToSteps = findViewById(R.id.startBtn);
@@ -203,7 +243,9 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         int day = sharedPreferences.getInt("day", -1);
 
         if(day != today) {
-            goalChangable = true;
+            goalChangeable = true;
+            canShowHalfEncour = true;
+            canShowOverPrevEncour = true;
             sharedPreferences.edit().putInt("day", today).apply();
         }
     }
@@ -213,31 +255,32 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         startActivity(intent);
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if(GoogleSignIn.getLastSignedInAccount(this) != null) {
-            SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-
-            final TextView stepText = findViewById(R.id.textStepsMain);
-
-            //get the steps that were there on the UI before we got the new steps
-            String beforeStepText = String.valueOf(stepText.getText());
-            String[] separatedStrings = beforeStepText.split(" ");
-            if(separatedStrings.length >= 3) {
-                int before = Integer.valueOf(separatedStrings[3]);
-
-                editor.putInt(KEY_BEFORE, before);
-                editor.apply();
-
-                //stops the main async
-                isCancelled = true;
-                //Toast.makeText(this, "stopped main ", Toast.LENGTH_SHORT).show();
-                fitnessService.stopAsync();
-            }
-        }
-    }
+//
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        if(GoogleSignIn.getLastSignedInAccount(this) != null) {
+//            SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
+//            SharedPreferences.Editor editor = sharedPreferences.edit();
+//
+//            final TextView stepText = findViewById(R.id.textStepsMain);
+//
+//            //get the steps that were there on the UI before we got the new steps
+//            String beforeStepText = String.valueOf(stepText.getText());
+//            String[] separatedStrings = beforeStepText.split(" ");
+//            if(separatedStrings.length >= 3) {
+//                int before = Integer.valueOf(separatedStrings[3]);
+//
+//                editor.putInt(KEY_BEFORE, before);
+//                editor.apply();
+//
+//                //stops the main async
+//                isCancelled = true;
+//                //Toast.makeText(this, "stopped main ", Toast.LENGTH_SHORT).show();
+//                fitnessService.stopAsync();
+//            }
+//        }
+//    }
 
     public void updateAll(int total) {
         int day = calendar.get(Calendar.DAY_OF_WEEK);
@@ -249,6 +292,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         editor.putInt(String.valueOf(day), total);
         editor.putInt("goal", goal);
         editor.apply();
+        Log.d("MAIN", "Total steps up to now: " + total);
 
         // store total dist
         SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
@@ -265,10 +309,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         stepText.setText(String.format(SHOW_STEP, total));
         stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
 
-        encourage.getDailyEncouragement(currentSteps, goal,this);
-
-        if(currentSteps >= goal && goalChangable) {
-            goalChangable = false;
+        if(currentSteps >= goal && goalChangeable) {
+            goalChangeable = false;
             showNewGoalPrompt();
         }
     }
@@ -277,10 +319,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         SharedPreferences sharedPreferences = getSharedPreferences("lastKnownSteps", MODE_PRIVATE);
         int beforeSteps = sharedPreferences.getInt("Before", 0);
         return beforeSteps;
-    }
-
-    private int getCurrentSteps() {
-        return currentSteps;
     }
 
     public void launchStepCountActivity() {
@@ -294,6 +332,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             intent.putExtra("stride", strideLength);
             startActivityForResult(intent, REQUEST_CODE);
             switchToActive = true;
+            fitnessService.stopAsync();
         }
     }
 
@@ -336,13 +375,27 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         statsEditor.putFloat(String.valueOf(day+14), totalActiveDist);
         statsEditor.apply();
 
-        if(activeSteps >= this.goal && goalChangable) { // this.goal is steps remaining
-            goalChangable = false; // Goal is only allowed to be set once in a week
+        if(activeSteps >= this.goal && goalChangeable) { // this.goal is steps remaining
+            goalChangeable = false; // Goal is only allowed to be set once in a week
             showNewGoalPrompt();
+        }
+
+        if(currentSteps > getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
+                MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) / 2 && canShowHalfEncour){
+            setCanShowHalfEncour(false);
+            showAchieveHalfEncouragement();
+        }
+
+        int yesterday = day - 1 >= 0 ? day - 1 : 6;
+        if(currentSteps > getSharedPreferences("weekly_steps",
+                MODE_PRIVATE).getInt(String.valueOf(yesterday), 0) + 1000 && canShowOverPrevEncour) {
+            showOverPrevEncouragement();
         }
 
         // Finally, update total steps, and display it on UI
         fitnessService.updateStepCount();
+        fitnessService.startAsync();
+        fitnessService.addActiveSteps(activeSteps);
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {
@@ -361,11 +414,27 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         setGoalDialogFragment.show(fm, "fragment_set_goal");
     }
 
+    private void showCustomStepPrompt() {
+        FragmentManager fm = getSupportFragmentManager();
+        ManualStepSetter setSetpDialogFragment = ManualStepSetter.newInstance(getString(R.string.stepPrompt));
+        setSetpDialogFragment.show(fm, "fragment_set_goal");
+    }
+
     public void showNewGoalPrompt() {
+        setGoalChangeable(false);
         FragmentManager fm = getSupportFragmentManager();
         NewGoalSetter setGoalDialogFragment = NewGoalSetter.newInstance(getString(R.string.congratsPrompt), goal);
         setGoalDialogFragment.show(fm, "fragment_set_new_goal");
-        goalChangable = false;
+    }
+
+    public void showAchieveHalfEncouragement() {
+        setCanShowHalfEncour(false);
+        Toast.makeText(this, "Good Job! You have finished half of your goal!", Toast.LENGTH_LONG).show();
+    }
+
+    public void showOverPrevEncouragement() {
+        setCanShowOverPrevEncour(false);
+        Toast.makeText(this, "Congratulation! You have 1000 steps more than yesterday!", Toast.LENGTH_LONG).show();
     }
 
     private void displayActiveData() {
@@ -390,15 +459,10 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             strideLength = (float) ((Integer.parseInt(inputText[1])*12 + Integer.parseInt(inputText[2])) * 0.413);
         }
         editor.putFloat(KEY_STRIDE, strideLength);
-        firstTimeUser = strideLength == 0 || GoogleSignIn.getLastSignedInAccount(this) == null;
         editor.apply();
 
         Toast.makeText(this, "Height saved", Toast.LENGTH_SHORT).show();
         Toast.makeText(this, String.format(SHOW_STRIDE, strideLength), Toast.LENGTH_LONG).show();
-
-        if(!firstTimeUser){
-            launchStepCountActivity();
-        }
     }
 
     //when we are done with the new goal
@@ -410,7 +474,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Save new goal
         this.goal = goal;
 
-        encourage.resetAllEncourgements();
+        fitnessService.updateStepCount();
 
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -434,4 +498,18 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
             sharedPref.edit().putBoolean("graphNotCleared", true).apply();
         }
     }
+
+    @Override
+    public void onFinishEditDialog(int[] inputStep) {
+        fitnessService.addInactiveSteps(inputStep[0]);
+    }
+
+    public void setCalendar(Calendar calendar) {
+        this.calendar = calendar;
+    }
+
+    public void mockCalendar(View view){
+        System.out.println(fitnessService.getLast7DaysSteps(weeklyInactiveSteps, weeklyActiveSteps, Calendar.getInstance()));
+    }
+
 }

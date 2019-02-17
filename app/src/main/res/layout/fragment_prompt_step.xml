@@ -1,0 +1,28 @@
+<!-- fragment_prompt_step.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/prompt_height"
+    android:layout_width="320dp"
+    android:layout_height="150dp"
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+
+    <EditText
+        android:id="@+id/num_steps"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="Steps Taken"
+        android:imeOptions="actionDone"
+        android:inputType="number"
+        android:visibility="visible"
+        android:layout_marginTop="20dp"/>
+
+    <Button
+        android:id="@+id/stepPosBtn"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:text="@string/confirm" />
+
+</LinearLayout>
