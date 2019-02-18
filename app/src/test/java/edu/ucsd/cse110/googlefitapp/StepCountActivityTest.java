@@ -61,11 +61,21 @@ public class StepCountActivityTest {
     }
 
     @Test
-    public void testStepUpdate(){
-        assertEquals("Steps will be shown here", textSteps.getText().toString());
+    public void testStepUpdate() {
+        assertEquals("0", textSteps.getText().toString());
         activity.setStepCount(nextStepCount);
         assertEquals("2000", textSteps.getText().toString());
     }
+
+    @Test
+    public void testDistanceUpdate() {
+        assertEquals("0.0 miles", textDist.getText().toString());
+        activity.setStepCount(nextStepCount);
+        activity.setStrideLen(20);
+        activity.setDistance();
+        assertEquals("0.6 miles", textDist.getText().toString());
+    }
+
 
     /*
     private class TestFitnessService implements FitnessService {
