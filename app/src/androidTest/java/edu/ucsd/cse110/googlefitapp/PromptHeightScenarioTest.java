@@ -51,7 +51,7 @@ import static org.hamcrest.core.StringContains.containsString;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class PromptHeightUSTest {
+public class PromptHeightScenarioTest {
     private static final String TEST_SERVICE_MAIN_ACTIVITY = "TEST_SERVICE_MAIN_ACTIVITY";
     private static final String TEST_SERVICE_STEP_ACTIVITY = "TEST_SERVICE_STEP_ACTIVITY";
 
@@ -169,7 +169,6 @@ public class PromptHeightUSTest {
                 .inRoot(isDialog())
                 .check(matches(isDisplayed()));
 
-        // Choose feet and inches
         onView(withId(R.id.metricSpinner)).perform(click());
         onData(anything()).inRoot(RootMatchers.isPlatformPopup()).atPosition(0).perform(click());
 
@@ -190,7 +189,7 @@ public class PromptHeightUSTest {
     }
 
     /*
-        Scenario: User type invalid height (0 or negative number)
+        Scenario3: User type invalid height (0 or negative number)
         Given Sarah has successfully downloaded the app
         And she has accepted all the permissions
         And she uses feet and inches for her height
