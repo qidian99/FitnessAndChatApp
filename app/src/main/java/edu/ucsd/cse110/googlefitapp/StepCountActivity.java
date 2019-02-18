@@ -63,9 +63,6 @@ public class StepCountActivity extends AppCompatActivity {
         editor.apply();
 
         Timer t = new Timer();
-        String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
-        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
-        fitnessService.updateStepCount();
 
         t.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -97,6 +94,10 @@ public class StepCountActivity extends AppCompatActivity {
         textSpeed.setText(String.format("%.1f MPH", speed));
 
         strideLen = getIntent().getFloatExtra("stride", 0);
+
+        String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
+        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
+        fitnessService.updateStepCount();
 
         Button btnUpdateSteps = findViewById(R.id.buttonUpdateSteps);
         btnUpdateSteps.setOnClickListener(new View.OnClickListener() {
@@ -167,6 +168,7 @@ public class StepCountActivity extends AppCompatActivity {
 
         initialSteps = sharedPref.getInt("initialSteps", stepCount);
         steps = stepCount - initialSteps;
+
         textSteps.setText(String.format("%d", steps));
     }
 
@@ -188,5 +190,17 @@ public class StepCountActivity extends AppCompatActivity {
         setStepCount(stepCount);
         setDistance();
         setSpeed();
+    }
+
+    public void setStrideLen(float strideLen) {
+        this.strideLen = strideLen;
+    }
+
+    public void setDistance(float dist) {
+        this.distance = dist;
+    }
+
+    public void setTime(int time) {
+        this.time = time;
     }
 }
