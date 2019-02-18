@@ -12,10 +12,13 @@ import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.google.android.gms.fitness.request.DataReadRequest;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,7 +67,8 @@ public class LogActiveSessionScenarioTest {
     private ActivityTestRule<StepCountActivity> mStepCountActivityTestRule = new ActivityTestRule<>(StepCountActivity.class);
 
 
-        public void setup() {
+    @Before
+    public void setup() {
         FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
             @Override
             public FitnessService create(StepCountActivity stepCountActivity) {
@@ -121,6 +125,7 @@ public class LogActiveSessionScenarioTest {
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
     }
 
+    @After
     public void tearDown() {
         mActivityTestRule.getActivity().finish();
         Intents.release();
@@ -137,15 +142,11 @@ public class LogActiveSessionScenarioTest {
         And will record her steps starting at 0.
      */
     @Test
-    public void logActiveSessionTestScenario1() {
-        setup();
-
-//        onView(withId(R.id.startBtn)).check(matches(isDisplayed()));
-//        onView(withId(R.id.startBtn)).perform(click());
+    public void userPressesStartButton() {
         mActivityTestRule.getActivity().launchStepCountActivity();
         intended(hasComponent(new ComponentName(getTargetContext(), StepCountActivity.class)));
         onView(withId(R.id.textSteps)).check(matches(withText("0")));
-        tearDown();
+        
     }
 
 
@@ -157,8 +158,8 @@ public class LogActiveSessionScenarioTest {
         Then the current session will end and display her stats
     */
     @Test
-    public void logActiveSessionTestScenario2() {
-        setup();
+    public void userPressesEndButton() {
+        
         mActivityTestRule.getActivity().launchStepCountActivity();
         intended(hasComponent(new ComponentName(getTargetContext(), StepCountActivity.class)));
         onView(withId(R.id.btnEndRecord)).perform(click());
@@ -169,6 +170,7 @@ public class LogActiveSessionScenarioTest {
         // First, she should click the OK button to close active data display dialog
         onView(withText("OK")).perform(click());
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
+        
     }
 
     private class TestMainFitnessService implements FitnessService {
@@ -186,12 +188,12 @@ public class LogActiveSessionScenarioTest {
 
         @Override
         public void setup() {
-            System.out.println(TAG + "setup");
+            Log.d(TAG, "setup");
         }
 
         @Override
         public void updateStepCount() {
-            System.out.println(TAG + "update all texts");
+            Log.d(TAG, "update all texts");
             mainActivity.updateAll(1000);
         }
 
@@ -247,7 +249,7 @@ public class LogActiveSessionScenarioTest {
 
         @Override
         public void setup() {
-            System.out.println(TAG + "setup");
+            Log.d(TAG, "setup");
         }
 
         @Override
