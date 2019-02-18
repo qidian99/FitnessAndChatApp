@@ -6,24 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.intent.Intents;
-import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 
 import com.google.android.gms.fitness.request.DataReadRequest;
 
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
-import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +26,6 @@ import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
-import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
@@ -46,15 +36,11 @@ import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withSpinnerText;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.core.IsAnything.anything;
-import static org.hamcrest.core.StringContains.containsString;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class PromptHeightScenarioTest {
+public class CustomGoalScenarioTest {
     private static final String TEST_SERVICE_MAIN_ACTIVITY = "TEST_SERVICE_MAIN_ACTIVITY";
     private static final String TEST_SERVICE_STEP_ACTIVITY = "TEST_SERVICE_STEP_ACTIVITY";
 
@@ -109,132 +95,52 @@ public class PromptHeightScenarioTest {
 
 
     /*
-      Feature: Prompt for Height
-
-      Scenario1: User uses feet and inches
-        Given Sarah has successfully downloaded the app
-        And she has accepted all the permissions
-        And she uses feet and inches for her height
-        When the application asks for her height, she
-        Then chooses the feet and inches option in the drop-down menu
-        And inputs 5 in the first textbox and 4 in the second textbox
-        When she presses the “Done” button
-        Then she is taken to the home screen.
+    Feature: Changing step goal at any time
+      Scenario 1: Sarah input new valid goal
+        Given Sarah has averaged 4000 steps per day for the week
+        And her current goal is 5000 steps per day
+        And she press “changing step goal”
+        When she set her goal to 4500 steps per day a week
+        Then application will show that her new goal of 4500 is set
+        And she will be directed to the home screen
      */
     @Test
-    public void userUsesFeetAndInches() {
-        
-        onView(withId(R.id.startBtn))
+    public void userEntersValidCustomGoal() {
+        onView(withId(R.id.btnSetGoal))
                 .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-        onView(withId(R.id.startBtn)).perform(click());
-        onView(withText(R.string.heightPrompt))
+        onView(withId(R.id.btnSetGoal)).perform(click());
+        onView(withId(R.id.newGoal))
                 .inRoot(isDialog())
                 .check(matches(isDisplayed()));
 
-        // Choose feet and inches
-        onView(withId(R.id.metricSpinner)).perform(click());
-        onData(anything()).inRoot(RootMatchers.isPlatformPopup()).atPosition(1).perform(click());
-
-        onView(withId(R.id.metricSpinner)).check(matches(withSpinnerText(containsString("ft"))));
-        onView(withId(R.id.cent_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.GONE))));
-        onView(withId(R.id.ft_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-        onView(withId(R.id.inch_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-
-        onView(withId(R.id.ft_height)).perform(typeText(String.valueOf(5)));
-        onView(withId(R.id.inch_height)).perform(typeText(String.valueOf(4)));
-
-        onView(withId(R.id.posBtn)).perform(click());
+        onView(withId(R.id.newGoal)).perform(typeText(String.valueOf(3000)));
+        onView(withId(R.id.doneBtn)).perform(click());
 
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
-        
     }
 
 
     /*
-        Scenario2: User uses centimeter
-        Given Richard has successfully downloaded the app following a google search
-        And has accepted all permissions by checking the “OK” boxes
-        And he uses centimeter for his height
-        When the application asks for his height, he
-        Then chooses the centimeters option in the drop-down menu
-        And input a value of 160 in the textbox
-        When he presses the “Done” button
-        Then it took him took the home screen
+      Scenario 2: Sarah input invalid valid goal too low
+        Given Sarah has averaged 4000 steps per day for the week
+        And her current goal is 5000 steps per day
+        And she press “changing step goal”
+        When she set her goal to 0 steps per day a week
+        Then application will show that her new goal of 0 is invalid
+        And she will be asked to input a valid goal
     */
     @Test
-    public void userUsesCentimeter() {
-        
-        onView(withId(R.id.startBtn))
+    public void userEntersTooLowCustomGoal() {
+        onView(withId(R.id.btnSetGoal))
                 .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-        onView(withId(R.id.startBtn)).perform(click());
-        onView(withText(R.string.heightPrompt))
+        onView(withId(R.id.btnSetGoal)).perform(click());
+        onView(withId(R.id.newGoal))
                 .inRoot(isDialog())
                 .check(matches(isDisplayed()));
 
-        onView(withId(R.id.metricSpinner)).perform(click());
-        onData(anything()).inRoot(RootMatchers.isPlatformPopup()).atPosition(0).perform(click());
-
-        onView(withId(R.id.metricSpinner)).check(matches(withSpinnerText(containsString("cm"))));
-        onView(withId(R.id.cent_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-        onView(withId(R.id.ft_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.GONE))));
-        onView(withId(R.id.inch_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.GONE))));
-
-        onView(withId(R.id.cent_height)).perform(typeText(String.valueOf(160)));
-
-        onView(withId(R.id.posBtn)).perform(click());
-
-        intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
-        
-    }
-
-    /*
-        Scenario3: User type invalid height (0 or negative number)
-        Given Sarah has successfully downloaded the app
-        And she has accepted all the permissions
-        And she uses feet and inches for her height
-        When the application asks for her height, she
-        Then chooses the feet and inches option in the drop-down menu
-        And inputs 0 in the first textbox and 0 in the second textbox
-        When she presses the “Done” button
-        Then the application should say height is invalid
-        And the application will ask her to type appropriate height
-     */
-    @Test
-    public void userTypeInvalidHeight() {
-        
-        onView(withId(R.id.startBtn))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-        onView(withId(R.id.startBtn)).perform(click());
-        onView(withText(R.string.heightPrompt))
-                .inRoot(isDialog())
-                .check(matches(isDisplayed()));
-
-        // Choose feet and inches
-        onView(withId(R.id.metricSpinner)).perform(click());
-        onData(anything()).inRoot(RootMatchers.isPlatformPopup()).atPosition(1).perform(click());
-
-        onView(withId(R.id.metricSpinner)).check(matches(withSpinnerText(containsString("ft"))));
-        onView(withId(R.id.cent_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.GONE))));
-        onView(withId(R.id.ft_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-        onView(withId(R.id.inch_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-
-        onView(withId(R.id.ft_height)).perform(typeText(String.valueOf(0)));
-        onView(withId(R.id.inch_height)).perform(typeText(String.valueOf(0)));
-
-        onView(withId(R.id.posBtn)).perform(click());
-
-        intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
-
-        onView(withText(R.string.invalidHeight))
+        onView(withId(R.id.newGoal)).perform(typeText(String.valueOf(0)));
+        onView(withId(R.id.doneBtn)).perform(click());
+        onView(withText(R.string.invalidGoal))
                 .inRoot(isDialog())
                 .check(matches(isDisplayed()));
 
@@ -242,11 +148,43 @@ public class PromptHeightScenarioTest {
         onView(withText("OK")).perform(click());
 
         // Then, the dialog for her to enter her height should not disappear
-        onView(withText(R.string.heightPrompt))
+        onView(withId(R.id.newGoal))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
+    }
+
+    /*
+      Scenario 3: Sarah input invalid valid goal too high
+        Given Sarah has averaged 4000 steps per day for the week
+        And her current goal is 5000 steps per day
+        And she press “changing step goal”
+        When she set her goal to 0 steps per day a week
+        Then application will show that her new goal of 0 is invalid
+        And she will be asked to input a valid goal
+     */
+    @Test
+    public void userEntersTooHighCustomGoal() {
+        onView(withId(R.id.btnSetGoal))
+                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
+        onView(withId(R.id.btnSetGoal)).perform(click());
+        onView(withId(R.id.newGoal))
                 .inRoot(isDialog())
                 .check(matches(isDisplayed()));
 
-        
+        onView(withId(R.id.newGoal)).perform(typeText(String.valueOf(100000)));
+        onView(withId(R.id.doneBtn)).perform(click());
+        onView(withText(R.string.invalidGoal))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
+
+        // First, she should click the OK button to close the alert
+        onView(withText("OK")).perform(click());
+
+        // Then, the dialog for her to enter her height should not disappear
+        onView(withId(R.id.newGoal))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
+
     }
 
     private class TestMainFitnessService implements FitnessService {
@@ -270,7 +208,7 @@ public class PromptHeightScenarioTest {
         @Override
         public void updateStepCount() {
             Log.d(TAG, "update all texts");
-            mainActivity.updateAll(1000);
+            mainActivity.updateAll(3000);
         }
 
         @Override

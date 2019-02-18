@@ -128,7 +128,7 @@ public class NewGoalSetter extends DialogFragment {
         try {
             goal = Integer.parseInt(goalStr);
             // Check for invalid input
-            if (goal < 0 || goal > 100000) {
+            if (goal <= 0 || goal >= 100000) {
                 throw new Exception("Please Try a New Goal.");
             }
         } catch (Exception e) {

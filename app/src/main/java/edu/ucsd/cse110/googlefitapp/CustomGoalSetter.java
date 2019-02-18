@@ -109,7 +109,7 @@ public class CustomGoalSetter extends DialogFragment implements TextView.OnEdito
         try {
             goal = Integer.parseInt(newGoalTxt.getText().toString());
             // Check for invalid input
-            if (goal < 0 || goal > 100000) {
+            if (goal <= 0 || goal >= 100000) {
                 throw new Exception("Please Try a New Goal.");
             }
         } catch (Exception e) {
