@@ -182,7 +182,6 @@ public class StepCountActivity extends AppCompatActivity {
 
         initialSteps = sharedPref.getInt("initialSteps", stepCount);
         steps = stepCount - initialSteps;
-
         textSteps.setText(String.format("%d", steps));
     }
 
