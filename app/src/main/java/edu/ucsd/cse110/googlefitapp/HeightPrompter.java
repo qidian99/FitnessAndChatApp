@@ -35,10 +35,6 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
     Spinner spinner;
     public HeightPrompter() {}
 
-    public void setCentText(String text) {
-        centText.setText(text);
-    }
-
     public static HeightPrompter newInstance(String title) {
         if(title == null) {
             return null;
@@ -156,11 +152,11 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
 
                 AlertDialog alertInvalidInput = builder1.create();
                 alertInvalidInput.show();
-                Log.d(TAG, "Enter height and stored Fail");
+                Log.d(TAG, "finishEnterHeight in metric Fail: " + e.toString());
                 return false;
             }
 
-            Log.d(TAG, "Enter height and stored Success");
+            Log.d(TAG, "finishEnterHeight in metric Success");
             listener.onFinishEditDialog(new String[]{String.valueOf(spinner.getSelectedItemPosition()), String.valueOf(height)});
             dismiss();
             return true;
@@ -189,11 +185,11 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
 
                 AlertDialog alertInvalidInput = builder1.create();
                 alertInvalidInput.show();
-                Log.d(TAG, "Enter height and stored Fail");
+                Log.d(TAG, "finishEnterHeight in imperial standard Fail: " + e.toString());
                 return false;
             }
 
-            Log.d(TAG, "Enter height and stored Success");
+            Log.d(TAG, "finishEnterHeight in imperial standard Success");
 
             listener.onFinishEditDialog(new String[]{String.valueOf(spinner.getSelectedItemPosition()), String.valueOf(height), String.valueOf(height2)});
             dismiss();

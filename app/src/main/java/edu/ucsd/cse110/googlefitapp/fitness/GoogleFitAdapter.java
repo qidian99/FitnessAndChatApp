@@ -1,10 +1,8 @@
 package edu.ucsd.cse110.googlefitapp.fitness;
 
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -20,23 +18,16 @@ import com.google.android.gms.fitness.request.DataUpdateRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.StepCalendar;
 import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 
 public class GoogleFitAdapter implements FitnessService {
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "GoogleFitAdapter";
-//    GoogleSignInOptionsExtension fitnessOptions =
-//            FitnessOptions.builder()
-//                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-//                    .build();
 
     boolean isCancelled = false;
 
@@ -64,11 +55,8 @@ public class GoogleFitAdapter implements FitnessService {
                     fitnessOptions);
         } else {
             updateStepCount();
-
             startRecording();
-
-            //create the async task here to refresh every five seconds
-            //after every 7 seconds refresh the total step count 7718 is "Bill" upside down
+            //create the async task here to refresh every 2 seconds
             new CountToTenAsyncTask().execute(String.valueOf(2000));
 
 
@@ -92,15 +80,10 @@ public class GoogleFitAdapter implements FitnessService {
     }
 
     @Override
-    public void addInactiveSteps(int extraStep) {
-
-    }
-
+    public void addInactiveSteps(int extraStep) {}
 
     @Override
-    public void addActiveSteps(int step) {
-
-    }
+    public void addActiveSteps(int step) {}
 
     @Override
     public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
@@ -112,11 +95,7 @@ public class GoogleFitAdapter implements FitnessService {
         return null;
     }
 
-
     private class CountToTenAsyncTask extends AsyncTask<String, String, Void> {
-
-        private String resp;
-        ProgressDialog progressDialog;
 
         @Override
         protected Void doInBackground(String... sleepTime) {
@@ -134,9 +113,7 @@ public class GoogleFitAdapter implements FitnessService {
         }
 
         @Override
-        protected void onPostExecute(Void result) {
-
-        }
+        protected void onPostExecute(Void result) {}
 
         @Override
         protected void onPreExecute() {
@@ -149,8 +126,7 @@ public class GoogleFitAdapter implements FitnessService {
             if (isCancelled) {
                 cancel(true);
             } else {
-                //call update steps here
-                System.out.println("SEVEN SECONDS PASSED REFRESH PERIOD RESTARTED");
+                Log.d(TAG, "onProgressUpdate Success");
 
                 updateStepCount();
             }
@@ -212,7 +188,7 @@ public class GoogleFitAdapter implements FitnessService {
                             @Override
                             public void onSuccess(DataReadResponse dataReadResponse) {
                                 DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
-                                Log.d(TAG, "Aggregate step count before adding active data: " + dataSet.toString());
+                                Log.d(TAG, "Aggregate step count before adding active data in updateStepCount: " + dataSet.toString());
                                 int total =
                                         dataSet.isEmpty()
                                                 ? 0
@@ -221,7 +197,7 @@ public class GoogleFitAdapter implements FitnessService {
                                 totalSteps = total;
 
                                 stepCountActivity.updateAll(total);
-                                Log.d(TAG, "Total steps: " + total);
+                                Log.d(TAG, "Total steps in updateStepCount: " + total);
                             }
                         })
                 .addOnFailureListener(
@@ -259,7 +235,7 @@ public class GoogleFitAdapter implements FitnessService {
                             @Override
                             public void onSuccess(DataReadResponse dataReadResponse) {
                                 DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
-                                System.out.println("begin mock data " + dataSet.isEmpty());
+                                Log.d(TAG, "mockDataPoint dataSet.isEmpty() = " + dataSet.isEmpty());
                                 if(dataSet.isEmpty()) {
                                     int stepCountDelta = 500;
                                     Calendar cal = StepCalendar.getInstance();
@@ -280,14 +256,13 @@ public class GoogleFitAdapter implements FitnessService {
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(stepCountDelta);
                                     step = stepCountDelta;
                                     dataSet2.add(dataPoint);
-                                    Log.d(TAG, "Newly created dataset: " + dataSet2);
+                                    Log.d(TAG, "mockDataPoint - Newly created dataSet: " + dataSet2);
 
                                     Fitness.getHistoryClient(stepCountActivity, gsa).insertData(dataSet2);
                                 } else {
                                     step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + 500;
                                     dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).setInt(step);
-                                    Log.d(TAG, "Total steps: " + step);
-                                    Log.d(TAG, "Total steps: " + dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
+                                    Log.d(TAG, "Total steps in mockDataPoint: " + dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
 
                                     // Create a data source
                                     DataSource dataSource =
@@ -304,7 +279,7 @@ public class GoogleFitAdapter implements FitnessService {
                                                     .getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
                                     dataSet2.add(dataPoint);
-                                    Log.d(TAG, "Newly created dataset: " + dataSet2);
+                                    Log.d(TAG, "mockDataPoint - Newly created dataSet: " + dataSet2);
 
                                     DataUpdateRequest request = new DataUpdateRequest.Builder()
                                             .setDataSet(dataSet2)

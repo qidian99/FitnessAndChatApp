@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +24,10 @@ import java.util.ArrayList;
 public class WeeklyStats extends AppCompatActivity {
 
     private int goal;
+    public static final String TAG = "WEEKLY_STATS";
+    private ArrayList<BarEntry> barEntries;
+    private LimitLine goalLine;
+    private BarData barData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +79,8 @@ public class WeeklyStats extends AppCompatActivity {
                 float activeDist = statsPref.getFloat(String.valueOf(index + 15), 0.0f);
                 float inciDist = distance - activeDist;
 
+                Log.d(TAG, String.format("speed: %.1f, distance: %.1f -> active: %.1f + incidental: %.1f", speed, distance, activeDist, inciDist));
+
                 if(yInd == 1) {
                     Toast.makeText(WeeklyStats.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, distance), Toast.LENGTH_LONG).show();
                 } else {
@@ -93,7 +100,7 @@ public class WeeklyStats extends AppCompatActivity {
             public void onChartTranslate(MotionEvent me, float dX, float dY) { }
         });
 
-        ArrayList<BarEntry> barEntries = new ArrayList<BarEntry>();
+        barEntries = new ArrayList<BarEntry>();
 
         int max = 0;
 
@@ -104,6 +111,8 @@ public class WeeklyStats extends AppCompatActivity {
             if (inactiveSteps + activeSteps > max) {
                 max = inactiveSteps + activeSteps;
             }
+            Log.d(TAG, String.format("day: %d: incidental steps(%d), active steps(%d)", i, inactiveSteps, activeSteps));
+
             barEntries.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i-1));
         }
 
@@ -114,6 +123,8 @@ public class WeeklyStats extends AppCompatActivity {
             barChart.getAxisLeft().setAxisMaxValue(max + 200);
             barChart.getAxisRight().setAxisMaxValue(max + 200);
         }
+
+        Log.d(TAG, String.format("graph maximum set success: %.1f", barChart.getAxisLeft().getAxisMaximum()));
 
         BarDataSet barDataSet = new BarDataSet(barEntries, "");
         barDataSet.setStackLabels(new String[]{"Active steps", "Incidental steps"});
@@ -128,13 +139,15 @@ public class WeeklyStats extends AppCompatActivity {
         days.add("Fri");
         days.add("Sat");
 
-        BarData barData = new BarData(days, barDataSet);
+        barData = new BarData(days, barDataSet);
+
         barChart.setData(barData);
 
         barChart.animateY(2000);
 
-        LimitLine l = new LimitLine(goal);
-        barChart.getAxisLeft().addLimitLine(l);
+        goalLine = new LimitLine(goal);
+        barChart.getAxisLeft().addLimitLine(goalLine);
+        Log.d(TAG, String.format("goal line set success: %d", goal));
 
         Button button = findViewById(R.id.backToHome);
         button.setOnClickListener(new View.OnClickListener() {
@@ -143,7 +156,17 @@ public class WeeklyStats extends AppCompatActivity {
                 finish();
             }
         });
-
     }
 
+    public ArrayList<BarEntry> getBarEntries() {
+        return barEntries;
+    }
+
+    public LimitLine getGoalLine() {
+        return goalLine;
+    }
+
+    public BarData getBarData() {
+        return barData;
+    }
 }

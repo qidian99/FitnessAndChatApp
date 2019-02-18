@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class NewGoalSetter extends DialogFragment {
+    private final String TAG = "NewGoalSetter";
     public NewGoalSetter() {}
 
     @SuppressLint("ValidFragment")
@@ -47,59 +49,75 @@ public class NewGoalSetter extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = getActivity().getLayoutInflater().inflate(R.layout.fragment_set_new_goal, container, false);
-        getDialog().setTitle(getString(R.string.congratsPrompt));
+        View v = null;
+        try {
+            v = getActivity().getLayoutInflater().inflate(R.layout.fragment_set_new_goal, container, false);
+            getDialog().setTitle(getString(R.string.congratsPrompt));
+            Log.d(TAG, "onCreateView Success");
+        } catch (Exception e) {
+            Log.d(TAG, "onCreateView Fail: " + e.toString());
+            e.printStackTrace();
+        }
         return v;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        final Button btnYes = view.findViewById(R.id.btnYes);
-        final Button btnNo = view.findViewById(R.id.btnNo);
-        final TextView congrats = view.findViewById(R.id.congrats);
-        final Button btnSuggested = view.findViewById(R.id.btnSuggested);
-        final Button btnCustomed = view.findViewById(R.id.btnCustomed);
-        final TextView suggestedGoal = view.findViewById(R.id.suggestedGoal);
-        final TextView customGoal = view.findViewById(R.id.customGoal);
-        newGoalTxt = view.findViewById(R.id.newGoal);
-        this.window = getDialog().getWindow();
+        try {
+            super.onViewCreated(view, savedInstanceState);
+            final Button btnYes = view.findViewById(R.id.btnYes);
+            final Button btnNo = view.findViewById(R.id.btnNo);
+            final TextView congrats = view.findViewById(R.id.congrats);
+            final Button btnSuggested = view.findViewById(R.id.btnSuggested);
+            final Button btnCustomed = view.findViewById(R.id.btnCustomed);
+            final TextView suggestedGoal = view.findViewById(R.id.suggestedGoal);
+            final TextView customGoal = view.findViewById(R.id.customGoal);
+            newGoalTxt = view.findViewById(R.id.newGoal);
+            this.window = getDialog().getWindow();
 
-        btnYes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btnYes.setVisibility(View.GONE);
-                btnNo.setVisibility(View.GONE);
-                congrats.setVisibility(View.GONE);
-                suggestedGoal.setVisibility(View.VISIBLE);
-                btnSuggested.setVisibility(View.VISIBLE);
-                btnSuggested.setText(String.valueOf(currentGoal + SUGGESTED_GOAL_INCREMENT));
-                btnCustomed.setVisibility(View.VISIBLE);
-                customGoal.setVisibility(View.VISIBLE);
-                newGoalTxt.setVisibility(View.VISIBLE);
-                getDialog().setTitle(getString(R.string.newGoalPrompt));
-                btnSuggested.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        finishEnterGoal(btnSuggested.getText().toString());
-                        Toast.makeText(getContext(), "Goal Updated", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                btnCustomed.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        finishEnterGoal(newGoalTxt.getText().toString());
-                    }
-                });
-            }
-        });
+            btnYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onViewCreated click yes");
+                    btnYes.setVisibility(View.GONE);
+                    btnNo.setVisibility(View.GONE);
+                    congrats.setVisibility(View.GONE);
+                    suggestedGoal.setVisibility(View.VISIBLE);
+                    btnSuggested.setVisibility(View.VISIBLE);
+                    btnSuggested.setText(String.valueOf(currentGoal + SUGGESTED_GOAL_INCREMENT));
+                    btnCustomed.setVisibility(View.VISIBLE);
+                    customGoal.setVisibility(View.VISIBLE);
+                    newGoalTxt.setVisibility(View.VISIBLE);
+                    getDialog().setTitle(getString(R.string.newGoalPrompt));
+                    btnSuggested.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Log.d(TAG, "onViewCreated click suggested goal");
+                            finishEnterGoal(btnSuggested.getText().toString());
+                            Toast.makeText(getContext(), "Goal Updated", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    btnCustomed.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Log.d(TAG, "onViewCreated click custom goal");
+                            finishEnterGoal(newGoalTxt.getText().toString());
+                        }
+                    });
+                }
+            });
 
-        btnNo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
+            btnNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onViewCreated click no");
+                    dismiss();
+                }
+            });
+        } catch (Exception e) {
+            Log.d(TAG, "onViewCreated Fail: " + e.toString());
+            e.printStackTrace();
+        }
     }
 
     public boolean finishEnterGoal(String goalStr) {
@@ -110,7 +128,7 @@ public class NewGoalSetter extends DialogFragment {
         try {
             goal = Integer.parseInt(goalStr);
             // Check for invalid input
-            if (goal < 0 || goal > 100000) {
+            if (goal <= 0 || goal >= 100000) {
                 throw new Exception("Please Try a New Goal.");
             }
         } catch (Exception e) {
@@ -133,10 +151,11 @@ public class NewGoalSetter extends DialogFragment {
 
             AlertDialog alertInvalidInput = builder1.create();
             alertInvalidInput.show();
-
+            Log.d(TAG, "finishEnterGoal Fail, " + e.toString());
             return false;
         }
 
+        Log.d(TAG, "finishEnterGoal Success");
         listener.onFinishEditDialog(goal);
         dismiss();
         return true;

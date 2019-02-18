@@ -10,6 +10,7 @@ import android.support.test.espresso.intent.Intents;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -20,14 +21,14 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.IsInstanceOf;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Calendar;
 
-import cucumber.api.java.After;
-import cucumber.api.java.Before;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.test.steps.SharedSteps;
@@ -55,6 +56,7 @@ public class MainActivityUITest {
         }
     };
 
+    @Before
     public void setup() {
         FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
             @Override
@@ -88,6 +90,7 @@ public class MainActivityUITest {
         mActivityTestRule.getActivity().setFitnessServiceKey(TEST_SERVICE_STEP_ACTIVITY);
     }
 
+    @After
     public void tearDown() {
         mActivityTestRule.getActivity().finish();
         Intents.release();
@@ -95,7 +98,7 @@ public class MainActivityUITest {
 
     @Test
     public void mainActivityTest() {
-        setup();
+        
         ViewInteraction textView = onView(
                 allOf(withId(R.id.textGoal2), withText("CURRENT GOAL"),
                         childAtPosition(
@@ -213,6 +216,7 @@ public class MainActivityUITest {
                                 5),
                         isDisplayed()));
         button5.check(matches(isDisplayed()));
+        
     }
 
     private static Matcher<View> childAtPosition(
@@ -250,12 +254,12 @@ public class MainActivityUITest {
 
         @Override
         public void setup() {
-            System.out.println(TAG + "setup");
+            Log.d(TAG, "setup");
         }
 
         @Override
         public void updateStepCount() {
-            System.out.println(TAG + "update all texts");
+            Log.d(TAG, "update all texts");
             mainActivity.updateAll(1000);
         }
 
@@ -311,12 +315,12 @@ public class MainActivityUITest {
 
         @Override
         public void setup() {
-            System.out.println(TAG + "setup");
+            Log.d(TAG, "setup");
         }
 
         @Override
         public void updateStepCount() {
-            System.out.println(TAG + "updateStepCount");
+            Log.d(TAG, "updateStepCount");
         }
 
         @Override

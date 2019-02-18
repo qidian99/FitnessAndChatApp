@@ -3,19 +3,12 @@ package edu.ucsd.cse110.googlefitapp.fitness;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.renderscript.Script;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.fitness.ConfigApi;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.Bucket;
@@ -29,13 +22,11 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.request.DataUpdateRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
-import com.google.android.gms.fitness.result.DataTypeResult;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -43,9 +34,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.MainActivity;
-import edu.ucsd.cse110.googlefitapp.R;
 import edu.ucsd.cse110.googlefitapp.StepCalendar;
-import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 
 public class MainStepCountAdapter implements FitnessService {
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
@@ -149,7 +138,6 @@ public class MainStepCountAdapter implements FitnessService {
                 });
     }
 
-
     /**
      * Reads the current daily step total, computed from midnight of the current day on the device's
      * current timezone.
@@ -190,7 +178,7 @@ public class MainStepCountAdapter implements FitnessService {
 
                                 step = total;
                                 activity.updateAll(total);
-                                Log.d(TAG, "Total steps: " + total);
+                                Log.d(TAG, "Total steps in updateStepCount: " + total);
                             }
                         })
                 .addOnFailureListener(
@@ -241,7 +229,7 @@ public class MainStepCountAdapter implements FitnessService {
                         .build())
                 .addOnSuccessListener(
                         dataReadResponse -> {
-                            System.out.println("Begin adding inactive data.");
+                            Log.d(TAG, "Begin addInactiveSteps");
                             List<Bucket> buckets = dataReadResponse.getBuckets();
                             DataSet dataSet = buckets.get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
                             Log.d(TAG, dataSet.toString());
@@ -265,11 +253,10 @@ public class MainStepCountAdapter implements FitnessService {
                                 dataPoint.getValue(Field.FIELD_STEPS).setInt(stepCountDelta);
                                 dataSet2.add(dataPoint);
 
-                                Log.d(TAG, "Added inactive steps");
-                                Log.d(TAG, dataSet2.toString());
+                                Log.d(TAG, "addInactiveSteps added: " + dataSet2.toString());
 
                                 Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
-                                Log.d(TAG, ""+response.isSuccessful());
+                                Log.d(TAG, "response.isSuccessful() = " + response.isSuccessful());
                             } else {
                                 DataDeleteRequest request =
                                         new DataDeleteRequest.Builder()
@@ -299,11 +286,10 @@ public class MainStepCountAdapter implements FitnessService {
                                 dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
                                 dataSet2.add(dataPoint);
 
-                                Log.d(TAG, "Added inactive steps");
-                                Log.d(TAG, dataSet2.toString());
+                                Log.d(TAG, "addInactiveSteps added: " + dataSet2.toString());
 
                                 Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
-                                Log.d(TAG, ""+response.isSuccessful());
+                                Log.d(TAG, "response.isSuccessful() = " + response.isSuccessful());
                             }
                             updateStepCount();
                         })
@@ -340,7 +326,7 @@ public class MainStepCountAdapter implements FitnessService {
                             @Override
                             public void onSuccess(DataReadResponse dataReadResponse) {
                                 DataSet dataSet = dataReadResponse.getDataSet(activeDataType);
-                                Log.d(TAG, "Fetched active data from google cloud. IsEmpty: " + dataSet.isEmpty());
+                                Log.d(TAG, "Fetched active data from google cloud. dataSet.isEmpty() = " + dataSet.isEmpty());
                                 if (dataSet.isEmpty()) {
                                     Calendar cal = StepCalendar.getInstance();
                                     Date now = new Date();
@@ -363,14 +349,14 @@ public class MainStepCountAdapter implements FitnessService {
 //                                    step = stepCountDelta;
                                     dataSet2.add(dataPoint);
 
-                                    Log.d(TAG, String.format("Added %d active steps", step));
+                                    Log.d(TAG, String.format("addActiveSteps - Added %d active steps", step));
                                     Log.d(TAG, dataSet2.toString());
 
                                     Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
                                 } else {
                                     int newActiveStep = dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt() + step;
                                     dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).setInt(newActiveStep);
-                                    Log.d(TAG, "Total active steps: " + dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt());
+                                    Log.d(TAG, "Total active steps in addActiveSteps: " + dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt());
 
                                     // Create a data source
                                     DataSource dataSource =
@@ -420,6 +406,7 @@ public class MainStepCountAdapter implements FitnessService {
                 .setName(ACTIVE_DT_NAME)
                 .setType(DataSource.TYPE_RAW)
                 .build();
+        Log.d(TAG, "getLast7DaysSteps Initialize Success");
         return new DataReadRequest.Builder()
                 .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
                         DataType.AGGREGATE_STEP_COUNT_DELTA)
@@ -441,20 +428,17 @@ public class MainStepCountAdapter implements FitnessService {
                             @Override
                             public void onSuccess(DataReadResponse dataReadResponse) {
                                 for (int i = 0; i < 7; i++) {
-//                                    System.out.println(dataReadResponse.getBuckets().get(i).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA).getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
-                                    System.out.println(dataReadResponse.getBuckets().get(i));
+                                    Log.d(TAG, String.format("getLast7DaysSteps - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
                                     Bucket bucket = dataReadResponse.getBuckets().get(i);
                                     DataSet dtSet = bucket.getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
                                     if(dtSet != null && !dtSet.isEmpty()){
-                                        System.out.println(dtSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
+                                        Log.d(TAG, "getLast7DaysSteps - dtSet steps = " + dtSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
                                     }
 
                                     DataSet dtSet2 = bucket.getDataSet(activeDataType);
                                     if(dtSet2 != null && !dtSet2.isEmpty()){
-                                        System.out.println(dtSet2.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
+                                        Log.d(TAG, "getLast7DaysSteps - dtSet2 steps = " + dtSet2.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
                                     }
-
-
                                 }
                             }
                         })
@@ -467,11 +451,9 @@ public class MainStepCountAdapter implements FitnessService {
         return null;
     }
 
-
     public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
         return getLast7DaysSteps(StepCalendar.getInstance());
     }
-
 
     @Override
     public int getRequestCode() {
@@ -480,15 +462,11 @@ public class MainStepCountAdapter implements FitnessService {
 
     private class UpdateStepAsyncTask extends AsyncTask<String, String, Void> {
 
-        private String resp;
-        ProgressDialog progressDialog;
-
         @Override
         protected Void doInBackground(String... sleepTime) {
             while(!isCancelled) {
 
                 try {
-
                     Thread.sleep(Integer.valueOf(sleepTime[0]));
                     publishProgress();
                 } catch (InterruptedException e) {
@@ -499,9 +477,7 @@ public class MainStepCountAdapter implements FitnessService {
         }
 
         @Override
-        protected void onPostExecute(Void result) {
-
-        }
+        protected void onPostExecute(Void result) {}
 
         @Override
         protected void onPreExecute() {
@@ -514,10 +490,12 @@ public class MainStepCountAdapter implements FitnessService {
             if (isCancelled) {
                 cancel(true);
             } else {
+                Log.d(TAG, "onProgressUpdate start");
                 int today = calendar.get(Calendar.DAY_OF_WEEK);
                 int day = activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE).getInt("day", -1);
 
                 if(day != today) {
+                    Log.d(TAG, "onProgressUpdate new day encountered");
                     activity.setGoalChangeable(true);
                     activity.setCanShowHalfEncour(true);
                     activity.setCanShowOverPrevEncour(true);
@@ -529,17 +507,20 @@ public class MainStepCountAdapter implements FitnessService {
 
                 if(step > activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
                         Context.MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) / 2 && activity.getCanShowHalfEncour()){
+                    Log.d(TAG, "onProgressUpdate need show achieveHalfEncouragement");
                     activity.showAchieveHalfEncouragement();
                 }
 
                 if(step > activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
                         Context.MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) && activity.getGoalChangeable()){
+                    Log.d(TAG, "onProgressUpdate need show newGoalPrompt");
                     activity.showNewGoalPrompt();
                 }
 
                 int yesterday = today - 1 >= 0 ? today - 1 : 6;
                 if(step > activity.getSharedPreferences("weekly_steps",
                         Context.MODE_PRIVATE).getInt(String.valueOf(yesterday), 0) + 1000 && activity.getCanShowOverPrevEncour()) {
+                    Log.d(TAG, "onProgressUpdate need show OverPrevEncouragement");
                     activity.showOverPrevEncouragement();
                 }
             }

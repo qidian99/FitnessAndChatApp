@@ -35,4 +35,5 @@
     <string name="time_elapsed">time elapsed</string>
     <string name="speed">speed</string>
     <string name="distance">distance</string>
+    <string name="graphText">Tap on blue bar: display stats for active sessions of the day.\n\n\t\tTap on red bar: display stats from the rest of the day.</string>
 </resources>

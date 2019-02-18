@@ -1,6 +1,8 @@
 package edu.ucsd.cse110.googlefitapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.support.v4.widget.TextViewCompat;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
@@ -23,17 +25,20 @@ import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
-public class StepCountActivityTest {
+public class StepCountActivityUnitTest {
     private static final String TEST_SERVICE = "TEST_SERVICE_STEP_COUNT_ACT";
 
     private StepCountActivity activity;
     private TextView textSteps;
     private TextView textDist;
     private TextView textSpeed;
-    private Button btnUpdateSteps;
+    private TextView textTime;
+    Button btnUpdateSteps;
+    private Button end;
     private int nextStepCount;
 
     @Before
@@ -57,6 +62,9 @@ public class StepCountActivityTest {
         textSteps = activity.findViewById(R.id.textSteps);
         textDist = activity.findViewById(R.id.textDistance);
         textSpeed = activity.findViewById(R.id.textSpeed);
+        textTime = activity.findViewById(R.id.timer_text);
+        end = activity.findViewById(R.id.btnEndRecord);
+        btnUpdateSteps = activity.findViewById(R.id.buttonUpdateSteps);
         nextStepCount = 2000;
     }
 
@@ -68,6 +76,14 @@ public class StepCountActivityTest {
     }
 
     @Test
+    public void testInitalStep() {
+        SharedPreferences sharedPref = activity.getSharedPreferences("stepCountData", activity.MODE_PRIVATE);
+        assertTrue(sharedPref.getInt("initialSteps", -1) == 0);
+        activity.setStepCount(nextStepCount);
+        assertTrue(sharedPref.getInt("initialSteps", -1) == 0);
+    }
+
+    @Test
     public void testDistanceUpdate() {
         assertEquals("0.0 miles", textDist.getText().toString());
         activity.setStepCount(nextStepCount);
@@ -76,49 +92,43 @@ public class StepCountActivityTest {
         assertEquals("0.6 miles", textDist.getText().toString());
     }
 
+    @Test
+    public void testSpeedUpdate() {
+        assertEquals("0.0 MPH", textSpeed.getText().toString());
+        activity.setDistance(1);
+        activity.setTime(10000);
+        activity.setSpeed();
+        assertEquals("0.4 MPH", textSpeed.getText().toString());
+    }
 
-    /*
-    private class TestFitnessService implements FitnessService {
-        private static final String TAG = "[TestFitnessService]: ";
-        private StepCountActivity stepCountActivity;
+    @Test
+    public void testTimeUpdate() {
+        assertEquals("0:00", textTime.getText().toString());
+        activity.setTime(1000);
+        activity.setTime();
+        assertEquals("16:40", textTime.getText().toString());
+    }
 
-        public TestFitnessService(StepCountActivity stepCountActivity) {
-            this.stepCountActivity = stepCountActivity;
-        }
+    @Test
+    public void testWholeMin() {
+        assertEquals("0:00", textTime.getText().toString());
+        activity.setTime(3600);
+        activity.setTime();
+        assertEquals("60:00", textTime.getText().toString());
+    }
 
-        @Override
-        public int getRequestCode() {
-            return 0;
-        }
+    @Test
+    public void testEndButton() {
+        end.performClick();
+        assertTrue(activity.isFinishing());
+    }
 
-        @Override
-        public void setup() {
-            System.out.println(TAG + "setup");
-        }
-
-        @Override
-        public void updateStepCount() {
-            System.out.println(TAG + "updateStepCount");
-            stepCountActivity.setStepCount(nextStepCount);
-        }
-
-        @Override
-        public void stopAsync() {
-            //TODO : this needs to be done for the test for the refresh every 7 seconds
-        }
-
-        @Override
-        public void updateActivity() {
-            //TODO : this needs to be done for the test for the refresh every 7 seconds
-
-        }
-
-        @Override
-        public void startAsync() {
-            //TODO : this needs to be done for the test for the refresh every 7 seconds
-
-        }
-    }*/
+    @Test
+    public void testStepUpdateButton() {
+        activity.setStepCount(nextStepCount);
+        btnUpdateSteps.performClick();
+        assertEquals("2000", textSteps.getText().toString());
+    }
 
     private class TestFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountActFitnessService]: ";
@@ -135,7 +145,7 @@ public class StepCountActivityTest {
 
         @Override
         public void setup() {
-            System.out.println(TAG + "setup");
+            Log.d(TAG, "setup");
         }
 
         @Override
