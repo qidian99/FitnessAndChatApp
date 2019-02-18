@@ -188,7 +188,6 @@ public class SharedSteps {
     public void sheIsTakenToTheHomeScreen() throws Throwable {
         //  Make sure the dialog disappear and she is on the Home Screen now
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
-        ;
     }
 
     @Given("^Richard has successfully downloaded the app following a google search$")

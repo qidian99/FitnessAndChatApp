@@ -120,7 +120,7 @@
             android:layout_height="match_parent">
 
             <Button
-                android:id="@+id/clearBtn"
+                android:id="@+id/setHeightBtn"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="20dp"
@@ -256,7 +256,7 @@
 
     <Button
         android:id="@+id/mockCalBtn"
-        android:layout_width="108dp"
+        android:layout_width="127dp"
         android:layout_height="41dp"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="8dp"
@@ -264,31 +264,27 @@
         android:text="SET DATE"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.89"
+        app:layout_constraintHorizontal_bias="0.232"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tableLayout"
-        app:layout_constraintVertical_bias="0.2" />
+        app:layout_constraintVertical_bias="0.196" />
 
-    <EditText
+    <TextView
         android:id="@+id/textCal"
-        android:layout_width="203dp"
+        android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="13dp"
-        android:layout_marginRight="13dp"
-        android:layout_marginBottom="11dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
         android:ems="10"
-        android:hint="CurrentTimeMillis"
+        android:hint="Date is set to"
         android:inputType="number"
-        android:textSize="14sp"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/mockCalBtn"
-        app:layout_constraintHorizontal_bias="0.888"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.802"
+        app:layout_constraintStart_toEndOf="@+id/mockCalBtn"
         app:layout_constraintTop_toBottomOf="@+id/tableLayout"
-        app:layout_constraintVertical_bias="0.583" />
+        app:layout_constraintVertical_bias="0.333" />
 
 
 </android.support.constraint.ConstraintLayout>
