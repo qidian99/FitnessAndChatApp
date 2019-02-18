@@ -13,7 +13,7 @@
         <item>ft</item>
     </string-array>
     <string name="invalidHeight">Invalid height. Please enter again.</string>
-    <string name="invalidStep">Invalid steps. Please enter again.</string>
+    <string name="invalidStep">Steps must be between 0(exclusive) and 10000(inclusive)</string>
     <string name="displaySteps">Steps Taken</string>
     <string name="displayGoal">Current Goal</string>
     <string name="setGoalPrompt">Set a New Step Goal</string>

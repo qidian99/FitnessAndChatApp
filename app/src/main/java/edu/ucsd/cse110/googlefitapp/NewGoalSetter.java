@@ -20,16 +20,23 @@ public class NewGoalSetter extends DialogFragment {
     public NewGoalSetter() {}
 
     @SuppressLint("ValidFragment")
-    public NewGoalSetter(long currentGoal) {
+    public NewGoalSetter(int currentGoal) {
         this.currentGoal = currentGoal;
     }
 
     private Window window;
     private EditText newGoalTxt;
-    private long currentGoal;
-    public static final long SUGGESTED_GOAL_INCREMENT = 500L;
+    private int currentGoal;
+    public static final int SUGGESTED_GOAL_INCREMENT = 500;
 
-    public static NewGoalSetter newInstance(String title, long currentGoal) {
+    public int getCurrentGoal() {
+        return this.currentGoal;
+    }
+
+    public static NewGoalSetter newInstance(String title, int currentGoal) {
+        if(title == null) {
+            return null;
+        }
         NewGoalSetter frag = new NewGoalSetter(currentGoal);
         Bundle args = new Bundle();
         args.putString("title", title);

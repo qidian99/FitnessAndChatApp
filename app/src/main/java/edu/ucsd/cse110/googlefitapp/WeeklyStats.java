@@ -2,41 +2,23 @@ package edu.ucsd.cse110.googlefitapp;
 
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.LimitLine;
-import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.fitness.Fitness;
-import com.google.android.gms.fitness.data.DataPoint;
-import com.google.android.gms.fitness.data.DataSet;
-import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.data.Field;
-import com.google.android.gms.fitness.request.DataReadRequest;
-import com.google.android.gms.fitness.result.DataReadResponse;
-import com.google.android.gms.tasks.Task;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static java.text.DateFormat.getDateInstance;
 
 public class WeeklyStats extends AppCompatActivity {
 
@@ -128,6 +110,9 @@ public class WeeklyStats extends AppCompatActivity {
         if(max < goal) {
             barChart.getAxisLeft().setAxisMaxValue(goal + 200);
             barChart.getAxisRight().setAxisMaxValue(goal + 200);
+        } else {
+            barChart.getAxisLeft().setAxisMaxValue(max + 200);
+            barChart.getAxisRight().setAxisMaxValue(max + 200);
         }
 
         BarDataSet barDataSet = new BarDataSet(barEntries, "");

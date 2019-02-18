@@ -10,6 +10,7 @@ import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.rule.ActivityTestRule;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +48,8 @@ import android.content.SharedPreferences;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+
+import com.google.android.gms.fitness.request.DataReadRequest;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -185,7 +188,6 @@ public class SharedSteps {
     public void sheIsTakenToTheHomeScreen() throws Throwable {
         //  Make sure the dialog disappear and she is on the Home Screen now
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
-        ;
     }
 
     @Given("^Richard has successfully downloaded the app following a google search$")
@@ -298,6 +300,26 @@ public class SharedSteps {
         public boolean hasPermission() {
             return true;
         }
+
+        @Override
+        public void addInactiveSteps(int extraStep) {
+
+        }
+
+        @Override
+        public void addActiveSteps(int step) {
+
+        }
+
+        @Override
+        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
+            return null;
+        }
+
+        @Override
+        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
+            return null;
+        }
     }
 
     private class TestStepCountFitnessService implements FitnessService {
@@ -336,6 +358,26 @@ public class SharedSteps {
         @Override
         public boolean hasPermission() {
             return true;
+        }
+
+        @Override
+        public void addInactiveSteps(int extraStep) {
+
+        }
+
+        @Override
+        public void addActiveSteps(int step) {
+
+        }
+
+        @Override
+        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
+            return null;
+        }
+
+        @Override
+        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
+            return null;
         }
     }
 

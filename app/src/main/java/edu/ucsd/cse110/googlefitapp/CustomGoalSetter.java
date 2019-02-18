@@ -21,7 +21,6 @@ public class CustomGoalSetter extends DialogFragment implements TextView.OnEdito
         void onFinishEditDialog(int goal);
     }
 
-
     private Window window;
     private EditText newGoalTxt;
 
