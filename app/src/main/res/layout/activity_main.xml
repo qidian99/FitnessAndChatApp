@@ -120,7 +120,7 @@
             android:layout_height="match_parent">
 
             <Button
-                android:id="@+id/clearBtn"
+                android:id="@+id/setHeightBtn"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="20dp"

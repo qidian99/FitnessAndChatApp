@@ -259,7 +259,7 @@ public class GoogleFitAdapter implements FitnessService {
                             @Override
                             public void onSuccess(DataReadResponse dataReadResponse) {
                                 DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
-                                System.out.println("begin mock data" + dataSet.isEmpty());
+                                System.out.println("begin mock data " + dataSet.isEmpty());
                                 if(dataSet.isEmpty()) {
                                     int stepCountDelta = 500;
                                     Calendar cal = StepCalendar.getInstance();
@@ -282,8 +282,7 @@ public class GoogleFitAdapter implements FitnessService {
                                     dataSet2.add(dataPoint);
                                     Log.d(TAG, "Newly created dataset: " + dataSet2);
 
-                                    Task<Void> response = Fitness.getHistoryClient(stepCountActivity, gsa).insertData(dataSet2);
-                                    System.out.println(response.isSuccessful());
+                                    Fitness.getHistoryClient(stepCountActivity, gsa).insertData(dataSet2);
                                 } else {
                                     step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + 500;
                                     dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).setInt(step);
@@ -300,27 +299,26 @@ public class GoogleFitAdapter implements FitnessService {
                                                     .build();
                                     DataSet dataSet2 = DataSet.create(dataSource);
                                     DataPoint dataPoint =
-                                            dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS),dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+                                            dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0)
+                                                    .getStartTime(TimeUnit.MILLISECONDS),dataSet.getDataPoints().get(0)
+                                                    .getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
                                     dataSet2.add(dataPoint);
                                     Log.d(TAG, "Newly created dataset: " + dataSet2);
 
                                     DataUpdateRequest request = new DataUpdateRequest.Builder()
                                             .setDataSet(dataSet2)
-                                            .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS) ,dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS )
+                                            .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS),
+                                                    dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS )
                                             .build();
 
-                                    Task<Void> response = Fitness.getHistoryClient(stepCountActivity, GoogleSignIn.getLastSignedInAccount(stepCountActivity)).updateData(request);
+                                    Fitness.getHistoryClient(stepCountActivity, GoogleSignIn.getLastSignedInAccount(stepCountActivity)).
+                                            updateData(request);
                                 }
                                 updateStepCount();
                             }
                         })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                            }
-                        });
+                .addOnFailureListener(e -> {});
     }
 
     @Override
