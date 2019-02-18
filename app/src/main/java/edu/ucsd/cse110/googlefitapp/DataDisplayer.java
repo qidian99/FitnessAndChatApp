@@ -18,7 +18,7 @@ public class DataDisplayer extends DialogFragment {
     int steps;
     int sec;
     int min;
-    private static final String TAG = "[TestDataDisplayer]: ";
+    private static final String TAG = "DataDisplayer";
 
     private final String FORMAT_STR = "Steps: %d\n" +
                                       "Time elapsed: %d' %d\"\n" +
@@ -56,9 +56,9 @@ public class DataDisplayer extends DialogFragment {
         try {
             v = getActivity().getLayoutInflater().inflate(R.layout.fragment_display_active_data, container, false);
             getDialog().setTitle(getString(R.string.prevSession));
-            Log.d(TAG, "Create view succeed");
+            Log.d(TAG, "onCreateView Success");
         } catch (Exception e) {
-            Log.d(TAG, "Create view failed" + e.toString());
+            Log.d(TAG, "onCreateView Fail: " + e.toString());
             e.printStackTrace();
         }
         return v;
@@ -71,11 +71,11 @@ public class DataDisplayer extends DialogFragment {
             okButton = view.findViewById(R.id.Okbutton);
             data = view.findViewById(R.id.data);
             this.window = getDialog().getWindow();
-            Log.d(TAG, "onViewCreated success");
+            Log.d(TAG, "onViewCreated Success");
 
             data.setText(String.format(FORMAT_STR, steps, min, sec, distance, speed));
         } catch (Exception e) {
-            Log.d(TAG, "onViewCreated failed" + e.toString());
+            Log.d(TAG, "onViewCreated Fail: " + e.toString());
             e.printStackTrace();
         }
 
@@ -88,7 +88,7 @@ public class DataDisplayer extends DialogFragment {
                 }
             });
         } catch (Exception e) {
-            Log.d(TAG, "session dismission failed" + e.toString());
+            Log.d(TAG, "session dismiss fail: " + e.toString());
             e.printStackTrace();
         }
     }
