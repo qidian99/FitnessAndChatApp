@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +17,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.security.spec.ECField;
+
 public class DataDisplayer extends DialogFragment {
     float distance;
     float speed;
     int steps;
     int sec;
     int min;
+    private static final String TAG = "[TestDataDisplayer]: ";
 
     private final String FORMAT_STR = "Steps: %d\n" +
                                       "Time elapsed: %d' %d\"\n" +
@@ -55,26 +59,45 @@ public class DataDisplayer extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = getActivity().getLayoutInflater().inflate(R.layout.fragment_display_active_data, container, false);
-        getDialog().setTitle(getString(R.string.prevSession));
+        View v = null;
+        try {
+            v = getActivity().getLayoutInflater().inflate(R.layout.fragment_display_active_data, container, false);
+            getDialog().setTitle(getString(R.string.prevSession));
+            Log.d(TAG, "Create view succeed");
+        } catch (Exception e) {
+            Log.d(TAG, "Create view failed" + e.toString());
+            e.printStackTrace();
+        }
         return v;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        okButton = view.findViewById(R.id.Okbutton);
-        data = view.findViewById(R.id.data);
-        this.window = getDialog().getWindow();
+        try {
+            super.onViewCreated(view, savedInstanceState);
+            okButton = view.findViewById(R.id.Okbutton);
+            data = view.findViewById(R.id.data);
+            this.window = getDialog().getWindow();
+            Log.d(TAG, "onViewCreated success");
 
-        data.setText(String.format(FORMAT_STR, steps, min, sec, distance, speed));
+            data.setText(String.format(FORMAT_STR, steps, min, sec, distance, speed));
+        } catch (Exception e) {
+            Log.d(TAG, "onViewCreated failed" + e.toString());
+            e.printStackTrace();
+        }
 
-        okButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
+        try {
+            okButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dismiss();
+                    Log.d(TAG, "floating window dismissed");
+                }
+            });
+        } catch (Exception e) {
+            Log.d(TAG, "session dismission failed" + e.toString());
+            e.printStackTrace();
+        }
     }
 
     public String getData() {
