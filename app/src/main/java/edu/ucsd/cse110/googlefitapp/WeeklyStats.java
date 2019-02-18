@@ -110,6 +110,9 @@ public class WeeklyStats extends AppCompatActivity {
         if(max < goal) {
             barChart.getAxisLeft().setAxisMaxValue(goal + 200);
             barChart.getAxisRight().setAxisMaxValue(goal + 200);
+        } else {
+            barChart.getAxisLeft().setAxisMaxValue(max + 200);
+            barChart.getAxisRight().setAxisMaxValue(max + 200);
         }
 
         BarDataSet barDataSet = new BarDataSet(barEntries, "");

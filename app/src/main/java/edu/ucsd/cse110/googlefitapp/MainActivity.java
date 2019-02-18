@@ -300,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         int day = calendar.get(Calendar.DAY_OF_WEEK);
         clearGraph(day);
-
+        Log.d("MAIN", "Day of Week: " + day);
         // store total steps
         SharedPreferences sharedPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -513,10 +513,11 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        Log.d("MAIN", "New year: " + year + ", New month: " + (month+1) + ", New date: " + dayOfMonth);
         StepCalendar.set(year, month, dayOfMonth);
-        Calendar calendar = StepCalendar.getInstance();
+        calendar = StepCalendar.getInstance();
         dateFormat.setCalendar(calendar);
+        Log.d("MAIN", "New year: " + year + ", New month: " + (month+1) + ", New date: " + dayOfMonth
+                + ", New day of Week: " + calendar.get(Calendar.DAY_OF_WEEK));
         ((TextView) findViewById(R.id.textCal)).setText(dateFormat.format(calendar.getTime()));
         fitnessService.updateStepCount();
     }
