@@ -20,6 +20,7 @@ import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.result.DailyTotalResult;
 
+import java.security.spec.ECField;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -37,6 +38,7 @@ public class StepCountActivity extends AppCompatActivity {
     private TextView textSteps;
     private TextView textDist;
     private TextView textSpeed;
+    private TextView tv;
     private FitnessService fitnessService;
     private int steps = 0;
     private int time = 0;
@@ -45,11 +47,18 @@ public class StepCountActivity extends AppCompatActivity {
     private float strideLen;
     private boolean recordInitialStep = true;
     private int initialSteps;
+    private boolean isTimePrinted = false;
 
     @Override
     protected void onRestart() {
-        super.onRestart();
-        fitnessService.startAsync();
+        try {
+            super.onRestart();
+            fitnessService.startAsync();
+            Log.d(TAG,"start async success");
+        } catch (Exception e) {
+            Log.d(TAG, "start async failed" + e.toString());
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -70,15 +79,14 @@ public class StepCountActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        TextView tv = (TextView)findViewById(R.id.timer_text);
-                        int min = time / 60;
-                        int sec = time % 60;
-
-                        if(sec < 10) {
-                            tv.setText(String.format("%d:0%d", min, sec));
-                        } else {
-                            tv.setText(String.format("%d:%d", min, sec));
+                        if (!isTimePrinted) {
+                            Log.d(TAG, "timer started");
+                            isTimePrinted = true;
                         }
+
+                        tv = (TextView)findViewById(R.id.timer_text);
+
+                        setTime();
                         setDistance();
                         setSpeed();
                         time += 1;
@@ -104,6 +112,7 @@ public class StepCountActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 fitnessService.updateStepCount();
+                Log.d(TAG, "update step count success");
             }
         });
 
@@ -112,6 +121,7 @@ public class StepCountActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ((GoogleFitAdapter) fitnessService).mockDataPoint();
+                Log.d(TAG, "mock data point success");
             }
         });
 
@@ -119,7 +129,6 @@ public class StepCountActivity extends AppCompatActivity {
         btnEndRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 fitnessService.stopAsync();
                 Intent homescreen = new Intent(getApplicationContext(), MainActivity.class);
                 homescreen.putExtra("speed", speed);
@@ -133,23 +142,28 @@ public class StepCountActivity extends AppCompatActivity {
         });
 
         fitnessService.setup();
-
     }
 
     @Override
     protected void onStop() {
-        super.onStop();
-
-        fitnessService.stopAsync();
+        try {
+            super.onStop();
+            fitnessService.stopAsync();
+            Log.d(TAG, "stop async success");
+        } catch (Exception e) {
+            Log.d(TAG, "stop async failed " + e.toString());
+            e.printStackTrace();
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//       If authentication was required during google fit setup, this will be called after the user authenticates
+        //If authentication was required during google fit setup, this will be called after the user authenticates
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == fitnessService.getRequestCode()) {
                 fitnessService.updateStepCount();
             }
+            Log.e(TAG, "SUCCESS, google fit result code: " + resultCode);
         } else {
             Log.e(TAG, "ERROR, google fit result code: " + resultCode);
         }
@@ -186,6 +200,17 @@ public class StepCountActivity extends AppCompatActivity {
         textSpeed.setText(String.format("%.1f MPH", speed));
     }
 
+    public void setTime() {
+        int min = time / 60;
+        int sec = time % 60;
+
+        if(sec < 10) {
+            tv.setText(String.format("%d:0%d", min, sec));
+        } else {
+            tv.setText(String.format("%d:%d", min, sec));
+        }
+    }
+
     public void updateAll(int stepCount) {
         setStepCount(stepCount);
         setDistance();
@@ -202,5 +227,21 @@ public class StepCountActivity extends AppCompatActivity {
 
     public void setTime(int time) {
         this.time = time;
+    }
+
+    public int getTime() {
+        return time;
+    }
+
+    public int getSteps() {
+        return steps;
+    }
+
+    public float getDistance() {
+        return distance;
+    }
+
+    public float getSpeed() {
+        return speed;
     }
 }
