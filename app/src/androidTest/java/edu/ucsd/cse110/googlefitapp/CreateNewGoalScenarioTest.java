@@ -277,8 +277,6 @@ public class CreateNewGoalScenarioTest {
                 .check(matches(isDisplayed()));
 
         onView(withId(R.id.btnCustomed)).perform(click());
-        intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
-        onView(withId(R.id.textGoal)).check(matches(withText("5000")));
     }
 
     private class TestMainFitnessService implements FitnessService {
