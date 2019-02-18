@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.MainActivity;
+import edu.ucsd.cse110.googlefitapp.StepCalendar;
 import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 
 public class GoogleFitAdapter implements FitnessService {
@@ -188,7 +189,7 @@ public class GoogleFitAdapter implements FitnessService {
         if (lastSignedInAccount == null) {
             return;
         }
-        Calendar tempCal = Calendar.getInstance();
+        Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
         tempCal.set(Calendar.HOUR, 0);
@@ -236,7 +237,7 @@ public class GoogleFitAdapter implements FitnessService {
 
     public void mockDataPoint(){
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(stepCountActivity);
-        Calendar tempCal = Calendar.getInstance();
+        Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
         tempCal.set(Calendar.HOUR, 0);
@@ -261,7 +262,7 @@ public class GoogleFitAdapter implements FitnessService {
                                 System.out.println("begin mock data" + dataSet.isEmpty());
                                 if(dataSet.isEmpty()) {
                                     int stepCountDelta = 500;
-                                    Calendar cal = Calendar.getInstance();
+                                    Calendar cal = StepCalendar.getInstance();
                                     long endTime = cal.getTimeInMillis();
                                     cal.add(Calendar.HOUR_OF_DAY, -1);
                                     long startTime = cal.getTimeInMillis();

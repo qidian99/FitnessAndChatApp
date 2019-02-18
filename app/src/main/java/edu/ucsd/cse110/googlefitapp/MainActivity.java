@@ -50,23 +50,22 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private int goal;
 
     private boolean isCancelled = false;
-    private boolean goalChangeable = true;
-    private boolean canShowHalfEncour = true;
-    private boolean canShowOverPrevEncour = true;
+    private boolean goalChangeable = false;
+    private boolean canShowHalfEncour = false;
+    private boolean canShowOverPrevEncour = false;
     private int currentSteps;
 
-    private double activeDistance;
-    private double activeSpeed;
+    private float activeDistance;
+    private float activeSpeed;
     private int activeMin;
     private int activeSec;
     private int activeSteps = 0;
     private float strideLength;
 
     private FitnessService fitnessService;
-    private double[] weeklyDistance = new double[7];
-    private double[] weeklySpeed = new double[7];
     private double[] weeklyInactiveSteps = new double[7];
     private double[] weeklyActiveSteps = new double[7];
+
     private boolean notCleared = true;
     public static Calendar calendar = StepCalendar.getInstance();
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -267,8 +266,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
     public void launchWeeklyStats() {
         Intent intent = new Intent(MainActivity.this, WeeklyStats.class);
-        intent.putExtra("weeklySpeed", weeklySpeed);
-        intent.putExtra("weeklyDistance", weeklyDistance);
         startActivity(intent);
     }
 
@@ -302,15 +299,21 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     public void updateAll(int total) {
 
         int day = calendar.get(Calendar.DAY_OF_WEEK);
+        clearGraph(day);
 
+        // store total steps
         SharedPreferences sharedPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
-        SharedPreferences pref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-
         editor.putInt(String.valueOf(day), total);
         editor.putInt("goal", goal);
         editor.apply();
         Log.d("MAIN", "Total steps up to now: " + total);
+
+        // store total dist
+        SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
+        SharedPreferences.Editor statsEditor = statsPref.edit();
+        statsEditor.putFloat(String.valueOf(day + 7), total * strideLength / 63360.0f);
+        statsEditor.apply();
 
         final TextView stepText = findViewById(R.id.textStepsMain);
         final TextView stepsLeft = findViewById(R.id.stepsLeft);
@@ -320,9 +323,6 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         stepText.setText(String.format(SHOW_STEP, total));
         stepsLeft.setText(String.format(SHOW_STEPS_LEFT, stepLeft));
-
-        Log.d("MAIN", stepText.getText().toString());
-
 
         if(currentSteps >= goal && goalChangeable) {
             goalChangeable = false;
@@ -361,61 +361,57 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         // Firstly it fetches active data from StepCountActivity
         if(switchToActive) {
             super.onActivityResult(requestCode, resultCode, data);
-            activeDistance = data.getFloatExtra("distance", 0);
-            activeSpeed = data.getFloatExtra("speed", 0);
+            activeDistance = data.getFloatExtra("distance", 0.0f);
+            activeSpeed = data.getFloatExtra("speed", 0.0f);
             activeMin = data.getIntExtra("min", 0);
             activeSec = data.getIntExtra("second", 0);
             activeSteps = data.getIntExtra("steps", 0);
             displayActiveData();
-        }
 
-        // Then, store the active data into local storage
-        // Note that if the date is Saturday, a new cycle will start, so also weekly data are cleared
-        int day = calendar.get(Calendar.DAY_OF_WEEK);
-        int currentActiveSteps;
-        SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+            // Then, store the active data into local storage
+            // Note that if the date is Saturday, a new cycle will start, so also weekly data are cleared
+            int day = calendar.get(Calendar.DAY_OF_WEEK);
 
-        if(day == Calendar.SUNDAY) {
-            if (notCleared) {
-                notCleared = false;
-                stepPref.edit().clear().apply();
-                weeklyDistance = new double[7];
-                weeklySpeed = new double[7];
+            clearGraph(day);
+
+            // update active steps
+            SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+            int totalActiveSteps = stepPref.getInt(String.valueOf(day + 7), 0) + activeSteps; // Store active steps
+            SharedPreferences.Editor editor = stepPref.edit();
+            editor.putInt(String.valueOf(day + 7), totalActiveSteps);
+            editor.apply();
+
+            // update avg speed and total distance
+            SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
+            float currActiveSpeed = statsPref.getFloat(String.valueOf(day), 0.0f);
+            float totalActiveDist = totalActiveSteps * strideLength / 63360.0f;
+            SharedPreferences.Editor statsEditor = statsPref.edit();
+            statsEditor.putFloat(String.valueOf(day), (currActiveSpeed + activeSpeed) / 2.0f);
+            statsEditor.putFloat(String.valueOf(day + 14), totalActiveDist);
+            statsEditor.apply();
+
+            if (activeSteps >= this.goal && goalChangeable) { // this.goal is steps remaining
+                goalChangeable = false; // Goal is only allowed to be set once in a week
+                showNewGoalPrompt();
             }
-        } else {
-            notCleared = true;
-        }
 
-        currentActiveSteps = stepPref.getInt(String.valueOf(day + 7), 0); // Store active steps
-        SharedPreferences.Editor editor = stepPref.edit();
-        editor.putInt(String.valueOf(day + 7), currentActiveSteps + activeSteps);
-        editor.apply();
+            if (currentSteps > getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
+                    MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) / 2 && canShowHalfEncour) {
+                setCanShowHalfEncour(false);
+                showAchieveHalfEncouragement();
+            }
 
-        double currentActiveSpeed = weeklySpeed[day - 1];
-        weeklySpeed[day - 1] = (currentActiveSpeed + activeSpeed)/2.0;
-        weeklyDistance[day - 1] += activeDistance;
+            int yesterday = day - 1 >= 0 ? day - 1 : 6;
+            if (currentSteps > getSharedPreferences("weekly_steps",
+                    MODE_PRIVATE).getInt(String.valueOf(yesterday), 0) + 1000 && canShowOverPrevEncour) {
+                showOverPrevEncouragement();
+            }
 
-        if(activeSteps >= this.goal && goalChangeable) { // this.goal is steps remaining
-            goalChangeable = false; // Goal is only allowed to be set once in a week
-            showNewGoalPrompt();
-        }
-
-        if(currentSteps > getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
-                MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) / 2 && canShowHalfEncour){
-            setCanShowHalfEncour(false);
-            showAchieveHalfEncouragement();
-        }
-
-        int yesterday = day - 1 >= 0 ? day - 1 : 6;
-        if(currentSteps > getSharedPreferences("weekly_steps",
-                MODE_PRIVATE).getInt(String.valueOf(yesterday), 0) + 1000 && canShowOverPrevEncour) {
-            showOverPrevEncouragement();
-        }
-
-        // Finally, update total steps, and display it on UI
-        fitnessService.setup();
-        fitnessService.startAsync();
+            // Finally, update total steps, and display it on UI
+            fitnessService.updateStepCount();
+            fitnessService.startAsync();
 //        fitnessService.addActiveSteps(activeSteps);
+        }
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {
@@ -524,4 +520,22 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         ((TextView) findViewById(R.id.textCal)).setText(dateFormat.format(calendar.getTime()));
         fitnessService.updateStepCount();
     }
+
+    private void clearGraph(int day) {
+        SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+        SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
+        SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+        boolean notCleared = sharedPref.getBoolean("graphNotCleared", true);
+
+        if(day == Calendar.SUNDAY) {
+            if (notCleared) {
+                sharedPref.edit().putBoolean("graphNotCleared", false).apply();
+                stepPref.edit().clear().apply();
+                statsPref.edit().clear().apply();
+            }
+        } else {
+            sharedPref.edit().putBoolean("graphNotCleared", true).apply();
+        }
+    }
+
 }
