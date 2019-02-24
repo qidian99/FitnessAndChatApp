@@ -20,6 +20,7 @@ public class GraphDisplay implements Observer{
                 activity.getStepPref().edit().clear().apply();
                 activity.getStatsPref().edit().clear().apply();
                 Log.d(TAG, "Sunday: bar graph is cleared");
+                activity.setNotCleared(false);
             }
         } else {
             activity.getSharedPref().edit().putBoolean("graphNotCleared", true).apply();

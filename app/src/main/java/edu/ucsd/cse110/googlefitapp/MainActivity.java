@@ -316,6 +316,10 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
         // Firstly it fetches active data from PlannedWalkActivity
         if(switchToActive) {
             super.onActivityResult(requestCode, resultCode, data);
+            stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+            statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
+            sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+
             activeDistance = data.getFloatExtra("distance", 0.0f);
             activeSpeed = data.getFloatExtra("speed", 0.0f);
             activeMin = data.getIntExtra("min", 0);
@@ -488,6 +492,11 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
     public void setDay(int day) {
         this.day = day;
         getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE).edit().putInt("day", today).apply();
+    }
+
+    public void setNotCleared(boolean notCleared) {
+        this.notCleared = notCleared;
+        sharedPref.edit().putBoolean("graphNotCleared", notCleared);
     }
 
     @Override

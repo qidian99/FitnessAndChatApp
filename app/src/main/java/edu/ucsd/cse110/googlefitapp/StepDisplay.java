@@ -29,6 +29,11 @@ public class StepDisplay implements Observer{
         statsEditor.apply();
         Log.d(TAG, "Today's total distance (incidental + active): " + currentStep * activity.getStrideLength() / 63360.0f);
 
+        SharedPreferences stepPref = activity.getStepPref();
+        SharedPreferences.Editor stepEditor = stepPref.edit();
+        stepEditor.putInt(String.valueOf(today), currentStep);
+        stepEditor.apply();
+
         final TextView stepText = activity.findViewById(R.id.textStepsMain);
         final TextView stepsLeft = activity.findViewById(R.id.stepsLeft);
         int stepLeft = goal - currentStep > 0 ? goal - currentStep : 0;

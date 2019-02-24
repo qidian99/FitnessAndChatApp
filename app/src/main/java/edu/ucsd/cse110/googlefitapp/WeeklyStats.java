@@ -34,8 +34,10 @@ public class WeeklyStats extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weekly_stats);
 
-        SharedPreferences sharedPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
-        goal = sharedPref.getInt("goal", 0);
+        SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+        SharedPreferences sharedPref = getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+
+        goal = sharedPref.getInt("goal", MainActivity.DEFAULT_GOAL);
 
         final BarChart barChart;
 
@@ -105,8 +107,8 @@ public class WeeklyStats extends AppCompatActivity {
         int max = 0;
 
         for(int i = 1; i <= 7; i++) {
-            int activeSteps = sharedPref.getInt(String.valueOf(i + 7), 0);
-            int inactiveSteps = sharedPref.getInt(String.valueOf(i), 0) - activeSteps;
+            int activeSteps = stepPref.getInt(String.valueOf(i + 7), 0);
+            int inactiveSteps = stepPref.getInt(String.valueOf(i), 0) - activeSteps;
 
             if (inactiveSteps + activeSteps > max) {
                 max = inactiveSteps + activeSteps;
