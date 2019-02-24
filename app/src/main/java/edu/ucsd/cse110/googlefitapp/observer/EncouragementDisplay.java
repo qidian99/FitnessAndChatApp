@@ -17,11 +17,11 @@ public class EncouragementDisplay implements Observer {
     public void update(int currentStep, int lastStep, int goal, int day, int yesterday, int today, boolean notCleared) {
         if (day != today) {
             Log.d(TAG, "new day encountered");
-            activity.setCanShowHalfEncour(true);
-            activity.setCanShowOverPrevEncour(true);
+            activity.setCanShowHalfEncouragement(true);
+            activity.setCanShowOverPrevEncouragement(true);
         }
 
-        if (currentStep > goal / 2 && activity.getCanShowHalfEncour()) {
+        if (currentStep > goal / 2 && activity.getCanShowHalfEncouragement()) {
             Log.d(TAG, "need show achieveHalfEncouragement");
             activity.showAchieveHalfEncouragement();
         }
@@ -31,7 +31,7 @@ public class EncouragementDisplay implements Observer {
             activity.showNewGoalPrompt();
         }
 
-        if (currentStep > lastStep + 1000 && activity.getCanShowOverPrevEncour()) {
+        if (currentStep > lastStep + 1000 && activity.getCanShowOverPrevEncouragement()) {
             Log.d(TAG, "need show OverPrevEncouragement");
             activity.showOverPrevEncouragement();
         }

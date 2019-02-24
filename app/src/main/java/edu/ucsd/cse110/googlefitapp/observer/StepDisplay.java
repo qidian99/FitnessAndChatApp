@@ -1,5 +1,6 @@
 package edu.ucsd.cse110.googlefitapp.observer;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.TextView;
@@ -16,6 +17,7 @@ public class StepDisplay implements Observer {
         activity.registerObserver(this);
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public void update(int currentStep, int lastStep, int goal, int day, int yesterday, int today, boolean notCleared) {
         SharedPreferences sharedPref = activity.getSharedPref();

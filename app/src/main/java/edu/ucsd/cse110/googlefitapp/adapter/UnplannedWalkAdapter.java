@@ -1,7 +1,7 @@
 package edu.ucsd.cse110.googlefitapp.adapter;
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,14 +20,13 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.request.DataUpdateRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -37,12 +36,12 @@ import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
 public class UnplannedWalkAdapter implements FitnessService {
-    public static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.activedata";
-    public static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
+    private static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.activedata";
+    private static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
     public static Calendar calendar = MainActivity.calendar;
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "UnplannedWalkAdapter";
-    boolean isCancelled = false;
+    private boolean isCancelled = false;
     private FitnessOptions fitnessOptions;
     private Activity activity;
     private DataType activeDataType;
@@ -72,44 +71,41 @@ public class UnplannedWalkAdapter implements FitnessService {
             startRecording();
 
 
-            Thread reqThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
-                                .setName(ACTIVE_DT_NAME)
-                                .addField("active data", Field.FORMAT_INT32)
-                                .addField(Field.FIELD_ACTIVITY)
-                                .build();
+            Thread reqThread = new Thread(() -> {
+                try {
+                    DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
+                            .setName(ACTIVE_DT_NAME)
+                            .addField("active data", Field.FORMAT_INT32)
+                            .addField(Field.FIELD_ACTIVITY)
+                            .build();
 
-                        GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
-                        Task<DataType> response =
-                                Fitness.getConfigClient(activity, gsa).createCustomDataType(request);
-                        activeDataType = Tasks.await(response);
-                        if (activeDataType == null) {
-                            Task<DataType> pendingResult =
-                                    Fitness.getConfigClient(activity, gsa).readDataType(ACTIVE_DT_NAME);
-                            activeDataType = Tasks.await(pendingResult);
-                            Log.d(TAG, "Active Data Type: " + activeDataType.toString());
-                            if (activeDataType == null)
-                                throw new Exception("failed to create new data type.");
-                        }
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        Log.println(Log.DEBUG, TAG, "Custom data type created.");
-                        fitnessOptions = FitnessOptions.builder()
-                                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-                                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-                                .addDataType(activeDataType, FitnessOptions.ACCESS_READ)
-                                .addDataType(activeDataType, FitnessOptions.ACCESS_WRITE)
-                                .build();
-
+                    GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
+                    Task<DataType> response =
+                            Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).createCustomDataType(request);
+                    activeDataType = Tasks.await(response);
+                    if (activeDataType == null) {
+                        Task<DataType> pendingResult =
+                                Fitness.getConfigClient(activity, gsa).readDataType(ACTIVE_DT_NAME);
+                        activeDataType = Tasks.await(pendingResult);
+                        Log.d(TAG, "Active Data Type: " + activeDataType.toString());
+                        if (activeDataType == null)
+                            throw new Exception("failed to create new data type.");
                     }
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    Log.println(Log.DEBUG, TAG, "Custom data type created.");
+                    fitnessOptions = FitnessOptions.builder()
+                            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+                            .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                            .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+                            .addDataType(activeDataType, FitnessOptions.ACCESS_READ)
+                            .addDataType(activeDataType, FitnessOptions.ACCESS_WRITE)
+                            .build();
+
                 }
             });
             reqThread.start();
@@ -123,20 +119,10 @@ public class UnplannedWalkAdapter implements FitnessService {
             return;
         }
 
-        Fitness.getRecordingClient(activity, GoogleSignIn.getLastSignedInAccount(activity))
+        Fitness.getRecordingClient(activity, Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(activity)))
                 .subscribe(DataType.TYPE_STEP_COUNT_CUMULATIVE)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.i(TAG, "Successfully subscribed!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.i(TAG, "There was a problem subscribing.");
-                    }
-                });
+                .addOnSuccessListener(aVoid -> Log.i(TAG, "Successfully subscribed!"))
+                .addOnFailureListener(e -> Log.i(TAG, "There was a problem subscribing."));
     }
 
     /**
@@ -167,30 +153,22 @@ public class UnplannedWalkAdapter implements FitnessService {
                         .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                         .build())
                 .addOnSuccessListener(
-                        new OnSuccessListener<DataReadResponse>() {
-                            @Override
-                            public void onSuccess(DataReadResponse dataReadResponse) {
-                                DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
-                                Log.d(TAG, dataSet.toString());
-                                int total =
-                                        dataSet.isEmpty()
-                                                ? 0
-                                                : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
+                        dataReadResponse -> {
+                            DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
+                            Log.d(TAG, Objects.requireNonNull(dataSet).toString());
+                            int total =
+                                    dataSet.isEmpty()
+                                            ? 0
+                                            : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
 
-                                currentStep = total;
-                                activity.setStep(currentStep);
-                                activity.updateAll(total);
-                                activity.notifyObservers();
-                                Log.d(TAG, "Total steps in updateStepCount: " + total);
-                            }
+                            currentStep = total;
+                            activity.setStep(currentStep);
+                            activity.updateAll(total);
+                            activity.notifyObservers();
+                            Log.d(TAG, "Total steps in updateStepCount: " + total);
                         })
                 .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.d(TAG, "There was a problem getting the currentStep count.", e);
-                            }
-                        });
+                        e -> Log.d(TAG, "There was a problem getting the currentStep count.", e));
     }
 
     @Override
@@ -222,7 +200,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         tempCal.set(Calendar.MINUTE, 59);
         tempCal.set(Calendar.HOUR, 23);
         long endTime = tempCal.getTimeInMillis();
-        Fitness.getHistoryClient(activity, gsa)
+        Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
                 .readData(new DataReadRequest.Builder()
                         .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
                                 DataType.AGGREGATE_STEP_COUNT_DELTA)
@@ -235,9 +213,8 @@ public class UnplannedWalkAdapter implements FitnessService {
                             Log.d(TAG, "Begin addInactiveSteps");
                             List<Bucket> buckets = dataReadResponse.getBuckets();
                             DataSet dataSet = buckets.get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
-                            Log.d(TAG, dataSet.toString());
+                            Log.d(TAG, Objects.requireNonNull(dataSet).toString());
                             if (dataSet.isEmpty()) {
-                                int stepCountDelta = extraStep;
                                 Calendar cal = StepCalendar.getInstance();
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.add(Calendar.HOUR_OF_DAY, -1);
@@ -253,7 +230,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 DataSet dataSet2 = DataSet.create(dataSource);
                                 DataPoint dataPoint =
                                         dataSet2.createDataPoint().setTimeInterval(startTime1, endTime1, TimeUnit.MILLISECONDS);
-                                dataPoint.getValue(Field.FIELD_STEPS).setInt(stepCountDelta);
+                                dataPoint.getValue(Field.FIELD_STEPS).setInt(extraStep);
                                 dataSet2.add(dataPoint);
 
                                 Log.d(TAG, "addInactiveSteps added: " + dataSet2.toString());
@@ -267,7 +244,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
                                                 .build();
 
-                                Fitness.getHistoryClient(activity, GoogleSignIn.getLastSignedInAccount(activity))
+                                Fitness.getHistoryClient(activity, Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(activity)))
                                         .deleteData(request);
 
                                 int step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + extraStep;
@@ -297,10 +274,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                             updateStepCount();
                         })
                 .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                            }
+                        e -> {
                         });
     }
 
@@ -319,75 +293,69 @@ public class UnplannedWalkAdapter implements FitnessService {
         // Read active data
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
 
-        Fitness.getHistoryClient(activity, gsa)
+        Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
                 .readData(new DataReadRequest.Builder()
                         .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                         .read(activeDataType)
                         .build())
                 .addOnSuccessListener(
-                        new OnSuccessListener<DataReadResponse>() {
-                            @Override
-                            public void onSuccess(DataReadResponse dataReadResponse) {
-                                DataSet dataSet = dataReadResponse.getDataSet(activeDataType);
-                                Log.d(TAG, "Fetched active data from google cloud. dataSet.isEmpty() = " + dataSet.isEmpty());
-                                if (dataSet.isEmpty()) {
-                                    Calendar cal = StepCalendar.getInstance();
-                                    Date now = new Date();
-                                    cal.setTime(now);
-                                    long endTime = cal.getTimeInMillis();
+                        dataReadResponse -> {
+                            DataSet dataSet = dataReadResponse.getDataSet(activeDataType);
+                            Log.d(TAG, "Fetched active data from google cloud. dataSet.isEmpty() = " + dataSet.isEmpty());
+                            if (dataSet.isEmpty()) {
+                                Calendar cal = StepCalendar.getInstance();
+                                Date now = new Date();
+                                cal.setTime(now);
+                                long endTime1 = cal.getTimeInMillis();
 //                                    cal.add(Calendar.SECOND, -1);
-                                    long startTime = cal.getTimeInMillis();
+                                long startTime1 = cal.getTimeInMillis();
 
-                                    DataSource dataSource =
-                                            new DataSource.Builder()
-                                                    .setAppPackageName(APP_PACKAGE_NAME)
-                                                    .setDataType(activeDataType)
-                                                    .setStreamName(TAG + " - active currentStep")
-                                                    .setType(DataSource.TYPE_RAW)
-                                                    .build();
-                                    DataSet dataSet2 = DataSet.create(dataSource);
-                                    DataPoint dataPoint =
-                                            dataSet2.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
-                                    dataPoint.getValue(activeDataType.getFields().get(0)).setInt(step);
+                                DataSource dataSource =
+                                        new DataSource.Builder()
+                                                .setAppPackageName(APP_PACKAGE_NAME)
+                                                .setDataType(activeDataType)
+                                                .setStreamName(TAG + " - active currentStep")
+                                                .setType(DataSource.TYPE_RAW)
+                                                .build();
+                                DataSet dataSet2 = DataSet.create(dataSource);
+                                DataPoint dataPoint =
+                                        dataSet2.createDataPoint().setTimeInterval(startTime1, endTime1, TimeUnit.MILLISECONDS);
+                                dataPoint.getValue(activeDataType.getFields().get(0)).setInt(step);
 //                                    currentStep = stepCountDelta;
-                                    dataSet2.add(dataPoint);
+                                dataSet2.add(dataPoint);
 
-                                    Log.d(TAG, String.format("addActiveSteps - Added %d active steps", step));
-                                    Log.d(TAG, dataSet2.toString());
+                                Log.d(TAG, String.format("addActiveSteps - Added %d active steps", step));
+                                Log.d(TAG, dataSet2.toString());
 
-                                    Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
-                                } else {
-                                    int newActiveStep = dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt() + step;
-                                    dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).setInt(newActiveStep);
-                                    Log.d(TAG, "Total active steps in addActiveSteps: " + dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt());
+                                Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
+                            } else {
+                                int newActiveStep = dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt() + step;
+                                dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).setInt(newActiveStep);
+                                Log.d(TAG, "Total active steps in addActiveSteps: " + dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt());
 
-                                    // Create a data source
-                                    DataSource dataSource =
-                                            new DataSource.Builder()
-                                                    .setAppPackageName(APP_PACKAGE_NAME)
-                                                    .setDataType(activeDataType)
-                                                    .setStreamName(TAG + " - active currentStep")
-                                                    .setType(DataSource.TYPE_RAW)
-                                                    .build();
-                                    DataSet dataSet2 = DataSet.create(dataSource);
-                                    DataPoint dataPoint =
-                                            dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
-                                    dataPoint.getValue(activeDataType.getFields().get(0)).setInt(newActiveStep);
-                                    dataSet2.add(dataPoint);
-                                    DataUpdateRequest request = new DataUpdateRequest.Builder()
-                                            .setDataSet(dataSet2)
-                                            .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
-                                            .build();
+                                // Create a data source
+                                DataSource dataSource =
+                                        new DataSource.Builder()
+                                                .setAppPackageName(APP_PACKAGE_NAME)
+                                                .setDataType(activeDataType)
+                                                .setStreamName(TAG + " - active currentStep")
+                                                .setType(DataSource.TYPE_RAW)
+                                                .build();
+                                DataSet dataSet2 = DataSet.create(dataSource);
+                                DataPoint dataPoint =
+                                        dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+                                dataPoint.getValue(activeDataType.getFields().get(0)).setInt(newActiveStep);
+                                dataSet2.add(dataPoint);
+                                DataUpdateRequest request = new DataUpdateRequest.Builder()
+                                        .setDataSet(dataSet2)
+                                        .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
+                                        .build();
 
-                                    Task<Void> response = Fitness.getHistoryClient(activity, GoogleSignIn.getLastSignedInAccount(activity)).updateData(request);
-                                }
+                                Task<Void> response = Fitness.getHistoryClient(activity, Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(activity))).updateData(request);
                             }
                         })
                 .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                            }
+                        e -> {
                         });
     }
 
@@ -424,32 +392,26 @@ public class UnplannedWalkAdapter implements FitnessService {
     public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
         DataReadRequest dataReadRequest = getLast7DaysSteps(cal);
-        Fitness.getHistoryClient(activity, gsa)
+        Task<DataReadResponse> dataReadResponseTask = Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
                 .readData(dataReadRequest)
                 .addOnSuccessListener(
-                        new OnSuccessListener<DataReadResponse>() {
-                            @Override
-                            public void onSuccess(DataReadResponse dataReadResponse) {
-                                for (int i = 0; i < 7; i++) {
-                                    Log.d(TAG, String.format("getLast7DaysSteps - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
-                                    Bucket bucket = dataReadResponse.getBuckets().get(i);
-                                    DataSet dtSet = bucket.getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
-                                    if (dtSet != null && !dtSet.isEmpty()) {
-                                        Log.d(TAG, "getLast7DaysSteps - dtSet steps = " + dtSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
-                                    }
+                        dataReadResponse -> {
+                            for (int i = 0; i < 7; i++) {
+                                Log.d(TAG, String.format("getLast7DaysSteps - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
+                                Bucket bucket = dataReadResponse.getBuckets().get(i);
+                                DataSet dtSet = bucket.getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
+                                if (dtSet != null && !dtSet.isEmpty()) {
+                                    Log.d(TAG, "getLast7DaysSteps - dtSet steps = " + dtSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
+                                }
 
-                                    DataSet dtSet2 = bucket.getDataSet(activeDataType);
-                                    if (dtSet2 != null && !dtSet2.isEmpty()) {
-                                        Log.d(TAG, "getLast7DaysSteps - dtSet2 steps = " + dtSet2.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
-                                    }
+                                DataSet dtSet2 = bucket.getDataSet(activeDataType);
+                                if (dtSet2 != null && !dtSet2.isEmpty()) {
+                                    Log.d(TAG, "getLast7DaysSteps - dtSet2 steps = " + dtSet2.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
                                 }
                             }
                         })
                 .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                            }
+                        e -> {
                         });
         return null;
     }
@@ -463,6 +425,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         return GOOGLE_FIT_PERMISSIONS_REQUEST_CODE;
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class UpdateStepAsyncTask extends AsyncTask<String, String, Void> {
 
         @Override

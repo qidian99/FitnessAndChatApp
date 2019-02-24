@@ -1,8 +1,8 @@
 package edu.ucsd.cse110.googlefitapp.dialog;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
@@ -16,6 +16,8 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.R;
 
@@ -39,11 +41,11 @@ public class CustomGoalDialog extends DialogFragment implements TextView.OnEdito
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = null;
         try {
-            v = getActivity().getLayoutInflater().inflate(R.layout.fragment_set_goal, container, false);
+            v = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.fragment_set_goal, container, false);
             getDialog().setTitle(getString(R.string.setGoalPrompt));
             Log.d(TAG, "onCreateView Success");
         } catch (Exception e) {
@@ -54,7 +56,7 @@ public class CustomGoalDialog extends DialogFragment implements TextView.OnEdito
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         try {
             super.onViewCreated(view, savedInstanceState);
 
@@ -62,23 +64,15 @@ public class CustomGoalDialog extends DialogFragment implements TextView.OnEdito
             this.newGoalTxt.setOnEditorActionListener(this);
             Button doneBtn = view.findViewById(R.id.doneBtn);
 
-            doneBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    finishEnterGoal();
-                }
-            });
+            doneBtn.setOnClickListener(v -> finishEnterGoal());
 
             setCancelable(true);
 
             // Show soft keyboard
             this.window = getDialog().getWindow();
-            this.newGoalTxt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (hasFocus) {
-                        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                    }
+            this.newGoalTxt.setOnFocusChangeListener((v, hasFocus) -> {
+                if (hasFocus) {
+                    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                 }
             });
             this.newGoalTxt.requestFocus();
@@ -116,15 +110,13 @@ public class CustomGoalDialog extends DialogFragment implements TextView.OnEdito
 
             builder1.setPositiveButton(
                     "OK",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                            newGoalTxt.setText("");
-                            newGoalTxt.clearFocus();
-                            newGoalTxt.requestFocus();
-                            window.setSoftInputMode(
-                                    WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                        }
+                    (dialog, id) -> {
+                        dialog.cancel();
+                        newGoalTxt.setText("");
+                        newGoalTxt.clearFocus();
+                        newGoalTxt.requestFocus();
+                        window.setSoftInputMode(
+                                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                     });
 
             AlertDialog alertInvalidInput = builder1.create();
@@ -133,7 +125,7 @@ public class CustomGoalDialog extends DialogFragment implements TextView.OnEdito
             return false;
         }
         Log.d(TAG, "finishEnterGoal Success");
-        listener.onFinishEditDialog(goal);
+        Objects.requireNonNull(listener).onFinishEditDialog(goal);
         dismiss();
         return true;
     }

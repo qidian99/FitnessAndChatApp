@@ -155,7 +155,7 @@ public class HeightDialog extends DialogFragment implements TextView.OnEditorAct
             }
 
             Log.d(TAG, "finishEnterHeight in metric Success");
-            listener.onFinishEditDialog(new String[]{String.valueOf(spinner.getSelectedItemPosition()), String.valueOf(height)});
+            Objects.requireNonNull(listener).onFinishEditDialog(new String[]{String.valueOf(spinner.getSelectedItemPosition()), String.valueOf(height)});
             dismiss();
             return true;
         } else { // Feet and inches are used
@@ -189,7 +189,7 @@ public class HeightDialog extends DialogFragment implements TextView.OnEditorAct
 
             Log.d(TAG, "finishEnterHeight in imperial standard Success");
 
-            listener.onFinishEditDialog(new String[]{String.valueOf(spinner.getSelectedItemPosition()), String.valueOf(height), String.valueOf(height2)});
+            Objects.requireNonNull(listener).onFinishEditDialog(new String[]{String.valueOf(spinner.getSelectedItemPosition()), String.valueOf(height), String.valueOf(height2)});
             dismiss();
             return true;
         }

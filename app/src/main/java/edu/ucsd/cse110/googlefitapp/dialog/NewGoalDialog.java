@@ -2,8 +2,8 @@ package edu.ucsd.cse110.googlefitapp.dialog;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.R;
 
@@ -50,11 +52,11 @@ public class NewGoalDialog extends DialogFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = null;
         try {
-            v = getActivity().getLayoutInflater().inflate(R.layout.fragment_set_new_goal, container, false);
+            v = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.fragment_set_new_goal, container, false);
             getDialog().setTitle(getString(R.string.congratsPrompt));
             Log.d(TAG, "onCreateView Success");
         } catch (Exception e) {
@@ -65,7 +67,7 @@ public class NewGoalDialog extends DialogFragment {
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         try {
             super.onViewCreated(view, savedInstanceState);
             final Button btnYes = view.findViewById(R.id.btnYes);
@@ -78,44 +80,32 @@ public class NewGoalDialog extends DialogFragment {
             newGoalTxt = view.findViewById(R.id.newGoal);
             this.window = getDialog().getWindow();
 
-            btnYes.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d(TAG, "onViewCreated click yes");
-                    btnYes.setVisibility(View.GONE);
-                    btnNo.setVisibility(View.GONE);
-                    congrats.setVisibility(View.GONE);
-                    suggestedGoal.setVisibility(View.VISIBLE);
-                    btnSuggested.setVisibility(View.VISIBLE);
-                    btnSuggested.setText(String.valueOf(currentGoal + SUGGESTED_GOAL_INCREMENT));
-                    btnCustomed.setVisibility(View.VISIBLE);
-                    customGoal.setVisibility(View.VISIBLE);
-                    newGoalTxt.setVisibility(View.VISIBLE);
-                    getDialog().setTitle(getString(R.string.newGoalPrompt));
-                    btnSuggested.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Log.d(TAG, "onViewCreated click suggested goal");
-                            finishEnterGoal(btnSuggested.getText().toString());
-                            Toast.makeText(getContext(), "Goal Updated", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    btnCustomed.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Log.d(TAG, "onViewCreated click custom goal");
-                            finishEnterGoal(newGoalTxt.getText().toString());
-                        }
-                    });
-                }
+            btnYes.setOnClickListener(v -> {
+                Log.d(TAG, "onViewCreated click yes");
+                btnYes.setVisibility(View.GONE);
+                btnNo.setVisibility(View.GONE);
+                congrats.setVisibility(View.GONE);
+                suggestedGoal.setVisibility(View.VISIBLE);
+                btnSuggested.setVisibility(View.VISIBLE);
+                btnSuggested.setText(String.valueOf(currentGoal + SUGGESTED_GOAL_INCREMENT));
+                btnCustomed.setVisibility(View.VISIBLE);
+                customGoal.setVisibility(View.VISIBLE);
+                newGoalTxt.setVisibility(View.VISIBLE);
+                getDialog().setTitle(getString(R.string.newGoalPrompt));
+                btnSuggested.setOnClickListener(v12 -> {
+                    Log.d(TAG, "onViewCreated click suggested goal");
+                    finishEnterGoal(btnSuggested.getText().toString());
+                    Toast.makeText(getContext(), "Goal Updated", Toast.LENGTH_SHORT).show();
+                });
+                btnCustomed.setOnClickListener(v1 -> {
+                    Log.d(TAG, "onViewCreated click custom goal");
+                    finishEnterGoal(newGoalTxt.getText().toString());
+                });
             });
 
-            btnNo.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d(TAG, "onViewCreated click no");
-                    dismiss();
-                }
+            btnNo.setOnClickListener(v -> {
+                Log.d(TAG, "onViewCreated click no");
+                dismiss();
             });
         } catch (Exception e) {
             Log.d(TAG, "onViewCreated Fail: " + e.toString());
@@ -123,7 +113,7 @@ public class NewGoalDialog extends DialogFragment {
         }
     }
 
-    public boolean finishEnterGoal(String goalStr) {
+    public void finishEnterGoal(String goalStr) {
         // Return input text back to activity through the implemented listener
         CustomGoalDialog.GoalPrompterListener listener = (CustomGoalDialog.GoalPrompterListener) getActivity();
         int goal;
@@ -141,26 +131,23 @@ public class NewGoalDialog extends DialogFragment {
 
             builder1.setPositiveButton(
                     "OK",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                            newGoalTxt.setText("");
-                            newGoalTxt.clearFocus();
-                            newGoalTxt.requestFocus();
-                            window.setSoftInputMode(
-                                    WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                        }
+                    (dialog, id) -> {
+                        dialog.cancel();
+                        newGoalTxt.setText("");
+                        newGoalTxt.clearFocus();
+                        newGoalTxt.requestFocus();
+                        window.setSoftInputMode(
+                                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
                     });
 
             AlertDialog alertInvalidInput = builder1.create();
             alertInvalidInput.show();
             Log.d(TAG, "finishEnterGoal Fail, " + e.toString());
-            return false;
+            return;
         }
 
         Log.d(TAG, "finishEnterGoal Success");
-        listener.onFinishEditDialog(goal);
+        Objects.requireNonNull(listener).onFinishEditDialog(goal);
         dismiss();
-        return true;
     }
 }

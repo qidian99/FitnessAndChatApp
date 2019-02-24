@@ -5,9 +5,8 @@ import android.util.Log;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 
 public class GoalDisplay implements Observer {
-    private final String TAG = "GoalDisplay Observer";
     private MainActivity activity;
-    private boolean goalChangeable = false;
+    private boolean goalChangeable;
 
     public GoalDisplay(MainActivity activity) {
         this.activity = activity;
@@ -18,10 +17,11 @@ public class GoalDisplay implements Observer {
     @Override
     public void update(int currentStep, int lastStep, int goal, int day, int yesterday, int today, boolean notCleared) {
         if (day != today) {
+            String TAG = "GoalDisplay Observer";
             Log.d(TAG, "onProgressUpdate new day encountered");
             activity.setGoalChangeable(true);
-            activity.setCanShowHalfEncour(true);
-            activity.setCanShowOverPrevEncour(true);
+            activity.setCanShowHalfEncouragement(true);
+            activity.setCanShowOverPrevEncouragement(true);
             activity.getSharedPref().edit().putInt("day", today).apply();
         }
 

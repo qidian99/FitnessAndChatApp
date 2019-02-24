@@ -2,15 +2,17 @@ package edu.ucsd.cse110.googlefitapp.dialog;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.R;
 
@@ -25,9 +27,7 @@ public class PlannedWalkEndingDialog extends DialogFragment {
     int steps;
     int sec;
     int min;
-    private TextView data;
     private Button okButton;
-    private Window window;
 
     public PlannedWalkEndingDialog() {
     }
@@ -50,11 +50,11 @@ public class PlannedWalkEndingDialog extends DialogFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = null;
         try {
-            v = getActivity().getLayoutInflater().inflate(R.layout.fragment_display_active_data, container, false);
+            v = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.fragment_display_active_data, container, false);
             getDialog().setTitle(getString(R.string.prevSession));
             Log.d(TAG, "onCreateView Success");
         } catch (Exception e) {
@@ -64,13 +64,13 @@ public class PlannedWalkEndingDialog extends DialogFragment {
         return v;
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         try {
             super.onViewCreated(view, savedInstanceState);
             okButton = view.findViewById(R.id.Okbutton);
-            data = view.findViewById(R.id.data);
-            this.window = getDialog().getWindow();
+            TextView data = view.findViewById(R.id.data);
             Log.d(TAG, "onViewCreated Success");
 
             data.setText(String.format(FORMAT_STR, steps, min, sec, distance, speed));
@@ -80,12 +80,9 @@ public class PlannedWalkEndingDialog extends DialogFragment {
         }
 
         try {
-            okButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dismiss();
-                    Log.d(TAG, "floating window dismissed");
-                }
+            okButton.setOnClickListener(v -> {
+                dismiss();
+                Log.d(TAG, "floating window dismissed");
             });
         } catch (Exception e) {
             Log.d(TAG, "session dismiss fail: " + e.toString());
@@ -93,6 +90,7 @@ public class PlannedWalkEndingDialog extends DialogFragment {
         }
     }
 
+    @SuppressLint("DefaultLocale")
     public String getData() {
         return String.format(FORMAT_STR, steps, min, sec, distance, speed);
     }
