@@ -1,6 +1,8 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.observer;
 
 import android.util.Log;
+
+import edu.ucsd.cse110.googlefitapp.MainActivity;
 
 public class GoalDisplay implements Observer {
     private final String TAG = "GoalDisplay Observer";

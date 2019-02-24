@@ -1,4 +1,4 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.adapter;
 
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -22,7 +22,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
+import edu.ucsd.cse110.googlefitapp.Activity;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
+import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
 public class PlannedWalkAdapter implements FitnessService {
     public static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";

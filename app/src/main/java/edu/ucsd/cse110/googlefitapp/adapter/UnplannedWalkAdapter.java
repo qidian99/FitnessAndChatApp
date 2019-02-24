@@ -1,4 +1,4 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.adapter;
 
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -31,7 +31,10 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import edu.ucsd.cse110.googlefitapp.Activity;
+import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
+import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
 public class UnplannedWalkAdapter implements FitnessService {
     public static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.activedata";

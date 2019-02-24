@@ -1,4 +1,4 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.dialog;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -20,17 +20,20 @@ import android.widget.TextView;
 
 import java.util.Calendar;
 
-public class ManualDateSetter extends DialogFragment implements TextView.OnEditorActionListener {
+import edu.ucsd.cse110.googlefitapp.R;
+
+public class MockDateDialog extends DialogFragment implements TextView.OnEditorActionListener {
     private Window window;
     private EditText centText;
     private EditText ftText;
     private EditText inchText;
     private Spinner spinner;
-    public ManualDateSetter() {
+
+    public MockDateDialog() {
     }
 
-    public static ManualDateSetter newInstance(String title) {
-        ManualDateSetter frag = new ManualDateSetter();
+    public static MockDateDialog newInstance(String title) {
+        MockDateDialog frag = new MockDateDialog();
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);

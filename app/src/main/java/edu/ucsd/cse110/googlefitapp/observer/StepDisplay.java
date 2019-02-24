@@ -1,8 +1,11 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.observer;
 
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.TextView;
+
+import edu.ucsd.cse110.googlefitapp.MainActivity;
+import edu.ucsd.cse110.googlefitapp.R;
 
 public class StepDisplay implements Observer {
     private final String TAG = "StepDisplay Observer";

@@ -1,4 +1,4 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.dialog;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -21,21 +21,24 @@ import android.widget.TextView;
 
 import java.util.Objects;
 
-public class HeightPrompter extends DialogFragment implements TextView.OnEditorActionListener {
-    private final String TAG = "HeightPrompter";
+import edu.ucsd.cse110.googlefitapp.R;
+
+public class HeightDialog extends DialogFragment implements TextView.OnEditorActionListener {
+    private final String TAG = "HeightDialog";
     Window window;
     EditText centText;
     EditText ftText;
     EditText inchText;
     Spinner spinner;
-    public HeightPrompter() {
+
+    public HeightDialog() {
     }
 
-    public static HeightPrompter newInstance(String title) {
+    public static HeightDialog newInstance(String title) {
         if (title == null) {
             return null;
         }
-        HeightPrompter frag = new HeightPrompter();
+        HeightDialog frag = new HeightDialog();
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);

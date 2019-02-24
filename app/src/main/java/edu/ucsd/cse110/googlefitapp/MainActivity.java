@@ -20,12 +20,25 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import edu.ucsd.cse110.googlefitapp.adapter.PlannedWalkAdapter;
+import edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter;
+import edu.ucsd.cse110.googlefitapp.dialog.CustomGoalDialog;
+import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
+import edu.ucsd.cse110.googlefitapp.dialog.ManuallyEnterStepDialog;
+import edu.ucsd.cse110.googlefitapp.dialog.NewGoalDialog;
+import edu.ucsd.cse110.googlefitapp.dialog.PlannedWalkEndingDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
+import edu.ucsd.cse110.googlefitapp.observer.EncouragementDisplay;
+import edu.ucsd.cse110.googlefitapp.observer.GoalDisplay;
+import edu.ucsd.cse110.googlefitapp.observer.GraphDisplay;
+import edu.ucsd.cse110.googlefitapp.observer.Observer;
+import edu.ucsd.cse110.googlefitapp.observer.StepDisplay;
 
-public class MainActivity extends Activity implements HeightPrompter.HeightPrompterListener,
-        CustomGoalSetter.GoalPrompterListener, ManualStepSetter.ManualStepSetterListener,
+public class MainActivity extends Activity implements HeightDialog.HeightPrompterListener,
+        CustomGoalDialog.GoalPrompterListener, ManuallyEnterStepDialog.ManualStepSetterListener,
         DatePickerDialog.OnDateSetListener {
     public static final String MAIN_SERVICE = "MAIN_SERVICE";
     public static final String SHOW_STRIDE = "Your estimated stride length is %.2f\"";
@@ -41,7 +54,7 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
     public static final String TAG = "MAIN";
     private static final int REQUEST_CODE = 1000;
     public static boolean firstTimeUser = true;
-    public static FitnessServiceFactory fitnessServiceFactory;
+    public static FitnessServiceFactory fitnessServiceFactory = new GoogleFitnessServiceFactory();
     public static Calendar calendar = StepCalendar.getInstance();
     SharedPreferences stepPref;
     SharedPreferences statsPref;
@@ -122,8 +135,6 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
             fitnessService = fitnessServiceFactory.create(mainServiceKey, this);
             setFitnessServiceKey(stepCountServiceKey);
         } else { // Normal setup
-
-            fitnessServiceFactory = new GoogleFitnessServiceFactory();
             fitnessServiceFactory.put(MAIN_SERVICE, new FitnessServiceFactory.BluePrint() {
                 @Override
                 public FitnessService create(Activity activity) {
@@ -254,7 +265,7 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
 
     public void launchWeeklyStats() {
         try {
-            Intent intent = new Intent(MainActivity.this, WeeklyStats.class);
+            Intent intent = new Intent(MainActivity.this, WeeklyStatsActivity.class);
             startActivity(intent);
             Log.d(TAG, "lauchWeeklyStats success");
 
@@ -358,26 +369,26 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
 
     private void showHeightPrompt() {
         FragmentManager fm = getSupportFragmentManager();
-        HeightPrompter editNameDialogFragment = HeightPrompter.newInstance(getString(R.string.heightPrompt));
+        HeightDialog editNameDialogFragment = HeightDialog.newInstance(getString(R.string.heightPrompt));
         editNameDialogFragment.show(fm, "fragment_prompt_height");
     }
 
     private void showCustomGoalPrompt() {
         FragmentManager fm = getSupportFragmentManager();
-        CustomGoalSetter setGoalDialogFragment = CustomGoalSetter.newInstance(getString(R.string.setGoalPrompt));
+        CustomGoalDialog setGoalDialogFragment = CustomGoalDialog.newInstance(getString(R.string.setGoalPrompt));
         setGoalDialogFragment.show(fm, "fragment_set_goal");
     }
 
     private void showCustomStepPrompt() {
         FragmentManager fm = getSupportFragmentManager();
-        ManualStepSetter setSetpDialogFragment = ManualStepSetter.newInstance(getString(R.string.stepPrompt));
+        ManuallyEnterStepDialog setSetpDialogFragment = ManuallyEnterStepDialog.newInstance(getString(R.string.stepPrompt));
         setSetpDialogFragment.show(fm, "fragment_set_goal");
     }
 
     public void showNewGoalPrompt() {
         setGoalChangeable(false);
         FragmentManager fm = getSupportFragmentManager();
-        NewGoalSetter setGoalDialogFragment = NewGoalSetter.newInstance(getString(R.string.congratsPrompt), goal);
+        NewGoalDialog setGoalDialogFragment = NewGoalDialog.newInstance(getString(R.string.congratsPrompt), goal);
         setGoalDialogFragment.show(fm, "fragment_set_new_goal");
     }
 
@@ -395,9 +406,9 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
 
     private void displayActiveData() {
         FragmentManager fm = getSupportFragmentManager();
-        DataDisplayer dataDisplayer = DataDisplayer.newInstance(getString(R.string.prevSession), (float) activeDistance,
+        PlannedWalkEndingDialog plannedWalkEndingDialog = PlannedWalkEndingDialog.newInstance(getString(R.string.prevSession), (float) activeDistance,
                 (float) activeSpeed, activeSteps, activeMin, activeSec);
-        dataDisplayer.show(fm, "fragment_display_active_data");
+        plannedWalkEndingDialog.show(fm, "fragment_display_active_data");
     }
 
     @Override

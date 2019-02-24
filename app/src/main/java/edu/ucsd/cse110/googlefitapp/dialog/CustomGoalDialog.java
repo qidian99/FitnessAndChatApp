@@ -1,4 +1,4 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.dialog;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -17,18 +17,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class CustomGoalSetter extends DialogFragment implements TextView.OnEditorActionListener {
-    private final String TAG = "CustomGoalSetter";
+import edu.ucsd.cse110.googlefitapp.R;
+
+public class CustomGoalDialog extends DialogFragment implements TextView.OnEditorActionListener {
+    private final String TAG = "CustomGoalDialog";
     private Window window;
     private EditText newGoalTxt;
-    public CustomGoalSetter() {
+
+    public CustomGoalDialog() {
     }
 
-    public static CustomGoalSetter newInstance(String title) {
+    public static CustomGoalDialog newInstance(String title) {
         if (title == null) {
             return null;
         }
-        CustomGoalSetter frag = new CustomGoalSetter();
+        CustomGoalDialog frag = new CustomGoalDialog();
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);

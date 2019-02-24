@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.intent.Intents;
-import android.support.test.espresso.matcher.RootMatchers;
-import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -25,24 +23,17 @@ import org.junit.runner.RunWith;
 import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
+import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
-import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.intent.Intents.intended;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasComponent;
-import static android.support.test.espresso.matcher.RootMatchers.isDialog;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withSpinnerText;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.core.IsAnything.anything;
-import static org.hamcrest.core.StringContains.containsString;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
@@ -55,7 +46,7 @@ public class LogActiveSessionScenarioTest {
     private static final String TEST_SERVICE_MAIN_ACTIVITY = "TEST_SERVICE_MAIN_ACTIVITY";
     private static final String TEST_SERVICE_STEP_ACTIVITY = "TEST_SERVICE_STEP_ACTIVITY";
 
-    private ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<MainActivity>(MainActivity.class){
+    private ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<MainActivity>(MainActivity.class) {
         @Override
         protected void beforeActivityLaunched() {
             clearSharedPrefs(InstrumentationRegistry.getTargetContext());
@@ -65,29 +56,27 @@ public class LogActiveSessionScenarioTest {
 
     private ActivityTestRule<PlannedWalkActivity> mStepCountActivityTestRule = new ActivityTestRule<>(PlannedWalkActivity.class);
 
+    public static void clearSharedPrefs(Context context) {
+        SharedPreferences prefs =
+                context.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.commit();
+    }
 
     @Before
     public void setup() {
-        GoogleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
+        FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
+        googleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
-                return null;
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return new TestMainFitnessService(mainActivity);
+            public FitnessService create(Activity activity) {
+                return new TestMainFitnessService(activity);
             }
         });
-        GoogleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
+        googleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
-                return new TestStepCountFitnessService(plannedWalkActivity);
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return null;
+            public FitnessService create(Activity activity) {
+                return new TestStepCountFitnessService(activity);
             }
         });
 
@@ -98,30 +87,6 @@ public class LogActiveSessionScenarioTest {
         intent.putExtra("TEST_SERVICE_STEP_COUNT", TEST_SERVICE_STEP_ACTIVITY);
         mActivityTestRule.launchActivity(intent);
         mActivityTestRule.getActivity().setFitnessServiceKey(TEST_SERVICE_STEP_ACTIVITY);
-
-        onView(withId(R.id.startBtn))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-        onView(withId(R.id.startBtn)).perform(click());
-        onView(withText(R.string.heightPrompt))
-                .inRoot(isDialog())
-                .check(matches(isDisplayed()));
-
-        onView(withId(R.id.metricSpinner)).perform(click());
-        onData(anything()).inRoot(RootMatchers.isPlatformPopup()).atPosition(0).perform(click());
-
-        onView(withId(R.id.metricSpinner)).check(matches(withSpinnerText(containsString("cm"))));
-        onView(withId(R.id.cent_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-        onView(withId(R.id.ft_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.GONE))));
-        onView(withId(R.id.inch_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.GONE))));
-
-        onView(withId(R.id.cent_height)).perform(typeText(String.valueOf(160)));
-
-        onView(withId(R.id.posBtn)).perform(click());
-
-        intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
     }
 
     @After
@@ -129,7 +94,6 @@ public class LogActiveSessionScenarioTest {
         mActivityTestRule.getActivity().finish();
         Intents.release();
     }
-
 
     /*
       Feature: Way to Log intended active session (Start/End Button)
@@ -145,9 +109,8 @@ public class LogActiveSessionScenarioTest {
         mActivityTestRule.getActivity().launchStepCountActivity();
         intended(hasComponent(new ComponentName(getTargetContext(), PlannedWalkActivity.class)));
         onView(withId(R.id.textSteps)).check(matches(withText("0")));
-        
-    }
 
+    }
 
     /*
       Scenario 2: User presses end button
@@ -158,7 +121,7 @@ public class LogActiveSessionScenarioTest {
     */
     @Test
     public void userPressesEndButton() {
-        
+
         mActivityTestRule.getActivity().launchStepCountActivity();
         intended(hasComponent(new ComponentName(getTargetContext(), PlannedWalkActivity.class)));
         onView(withId(R.id.btnEndRecord)).perform(click());
@@ -169,14 +132,14 @@ public class LogActiveSessionScenarioTest {
         // First, she should click the OK button to close active data display dialog
         onView(withText("OK")).perform(click());
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
-        
+
     }
 
     private class TestMainFitnessService implements FitnessService {
         private static final String TAG = "[TestMainFitnessService]: ";
-        private MainActivity mainActivity;
+        private Activity mainActivity;
 
-        public TestMainFitnessService(MainActivity mainActivity) {
+        public TestMainFitnessService(Activity mainActivity) {
             this.mainActivity = mainActivity;
         }
 
@@ -235,9 +198,9 @@ public class LogActiveSessionScenarioTest {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private PlannedWalkActivity plannedWalkActivity;
+        private Activity plannedWalkActivity;
 
-        public TestStepCountFitnessService(PlannedWalkActivity plannedWalkActivity) {
+        public TestStepCountFitnessService(Activity plannedWalkActivity) {
             this.plannedWalkActivity = plannedWalkActivity;
         }
 
@@ -290,13 +253,5 @@ public class LogActiveSessionScenarioTest {
         public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
             return null;
         }
-    }
-
-    public static void clearSharedPrefs(Context context) {
-        SharedPreferences prefs =
-                context.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.clear();
-        editor.commit();
     }
 }

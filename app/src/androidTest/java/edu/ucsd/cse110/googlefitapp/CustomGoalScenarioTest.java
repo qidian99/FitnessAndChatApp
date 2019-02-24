@@ -45,13 +45,21 @@ public class CustomGoalScenarioTest {
     private static final String TEST_SERVICE_STEP_ACTIVITY = "TEST_SERVICE_STEP_ACTIVITY";
 
     private ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<MainActivity>(MainActivity
-            .class){
+            .class) {
         @Override
         protected void beforeActivityLaunched() {
             clearSharedPrefs(InstrumentationRegistry.getTargetContext());
             super.beforeActivityLaunched();
         }
     };
+
+    public static void clearSharedPrefs(Context context) {
+        SharedPreferences prefs =
+                context.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.commit();
+    }
 
     @Before
     public void setup() {
@@ -93,7 +101,6 @@ public class CustomGoalScenarioTest {
         Intents.release();
     }
 
-
     /*
     Feature: Changing step goal at any time
       Scenario 1: Sarah input new valid goal
@@ -118,7 +125,6 @@ public class CustomGoalScenarioTest {
 
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
     }
-
 
     /*
       Scenario 2: Sarah input invalid valid goal too low
@@ -305,13 +311,5 @@ public class CustomGoalScenarioTest {
         public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
             return null;
         }
-    }
-
-    public static void clearSharedPrefs(Context context) {
-        SharedPreferences prefs =
-                context.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.clear();
-        editor.commit();
     }
 }

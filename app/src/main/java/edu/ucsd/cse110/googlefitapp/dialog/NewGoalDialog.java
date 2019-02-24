@@ -1,4 +1,4 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.dialog;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -17,24 +17,28 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class NewGoalSetter extends DialogFragment {
+import edu.ucsd.cse110.googlefitapp.R;
+
+public class NewGoalDialog extends DialogFragment {
     public static final int SUGGESTED_GOAL_INCREMENT = 500;
-    private final String TAG = "NewGoalSetter";
+    private final String TAG = "NewGoalDialog";
     private Window window;
     private EditText newGoalTxt;
     private int currentGoal;
-    public NewGoalSetter() {
+
+    public NewGoalDialog() {
     }
+
     @SuppressLint("ValidFragment")
-    public NewGoalSetter(int currentGoal) {
+    public NewGoalDialog(int currentGoal) {
         this.currentGoal = currentGoal;
     }
 
-    public static NewGoalSetter newInstance(String title, int currentGoal) {
+    public static NewGoalDialog newInstance(String title, int currentGoal) {
         if (title == null) {
             return null;
         }
-        NewGoalSetter frag = new NewGoalSetter(currentGoal);
+        NewGoalDialog frag = new NewGoalDialog(currentGoal);
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);
@@ -121,7 +125,7 @@ public class NewGoalSetter extends DialogFragment {
 
     public boolean finishEnterGoal(String goalStr) {
         // Return input text back to activity through the implemented listener
-        CustomGoalSetter.GoalPrompterListener listener = (CustomGoalSetter.GoalPrompterListener) getActivity();
+        CustomGoalDialog.GoalPrompterListener listener = (CustomGoalDialog.GoalPrompterListener) getActivity();
         int goal;
 
         try {

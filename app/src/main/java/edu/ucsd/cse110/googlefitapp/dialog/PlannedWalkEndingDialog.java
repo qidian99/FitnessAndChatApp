@@ -1,4 +1,4 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.dialog;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -12,8 +12,10 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class DataDisplayer extends DialogFragment {
-    private static final String TAG = "DataDisplayer";
+import edu.ucsd.cse110.googlefitapp.R;
+
+public class PlannedWalkEndingDialog extends DialogFragment {
+    private static final String TAG = "PlannedWalkEndingDialog";
     private final String FORMAT_STR = "Steps: %d\n" +
             "Time elapsed: %d' %d\"\n" +
             "Distance: %.1f miles\n" +
@@ -27,11 +29,11 @@ public class DataDisplayer extends DialogFragment {
     private Button okButton;
     private Window window;
 
-    public DataDisplayer() {
+    public PlannedWalkEndingDialog() {
     }
 
     @SuppressLint("ValidFragment")
-    public DataDisplayer(float distance, float speed, int steps, int min, int sec) {
+    public PlannedWalkEndingDialog(float distance, float speed, int steps, int min, int sec) {
         this.distance = distance;
         this.speed = speed;
         this.steps = steps;
@@ -39,8 +41,8 @@ public class DataDisplayer extends DialogFragment {
         this.min = min;
     }
 
-    public static DataDisplayer newInstance(String title, float distance, float speed, int steps, int min, int sec) {
-        DataDisplayer frag = new DataDisplayer(distance, speed, steps, min, sec);
+    public static PlannedWalkEndingDialog newInstance(String title, float distance, float speed, int steps, int min, int sec) {
+        PlannedWalkEndingDialog frag = new PlannedWalkEndingDialog(distance, speed, steps, min, sec);
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);

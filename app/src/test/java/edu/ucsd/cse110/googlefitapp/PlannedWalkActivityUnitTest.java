@@ -18,36 +18,32 @@ import org.robolectric.RuntimeEnvironment;
 import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
+import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 public class PlannedWalkActivityUnitTest {
     private static final String TEST_SERVICE = "TEST_SERVICE_STEP_COUNT_ACT";
-
+    Button btnUpdateSteps;
     private PlannedWalkActivity activity;
     private TextView textSteps;
     private TextView textDist;
     private TextView textSpeed;
     private TextView textTime;
-    Button btnUpdateSteps;
     private Button end;
     private int nextStepCount;
 
     @Before
     public void setUp() throws Exception {
-        GoogleFitnessServiceFactory.put(TEST_SERVICE, new GoogleFitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
-                return new TestFitnessService(plannedWalkActivity);
-            }
+        FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
 
+        googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return null;
+            public FitnessService create(Activity plannedWalkActivity) {
+                return new TestFitnessService(plannedWalkActivity);
             }
         });
 
@@ -128,9 +124,9 @@ public class PlannedWalkActivityUnitTest {
 
     private class TestFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountActFitnessService]: ";
-        private PlannedWalkActivity plannedWalkActivity;
+        private Activity plannedWalkActivity;
 
-        public TestFitnessService(PlannedWalkActivity plannedWalkActivity) {
+        public TestFitnessService(Activity plannedWalkActivity) {
             this.plannedWalkActivity = plannedWalkActivity;
         }
 
@@ -147,7 +143,7 @@ public class PlannedWalkActivityUnitTest {
         @Override
         public void updateStepCount() {
             Log.d(TAG, "updateStepCount");
-            plannedWalkActivity.setStepCount(nextStepCount);
+            ((PlannedWalkActivity) plannedWalkActivity).setStepCount(nextStepCount);
             plannedWalkActivity.updateAll(nextStepCount);
         }
 

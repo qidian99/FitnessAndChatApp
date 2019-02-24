@@ -21,7 +21,7 @@ import com.github.mikephil.charting.listener.OnChartGestureListener;
 
 import java.util.ArrayList;
 
-public class WeeklyStats extends AppCompatActivity {
+public class WeeklyStatsActivity extends AppCompatActivity {
 
     public static final String TAG = "WEEKLY_STATS";
     private int goal;
@@ -88,9 +88,9 @@ public class WeeklyStats extends AppCompatActivity {
                 Log.d(TAG, String.format("speed: %.1f, distance: %.1f -> active: %.1f + incidental: %.1f", speed, distance, activeDist, inciDist));
 
                 if (yInd == 1) {
-                    Toast.makeText(WeeklyStats.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, distance), Toast.LENGTH_LONG).show();
+                    Toast.makeText(WeeklyStatsActivity.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, distance), Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(WeeklyStats.this,
+                    Toast.makeText(WeeklyStatsActivity.this,
                             String.format("Active walk distance: %.1f miles\nAverage speed: %.1f MPH", activeDist, speed),
                             Toast.LENGTH_LONG).show();
                 }

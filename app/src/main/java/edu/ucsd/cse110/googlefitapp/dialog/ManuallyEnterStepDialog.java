@@ -1,4 +1,4 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.dialog;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -13,19 +13,21 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
-public class ManualStepSetter extends DialogFragment {
-    private final String TAG = "ManualStepSetter";
+import edu.ucsd.cse110.googlefitapp.R;
+
+public class ManuallyEnterStepDialog extends DialogFragment {
+    private final String TAG = "ManuallyEnterStepDialog";
     private Window window;
     private EditText stepText;
 
-    public ManualStepSetter() {
+    public ManuallyEnterStepDialog() {
     }
 
-    public static ManualStepSetter newInstance(String title) {
+    public static ManuallyEnterStepDialog newInstance(String title) {
         if (title == null) {
             return null;
         }
-        ManualStepSetter frag = new ManualStepSetter();
+        ManuallyEnterStepDialog frag = new ManuallyEnterStepDialog();
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);
@@ -75,7 +77,7 @@ public class ManualStepSetter extends DialogFragment {
     }
 
     public boolean finishEnterStep() {
-        ManualStepSetter.ManualStepSetterListener listener = (ManualStepSetter.ManualStepSetterListener) getActivity();
+        ManuallyEnterStepDialog.ManualStepSetterListener listener = (ManuallyEnterStepDialog.ManualStepSetterListener) getActivity();
         int step;
         try {
             step = Integer.parseInt(stepText.getText().toString());

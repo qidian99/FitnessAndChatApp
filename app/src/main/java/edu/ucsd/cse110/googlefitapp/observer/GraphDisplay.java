@@ -1,8 +1,10 @@
-package edu.ucsd.cse110.googlefitapp;
+package edu.ucsd.cse110.googlefitapp.observer;
 
 import android.util.Log;
 
 import java.util.Calendar;
+
+import edu.ucsd.cse110.googlefitapp.MainActivity;
 
 public class GraphDisplay implements Observer {
     private final String TAG = "GraphtDisplay Observer";

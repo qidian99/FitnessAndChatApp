@@ -16,7 +16,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".WeeklyStats"></activity>
+        <activity android:name=".WeeklyStatsActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.PlannedWalkActivity"></activity>
 
         <meta-data

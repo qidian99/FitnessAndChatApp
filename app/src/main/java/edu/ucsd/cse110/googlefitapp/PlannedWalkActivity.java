@@ -11,7 +11,9 @@ import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import edu.ucsd.cse110.googlefitapp.adapter.PlannedWalkAdapter;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
+import edu.ucsd.cse110.googlefitapp.observer.Observer;
 
 public class PlannedWalkActivity extends Activity {
 
