@@ -246,10 +246,8 @@ public class CreateNewGoalScenarioTest {
       Choose to create custom a new goal and higher than before
         Given that user’s initial goal is 5000 steps a day
         And he or she walks over 5000 steps
-        And he or she will be given the option to change her daily goal
-        When he or she rejects the optional new goal which is 5500
-        Then the application asks the user if he or she wants to set custom goal
-        When he or she rejects to set custom goal
+
+        +
         Then the goal is not changed and still be 5000 steps
         And he or she will be directed to the home screen
         */
