@@ -19,6 +19,7 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
@@ -84,18 +85,8 @@ public class MainActivityUITest {
     @Before
     public void setup() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
-        googleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(Activity activity) {
-                return new TestMainFitnessService(activity);
-            }
-        });
-        googleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(Activity activity) {
-                return new TestStepCountFitnessService(activity);
-            }
-        });
+        googleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, activity -> new TestMainFitnessService(activity));
+        googleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, activity -> new TestStepCountFitnessService());
 
         Intents.init();
         Intent intent = new Intent();
@@ -119,7 +110,7 @@ public class MainActivityUITest {
                 allOf(withId(R.id.textGoal2), withText("CURRENT GOAL"),
                         childAtPosition(
                                 childAtPosition(
-                                        IsInstanceOf.<View>instanceOf(android.widget.TableLayout.class),
+                                        IsInstanceOf.instanceOf(android.widget.TableLayout.class),
                                         0),
                                 0),
                         isDisplayed()));
@@ -129,7 +120,7 @@ public class MainActivityUITest {
                 allOf(withId(R.id.textGoal2), withText("CURRENT GOAL"),
                         childAtPosition(
                                 childAtPosition(
-                                        IsInstanceOf.<View>instanceOf(android.widget.TableLayout.class),
+                                        IsInstanceOf.instanceOf(android.widget.TableLayout.class),
                                         0),
                                 0),
                         isDisplayed()));
@@ -139,7 +130,7 @@ public class MainActivityUITest {
                 allOf(withId(R.id.textGoal), withText("5000"),
                         childAtPosition(
                                 childAtPosition(
-                                        IsInstanceOf.<View>instanceOf(android.widget.TableLayout.class),
+                                        IsInstanceOf.instanceOf(android.widget.TableLayout.class),
                                         1),
                                 0),
                         isDisplayed()));
@@ -149,7 +140,7 @@ public class MainActivityUITest {
                 allOf(withId(R.id.textGoal), withText("5000"),
                         childAtPosition(
                                 childAtPosition(
-                                        IsInstanceOf.<View>instanceOf(android.widget.TableLayout.class),
+                                        IsInstanceOf.instanceOf(android.widget.TableLayout.class),
                                         1),
                                 0),
                         isDisplayed()));
@@ -180,7 +171,7 @@ public class MainActivityUITest {
         textView7.check(matches(isDisplayed()));
 
         ViewInteraction textView8 = onView(
-                allOf(withId(R.id.textStepsMain)));
+                Matchers.allOf(withId(R.id.textStepsMain)));
         textView8.check(matches(withText("Steps Taken")));
 
         ViewInteraction button = onView(
@@ -239,7 +230,7 @@ public class MainActivityUITest {
         private static final String TAG = "[TestMainFitnessService]: ";
         private Activity mainActivity;
 
-        public TestMainFitnessService(Activity mainActivity) {
+        TestMainFitnessService(Activity mainActivity) {
             this.mainActivity = mainActivity;
         }
 
@@ -298,10 +289,8 @@ public class MainActivityUITest {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private Activity plannedWalkActivity;
 
-        public TestStepCountFitnessService(Activity plannedWalkActivity) {
-            this.plannedWalkActivity = plannedWalkActivity;
+        TestStepCountFitnessService() {
         }
 
         @Override

@@ -330,7 +330,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
             // Then, store the active data into local storage
             // Note that if the date is Saturday, a new cycle will start, so also weekly data are cleared
-            day = calendar.get(Calendar.DAY_OF_WEEK);
+            today = calendar.get(Calendar.DAY_OF_WEEK);
 
             // update active steps
             // Store active steps

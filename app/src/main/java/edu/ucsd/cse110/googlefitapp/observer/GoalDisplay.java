@@ -11,6 +11,7 @@ public class GoalDisplay implements Observer {
 
     public GoalDisplay(MainActivity activity) {
         this.activity = activity;
+        goalChangeable = activity.getGoalChangeable();
         activity.registerObserver(this);
     }
 
@@ -21,6 +22,7 @@ public class GoalDisplay implements Observer {
             activity.setGoalChangeable(true);
             activity.setCanShowHalfEncour(true);
             activity.setCanShowOverPrevEncour(true);
+            activity.getSharedPref().edit().putInt("day", today).apply();
         }
 
         if (currentStep >= goal && goalChangeable) {

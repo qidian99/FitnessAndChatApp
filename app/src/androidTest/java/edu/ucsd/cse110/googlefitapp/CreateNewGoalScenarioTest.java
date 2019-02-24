@@ -296,7 +296,8 @@ public class CreateNewGoalScenarioTest {
         @Override
         public void updateStepCount() {
             Log.d(TAG, "update all texts");
-            mainActivity.updateAll(5000);
+            mainActivity.setStep(5000);
+            mainActivity.notifyObservers();
         }
 
         @Override

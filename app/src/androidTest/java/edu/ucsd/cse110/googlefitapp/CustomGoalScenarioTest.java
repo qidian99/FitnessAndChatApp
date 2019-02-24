@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
+import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
@@ -63,28 +64,9 @@ public class CustomGoalScenarioTest {
 
     @Before
     public void setup() {
-        GoogleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
-                return null;
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return new TestMainFitnessService(mainActivity);
-            }
-        });
-        GoogleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
-                return new TestStepCountFitnessService(plannedWalkActivity);
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return null;
-            }
-        });
+        FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
+        googleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, TestMainFitnessService::new);
+        googleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, plannedWalkActivity -> new TestStepCountFitnessService());
 
         Intents.init();
         Intent intent = new Intent();
@@ -195,9 +177,9 @@ public class CustomGoalScenarioTest {
 
     private class TestMainFitnessService implements FitnessService {
         private static final String TAG = "[TestMainFitnessService]: ";
-        private MainActivity mainActivity;
+        private Activity mainActivity;
 
-        public TestMainFitnessService(MainActivity mainActivity) {
+        TestMainFitnessService(Activity mainActivity) {
             this.mainActivity = mainActivity;
         }
 
@@ -214,7 +196,8 @@ public class CustomGoalScenarioTest {
         @Override
         public void updateStepCount() {
             Log.d(TAG, "update all texts");
-            mainActivity.updateAll(3000);
+            mainActivity.setStep(3000);
+            mainActivity.notifyObservers();
         }
 
         @Override
@@ -256,10 +239,8 @@ public class CustomGoalScenarioTest {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private PlannedWalkActivity plannedWalkActivity;
 
-        public TestStepCountFitnessService(PlannedWalkActivity plannedWalkActivity) {
-            this.plannedWalkActivity = plannedWalkActivity;
+        TestStepCountFitnessService() {
         }
 
         @Override
