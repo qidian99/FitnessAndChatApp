@@ -1,6 +1,5 @@
-package edu.ucsd.cse110.googlefitapp.fitness;
+package edu.ucsd.cse110.googlefitapp;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -33,14 +32,16 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import edu.ucsd.cse110.googlefitapp.Activity;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.StepCalendar;
+import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 
-public class MainStepCountAdapter implements FitnessService {
+public class UnplannedWalkAdapter implements FitnessService {
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
-    private final String TAG = "MainStepCountAdapter";
+    private final String TAG = "UnplannedWalkAdapter";
     private FitnessOptions fitnessOptions;
-    private MainActivity activity;
+    private Activity activity;
     private DataType activeDataType;
     public static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.activedata";
     public static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
@@ -48,7 +49,7 @@ public class MainStepCountAdapter implements FitnessService {
     boolean isCancelled = false;
     public static Calendar calendar = MainActivity.calendar;
 
-    public MainStepCountAdapter(MainActivity activity) {
+    public UnplannedWalkAdapter(Activity activity) {
         this.activity = activity;
     }
 

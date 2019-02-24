@@ -17,7 +17,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".WeeklyStats"></activity>
-        <activity android:name="edu.ucsd.cse110.googlefitapp.StepCountActivity"></activity>
+        <activity android:name="edu.ucsd.cse110.googlefitapp.PlannedWalkActivity"></activity>
 
         <meta-data
             android:name="preloaded_fonts"

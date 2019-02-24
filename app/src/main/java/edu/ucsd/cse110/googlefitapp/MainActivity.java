@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,16 +15,14 @@ import android.widget.Toast;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
-import java.security.spec.ECField;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
-import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
-import edu.ucsd.cse110.googlefitapp.fitness.MainStepCountAdapter;
 
-public class MainActivity extends AppCompatActivity implements HeightPrompter.HeightPrompterListener,
+public class MainActivity extends Activity implements HeightPrompter.HeightPrompterListener,
         CustomGoalSetter.GoalPrompterListener, ManualStepSetter.ManualStepSetterListener,
         DatePickerDialog.OnDateSetListener{
     private String fitnessServiceKey = "GOOGLE_FIT";
@@ -59,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
     private int activeSteps = 0;
     private float strideLength;
 
+    public static FitnessServiceFactory fitnessServiceFactory;
     private FitnessService fitnessService;
     private double[] weeklyInactiveSteps = new double[7];
     private double[] weeklyActiveSteps = new double[7];
@@ -101,35 +99,26 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         if(getIntent().getBooleanExtra("TEST", false)){
             String mainServiceKey = getIntent().getStringExtra("TEST_SERVICE_MAIN");
             String stepCountServiceKey = getIntent().getStringExtra("TEST_SERVICE_STEP_COUNT");
-            fitnessService = FitnessServiceFactory.create(mainServiceKey, this);
+            fitnessService = fitnessServiceFactory.create(mainServiceKey, this);
             setFitnessServiceKey(stepCountServiceKey);
         } else { // Normal setup
 
-            FitnessServiceFactory.put(MAIN_SERVICE, new FitnessServiceFactory.BluePrint() {
+            fitnessServiceFactory = new GoogleFitnessServiceFactory();
+            fitnessServiceFactory.put(MAIN_SERVICE, new FitnessServiceFactory.BluePrint() {
                 @Override
-                public FitnessService create(StepCountActivity stepCountActivity) {
-                    return null;
-                }
-
-                @Override
-                public FitnessService create(MainActivity mainActivity) {
-                    return new MainStepCountAdapter(mainActivity);
+                public FitnessService create(Activity activity) {
+                    return new UnplannedWalkAdapter(activity);
                 }
             });
 
-            FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
+            fitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
                 @Override
-                public FitnessService create(StepCountActivity stepCountActivity) {
-                    return new GoogleFitAdapter(stepCountActivity);
-                }
-
-                @Override
-                public FitnessService create(MainActivity mainActivity) {
-                    return null;
+                public FitnessService create(Activity activity) {
+                    return new PlannedWalkAdapter(activity);
                 }
             });
 
-            fitnessService = FitnessServiceFactory.create(MAIN_SERVICE, this);
+            fitnessService = fitnessServiceFactory.create(MAIN_SERVICE, this);
         }
 
         fitnessService.setup();
@@ -298,8 +287,8 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         } else if(strideLength == 0) {
             showHeightPrompt();
         } else {
-            Intent intent = new Intent(this, StepCountActivity.class);
-            intent.putExtra(StepCountActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
+            Intent intent = new Intent(this, PlannedWalkActivity.class);
+            intent.putExtra(PlannedWalkActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
             intent.putExtra("stride", strideLength);
             startActivityForResult(intent, REQUEST_CODE);
             switchToActive = true;
@@ -316,7 +305,7 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
 
         Log.d(TAG, "switch back to main activity success");
 
-        // Firstly it fetches active data from StepCountActivity
+        // Firstly it fetches active data from PlannedWalkActivity
         if(switchToActive) {
             super.onActivityResult(requestCode, resultCode, data);
             activeDistance = data.getFloatExtra("distance", 0.0f);
@@ -511,4 +500,18 @@ public class MainActivity extends AppCompatActivity implements HeightPrompter.He
         }
     }
 
+    @Override
+    public void registerObserver(Observer o) {
+
+    }
+
+    @Override
+    public void removeObserver(Observer o) {
+
+    }
+
+    @Override
+    public void notifyObservers() {
+
+    }
 }

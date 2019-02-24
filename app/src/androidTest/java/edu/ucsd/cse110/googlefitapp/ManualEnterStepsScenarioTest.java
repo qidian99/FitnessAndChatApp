@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.intent.Intents;
-import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
@@ -24,10 +23,9 @@ import org.junit.runner.RunWith;
 import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
-import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
-import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
@@ -41,7 +39,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withSpinnerText;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.core.IsAnything.anything;
-import static org.hamcrest.core.StringContains.containsString;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
@@ -60,9 +57,9 @@ public class ManualEnterStepsScenarioTest {
 
     @Before
     public void setup() {
-        FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        GoogleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
+            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
                 return null;
             }
 
@@ -71,10 +68,10 @@ public class ManualEnterStepsScenarioTest {
                 return new TestMainFitnessService(mainActivity);
             }
         });
-        FitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        GoogleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return new TestStepCountFitnessService(stepCountActivity);
+            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
+                return new TestStepCountFitnessService(plannedWalkActivity);
             }
 
             @Override
@@ -259,10 +256,10 @@ public class ManualEnterStepsScenarioTest {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private StepCountActivity stepCountActivity;
+        private PlannedWalkActivity plannedWalkActivity;
 
-        public TestStepCountFitnessService(StepCountActivity stepCountActivity) {
-            this.stepCountActivity = stepCountActivity;
+        public TestStepCountFitnessService(PlannedWalkActivity plannedWalkActivity) {
+            this.plannedWalkActivity = plannedWalkActivity;
         }
 
         @Override

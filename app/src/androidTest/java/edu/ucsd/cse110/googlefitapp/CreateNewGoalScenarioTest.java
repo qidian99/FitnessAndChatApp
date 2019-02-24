@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
-import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
 import static android.support.test.espresso.Espresso.onView;
@@ -55,9 +55,9 @@ public class CreateNewGoalScenarioTest {
 
     @Before
     public void setup() {
-        FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        GoogleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
+            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
                 return null;
             }
 
@@ -66,10 +66,10 @@ public class CreateNewGoalScenarioTest {
                 return new TestMainFitnessService(mainActivity);
             }
         });
-        FitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        GoogleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return new TestStepCountFitnessService(stepCountActivity);
+            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
+                return new TestStepCountFitnessService(plannedWalkActivity);
             }
 
             @Override
@@ -340,10 +340,10 @@ public class CreateNewGoalScenarioTest {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private StepCountActivity stepCountActivity;
+        private PlannedWalkActivity plannedWalkActivity;
 
-        public TestStepCountFitnessService(StepCountActivity stepCountActivity) {
-            this.stepCountActivity = stepCountActivity;
+        public TestStepCountFitnessService(PlannedWalkActivity plannedWalkActivity) {
+            this.plannedWalkActivity = plannedWalkActivity;
         }
 
         @Override

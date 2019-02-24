@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
-import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
 import static android.support.test.espresso.Espresso.onData;
@@ -34,7 +34,6 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.intent.Intents.intended;
-import static android.support.test.espresso.intent.VerificationModes.times;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -64,14 +63,14 @@ public class LogActiveSessionScenarioTest {
         }
     };
 
-    private ActivityTestRule<StepCountActivity> mStepCountActivityTestRule = new ActivityTestRule<>(StepCountActivity.class);
+    private ActivityTestRule<PlannedWalkActivity> mStepCountActivityTestRule = new ActivityTestRule<>(PlannedWalkActivity.class);
 
 
     @Before
     public void setup() {
-        FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        GoogleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
+            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
                 return null;
             }
 
@@ -80,10 +79,10 @@ public class LogActiveSessionScenarioTest {
                 return new TestMainFitnessService(mainActivity);
             }
         });
-        FitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        GoogleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return new TestStepCountFitnessService(stepCountActivity);
+            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
+                return new TestStepCountFitnessService(plannedWalkActivity);
             }
 
             @Override
@@ -144,7 +143,7 @@ public class LogActiveSessionScenarioTest {
     @Test
     public void userPressesStartButton() {
         mActivityTestRule.getActivity().launchStepCountActivity();
-        intended(hasComponent(new ComponentName(getTargetContext(), StepCountActivity.class)));
+        intended(hasComponent(new ComponentName(getTargetContext(), PlannedWalkActivity.class)));
         onView(withId(R.id.textSteps)).check(matches(withText("0")));
         
     }
@@ -161,7 +160,7 @@ public class LogActiveSessionScenarioTest {
     public void userPressesEndButton() {
         
         mActivityTestRule.getActivity().launchStepCountActivity();
-        intended(hasComponent(new ComponentName(getTargetContext(), StepCountActivity.class)));
+        intended(hasComponent(new ComponentName(getTargetContext(), PlannedWalkActivity.class)));
         onView(withId(R.id.btnEndRecord)).perform(click());
 //        onView(withText(R.string.invalidHeight))
 //                .inRoot(isDialog())
@@ -236,10 +235,10 @@ public class LogActiveSessionScenarioTest {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private StepCountActivity stepCountActivity;
+        private PlannedWalkActivity plannedWalkActivity;
 
-        public TestStepCountFitnessService(StepCountActivity stepCountActivity) {
-            this.stepCountActivity = stepCountActivity;
+        public TestStepCountFitnessService(PlannedWalkActivity plannedWalkActivity) {
+            this.plannedWalkActivity = plannedWalkActivity;
         }
 
         @Override
@@ -254,7 +253,7 @@ public class LogActiveSessionScenarioTest {
 
         @Override
         public void updateStepCount() {
-            ((TextView)stepCountActivity.findViewById(R.id.textSteps)).setText("0");
+            ((TextView) plannedWalkActivity.findViewById(R.id.textSteps)).setText("0");
         }
 
         @Override

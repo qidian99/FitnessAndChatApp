@@ -1,38 +1,22 @@
 package edu.ucsd.cse110.googlefitapp;
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.health.SystemHealthManager;
-import android.renderscript.Element;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.fitness.Fitness;
-import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.result.DailyTotalResult;
-
-import java.security.spec.ECField;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
-import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
-import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
 
-public class StepCountActivity extends AppCompatActivity {
+public class PlannedWalkActivity extends Activity {
 
     public static final String FITNESS_SERVICE_KEY = "FITNESS_SERVICE_KEY";
 
-    private static final String TAG = "StepCountActivity";
+    private static final String TAG = "PlannedWalkActivity";
     private static final int RESULT_CODE = 1000;
 
     private TextView textSteps;
@@ -104,7 +88,7 @@ public class StepCountActivity extends AppCompatActivity {
         strideLen = getIntent().getFloatExtra("stride", 0);
 
         String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
-        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
+        fitnessService = MainActivity.fitnessServiceFactory.create(fitnessServiceKey, this);
         fitnessService.updateStepCount();
 
         Button btnUpdateSteps = findViewById(R.id.buttonUpdateSteps);
@@ -120,7 +104,7 @@ public class StepCountActivity extends AppCompatActivity {
         btnMockData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((GoogleFitAdapter) fitnessService).mockDataPoint();
+                ((PlannedWalkAdapter) fitnessService).mockDataPoint();
                 Log.d(TAG, "mock data point success");
             }
         });
@@ -242,5 +226,20 @@ public class StepCountActivity extends AppCompatActivity {
 
     public float getSpeed() {
         return speed;
+    }
+
+    @Override
+    public void registerObserver(Observer o) {
+
+    }
+
+    @Override
+    public void removeObserver(Observer o) {
+
+    }
+
+    @Override
+    public void notifyObservers() {
+
     }
 }

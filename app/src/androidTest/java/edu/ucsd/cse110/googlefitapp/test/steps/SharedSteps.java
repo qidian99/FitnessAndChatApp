@@ -4,7 +4,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.espresso.matcher.ViewMatchers;
@@ -14,7 +13,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import cucumber.api.PendingException;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
@@ -22,11 +20,10 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
+import edu.ucsd.cse110.googlefitapp.PlannedWalkActivity;
 import edu.ucsd.cse110.googlefitapp.R;
-import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
-import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
-import gherkin.cli.Main;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.content.Context.MODE_PRIVATE;
 import static android.support.test.InstrumentationRegistry.getTargetContext;
@@ -82,9 +79,9 @@ public class SharedSteps {
 
     @Before
     public void setup() {
-        FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        GoogleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
+            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
                 return null;
             }
 
@@ -93,10 +90,10 @@ public class SharedSteps {
                 return new TestMainFitnessService(mainActivity);
             }
         });
-        FitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        GoogleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new GoogleFitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return new TestStepCountFitnessService(stepCountActivity);
+            public FitnessService create(PlannedWalkActivity plannedWalkActivity) {
+                return new TestStepCountFitnessService(plannedWalkActivity);
             }
 
             @Override
@@ -324,10 +321,10 @@ public class SharedSteps {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private StepCountActivity stepCountActivity;
+        private PlannedWalkActivity plannedWalkActivity;
 
-        public TestStepCountFitnessService(StepCountActivity stepCountActivity) {
-            this.stepCountActivity = stepCountActivity;
+        public TestStepCountFitnessService(PlannedWalkActivity plannedWalkActivity) {
+            this.plannedWalkActivity = plannedWalkActivity;
         }
 
         @Override
