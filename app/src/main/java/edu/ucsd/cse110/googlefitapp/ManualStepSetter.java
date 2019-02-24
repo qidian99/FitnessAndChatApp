@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 public class ManualStepSetter extends DialogFragment {
+    private final String TAG = "ManualStepSetter";
     public ManualStepSetter() {}
     public interface ManualStepSetterListener {
         void onFinishEditDialog(int[] inputStep);
@@ -24,6 +26,9 @@ public class ManualStepSetter extends DialogFragment {
 
 
     public static ManualStepSetter newInstance(String title) {
+        if(title == null) {
+            return null;
+        }
         ManualStepSetter frag = new ManualStepSetter();
         Bundle args = new Bundle();
         args.putString("title", title);
@@ -34,31 +39,44 @@ public class ManualStepSetter extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = getActivity().getLayoutInflater().inflate(R.layout.fragment_prompt_step, container, false);
-        getDialog().setTitle(getString(R.string.stepPrompt));
+        View v = null;
+        try {
+            v = getActivity().getLayoutInflater().inflate(R.layout.fragment_prompt_step, container, false);
+            getDialog().setTitle(getString(R.string.stepPrompt));
+            Log.d(TAG, "onCreateView Success");
+        } catch (Exception e) {
+            Log.d(TAG, "onCreateView Fail: " + e.toString());
+            e.printStackTrace();
+        }
         return v;
     }
 
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        try {
+            super.onViewCreated(view, savedInstanceState);
 
-        setCancelable(true);
+            setCancelable(true);
 
-        stepText = view.findViewById(R.id.num_steps);
-        Button posBtn = view.findViewById(R.id.stepPosBtn);
+            stepText = view.findViewById(R.id.num_steps);
+            Button posBtn = view.findViewById(R.id.stepPosBtn);
 
-        posBtn.setOnClickListener(v -> finishEnterStep());
+            posBtn.setOnClickListener(v -> finishEnterStep());
 
-        // Show soft keyboard
-        this.window = getDialog().getWindow();
-        stepText.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) {
-                window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-            }
-        });
-        stepText.requestFocus();
+            // Show soft keyboard
+            this.window = getDialog().getWindow();
+            stepText.setOnFocusChangeListener((v, hasFocus) -> {
+                if (hasFocus) {
+                    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                }
+            });
+            stepText.requestFocus();
+            Log.d(TAG, "onViewCreated Success");
+        } catch (Exception e) {
+            Log.d(TAG, "onViewCreated Fail: " + e.toString());
+            e.printStackTrace();
+        }
     }
 
     public boolean finishEnterStep() {
@@ -88,10 +106,10 @@ public class ManualStepSetter extends DialogFragment {
 
             AlertDialog alertInvalidInput = builder1.create();
             alertInvalidInput.show();
-
+            Log.d(TAG, "finishEnterStep Fail, " + e.toString());
             return false;
         }
-
+        Log.d(TAG, "finishEnterStep Success");
         listener.onFinishEditDialog(new int[]{step});
         dismiss();
         return true;

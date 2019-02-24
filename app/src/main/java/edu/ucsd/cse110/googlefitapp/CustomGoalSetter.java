@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 public class CustomGoalSetter extends DialogFragment implements TextView.OnEditorActionListener {
+    private final String TAG = "CustomGoalSetter";
+
     public interface GoalPrompterListener {
         void onFinishEditDialog(int goal);
     }
@@ -27,6 +30,9 @@ public class CustomGoalSetter extends DialogFragment implements TextView.OnEdito
     public CustomGoalSetter() {}
 
     public static CustomGoalSetter newInstance(String title) {
+        if(title == null) {
+            return null;
+        }
         CustomGoalSetter frag = new CustomGoalSetter();
         Bundle args = new Bundle();
         args.putString("title", title);
@@ -37,49 +43,59 @@ public class CustomGoalSetter extends DialogFragment implements TextView.OnEdito
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = getActivity().getLayoutInflater().inflate(R.layout.fragment_set_goal, container, false);
-        getDialog().setTitle(getString(R.string.setGoalPrompt));
+        View v = null;
+        try {
+            v = getActivity().getLayoutInflater().inflate(R.layout.fragment_set_goal, container, false);
+            getDialog().setTitle(getString(R.string.setGoalPrompt));
+            Log.d(TAG, "onCreateView Success");
+        } catch (Exception e) {
+            Log.d(TAG, "onCreateView Fail: " + e.toString());
+            e.printStackTrace();
+        }
         return v;
     }
 
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        try {
+            super.onViewCreated(view, savedInstanceState);
 
-        newGoalTxt = (EditText) view.findViewById(R.id.newGoal);
-        this.newGoalTxt.setOnEditorActionListener(this);
-        Button doneBtn = view.findViewById(R.id.doneBtn);
+            newGoalTxt = view.findViewById(R.id.newGoal);
+            this.newGoalTxt.setOnEditorActionListener(this);
+            Button doneBtn = view.findViewById(R.id.doneBtn);
 
-        doneBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finishEnterGoal();
-            }
-        });
-        
-        setCancelable(true);
+            doneBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finishEnterGoal();
+                }
+            });
 
-        // Show soft keyboard
-        this.window = getDialog().getWindow();
-        this.newGoalTxt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                                               @Override
-                                               public void onFocusChange(View v, boolean hasFocus) {
-                                                   if (hasFocus) {
-                                                       window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+            setCancelable(true);
+
+            // Show soft keyboard
+            this.window = getDialog().getWindow();
+            this.newGoalTxt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                                                   @Override
+                                                   public void onFocusChange(View v, boolean hasFocus) {
+                                                       if (hasFocus) {
+                                                           window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                                                       }
                                                    }
-                                               }
-                                           });
-        this.newGoalTxt.requestFocus();
-
-//        getDialog().getWindow().setSoftInputMode(
-//                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-
+                                               });
+            this.newGoalTxt.requestFocus();
+            Log.d(TAG, "onViewCreated Success");
+        } catch (Exception e) {
+            Log.d(TAG, "onViewCreated Fail: " + e.toString());
+            e.printStackTrace();
+        }
     }
 
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (EditorInfo.IME_ACTION_DONE == actionId) {
+            Log.d(TAG, "onEditorAction Success");
             return finishEnterGoal();
         }
         return false;
@@ -116,10 +132,10 @@ public class CustomGoalSetter extends DialogFragment implements TextView.OnEdito
 
             AlertDialog alertInvalidInput = builder1.create();
             alertInvalidInput.show();
-
+            Log.d(TAG, "finishEnterGoal Fail, " + e.toString());
             return false;
         }
-
+        Log.d(TAG, "finishEnterGoal Success");
         listener.onFinishEditDialog(goal);
         dismiss();
         return true;
