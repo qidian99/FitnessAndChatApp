@@ -1,7 +1,6 @@
 package edu.ucsd.cse110.googlefitapp;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,20 +22,17 @@ import android.widget.TextView;
 import java.util.Objects;
 
 public class HeightPrompter extends DialogFragment implements TextView.OnEditorActionListener {
-    public interface HeightPrompterListener {
-        void onFinishEditDialog(String[] inputText);
-    }
     private final String TAG = "HeightPrompter";
-
     Window window;
     EditText centText;
     EditText ftText;
     EditText inchText;
     Spinner spinner;
-    public HeightPrompter() {}
+    public HeightPrompter() {
+    }
 
     public static HeightPrompter newInstance(String title) {
-        if(title == null) {
+        if (title == null) {
             return null;
         }
         HeightPrompter frag = new HeightPrompter();
@@ -61,7 +57,6 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
         return v;
     }
 
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         try {
@@ -78,7 +73,7 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     int idx = spinner.getSelectedItemPosition();
-                    if( idx == 0 ){ // Use centimeters as metric
+                    if (idx == 0) { // Use centimeters as metric
                         inchText.setVisibility(View.GONE);
                         ftText.setVisibility(View.GONE);
                         centText.setVisibility(View.VISIBLE);
@@ -102,7 +97,7 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
             centText.setOnFocusChangeListener((v, hasFocus) -> {
                 if (hasFocus) {
                     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                    }
+                }
             });
             centText.requestFocus();
             Log.d(TAG, "onViewCreated Success");
@@ -195,5 +190,9 @@ public class HeightPrompter extends DialogFragment implements TextView.OnEditorA
             dismiss();
             return true;
         }
+    }
+
+    public interface HeightPrompterListener {
+        void onFinishEditDialog(String[] inputText);
     }
 }

@@ -1,4 +1,5 @@
 package edu.ucsd.cse110.googlefitapp;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -38,7 +39,7 @@ public class PlannedWalkActivity extends Activity {
         try {
             super.onRestart();
             fitnessService.startAsync();
-            Log.d(TAG,"start async success");
+            Log.d(TAG, "start async success");
         } catch (Exception e) {
             Log.d(TAG, "start async failed" + e.toString());
             e.printStackTrace();
@@ -68,7 +69,7 @@ public class PlannedWalkActivity extends Activity {
                             isTimePrinted = true;
                         }
 
-                        tv = (TextView)findViewById(R.id.timer_text);
+                        tv = (TextView) findViewById(R.id.timer_text);
 
                         setTime();
                         setDistance();
@@ -157,7 +158,7 @@ public class PlannedWalkActivity extends Activity {
         SharedPreferences sharedPref = getSharedPreferences("stepCountData", MODE_PRIVATE);
         recordInitialStep = sharedPref.getBoolean("recordInitialStep", true);
 
-        if(recordInitialStep) {
+        if (recordInitialStep) {
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putInt("initialSteps", stepCount);
             editor.putBoolean("recordInitialStep", false);
@@ -175,10 +176,10 @@ public class PlannedWalkActivity extends Activity {
     }
 
     public void setSpeed() {
-        if(time == 0) {
+        if (time == 0) {
             speed = 0.0f;
         } else {
-            speed = distance/(float)time * 3600.0f;
+            speed = distance / (float) time * 3600.0f;
         }
         textSpeed.setText(String.format("%.1f MPH", speed));
     }
@@ -187,7 +188,7 @@ public class PlannedWalkActivity extends Activity {
         int min = time / 60;
         int sec = time % 60;
 
-        if(sec < 10) {
+        if (sec < 10) {
             tv.setText(String.format("%d:0%d", min, sec));
         } else {
             tv.setText(String.format("%d:%d", min, sec));
@@ -209,16 +210,12 @@ public class PlannedWalkActivity extends Activity {
         this.strideLen = strideLen;
     }
 
-    public void setDistance(float dist) {
-        this.distance = dist;
+    public int getTime() {
+        return time;
     }
 
     public void setTime(int time) {
         this.time = time;
-    }
-
-    public int getTime() {
-        return time;
     }
 
     public int getSteps() {
@@ -227,6 +224,10 @@ public class PlannedWalkActivity extends Activity {
 
     public float getDistance() {
         return distance;
+    }
+
+    public void setDistance(float dist) {
+        this.distance = dist;
     }
 
     public float getSpeed() {

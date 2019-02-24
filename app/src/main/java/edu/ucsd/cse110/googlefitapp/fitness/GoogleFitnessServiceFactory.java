@@ -1,8 +1,5 @@
 package edu.ucsd.cse110.googlefitapp.fitness;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class GoogleFitnessServiceFactory extends FitnessServiceFactory {
     private static final String TAG = "[FitnessService]";
 

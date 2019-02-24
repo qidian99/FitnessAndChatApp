@@ -4,10 +4,11 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.TextView;
 
-public class StepDisplay implements Observer{
+public class StepDisplay implements Observer {
     private final String TAG = "StepDisplay Observer";
     private MainActivity activity;
-    public StepDisplay(MainActivity activity){
+
+    public StepDisplay(MainActivity activity) {
         this.activity = activity;
         activity.registerObserver(this);
     }

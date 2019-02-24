@@ -13,22 +13,22 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class DataDisplayer extends DialogFragment {
+    private static final String TAG = "DataDisplayer";
+    private final String FORMAT_STR = "Steps: %d\n" +
+            "Time elapsed: %d' %d\"\n" +
+            "Distance: %.1f miles\n" +
+            "Speed: %.1f miles/hour";
     float distance;
     float speed;
     int steps;
     int sec;
     int min;
-    private static final String TAG = "DataDisplayer";
-
-    private final String FORMAT_STR = "Steps: %d\n" +
-                                      "Time elapsed: %d' %d\"\n" +
-                                      "Distance: %.1f miles\n" +
-                                      "Speed: %.1f miles/hour";
-
     private TextView data;
     private Button okButton;
+    private Window window;
 
-    public DataDisplayer() {}
+    public DataDisplayer() {
+    }
 
     @SuppressLint("ValidFragment")
     public DataDisplayer(float distance, float speed, int steps, int min, int sec) {
@@ -38,8 +38,6 @@ public class DataDisplayer extends DialogFragment {
         this.sec = sec;
         this.min = min;
     }
-
-    private Window window;
 
     public static DataDisplayer newInstance(String title, float distance, float speed, int steps, int min, int sec) {
         DataDisplayer frag = new DataDisplayer(distance, speed, steps, min, sec);

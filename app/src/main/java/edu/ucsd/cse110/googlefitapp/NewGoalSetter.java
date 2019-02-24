@@ -18,25 +18,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class NewGoalSetter extends DialogFragment {
+    public static final int SUGGESTED_GOAL_INCREMENT = 500;
     private final String TAG = "NewGoalSetter";
-    public NewGoalSetter() {}
-
+    private Window window;
+    private EditText newGoalTxt;
+    private int currentGoal;
+    public NewGoalSetter() {
+    }
     @SuppressLint("ValidFragment")
     public NewGoalSetter(int currentGoal) {
         this.currentGoal = currentGoal;
     }
 
-    private Window window;
-    private EditText newGoalTxt;
-    private int currentGoal;
-    public static final int SUGGESTED_GOAL_INCREMENT = 500;
-
-    public int getCurrentGoal() {
-        return this.currentGoal;
-    }
-
     public static NewGoalSetter newInstance(String title, int currentGoal) {
-        if(title == null) {
+        if (title == null) {
             return null;
         }
         NewGoalSetter frag = new NewGoalSetter(currentGoal);
@@ -44,6 +39,10 @@ public class NewGoalSetter extends DialogFragment {
         args.putString("title", title);
         frag.setArguments(args);
         return frag;
+    }
+
+    public int getCurrentGoal() {
+        return this.currentGoal;
     }
 
     @Override

@@ -19,18 +19,13 @@ import android.widget.TextView;
 
 public class CustomGoalSetter extends DialogFragment implements TextView.OnEditorActionListener {
     private final String TAG = "CustomGoalSetter";
-
-    public interface GoalPrompterListener {
-        void onFinishEditDialog(int goal);
-    }
-
     private Window window;
     private EditText newGoalTxt;
-
-    public CustomGoalSetter() {}
+    public CustomGoalSetter() {
+    }
 
     public static CustomGoalSetter newInstance(String title) {
-        if(title == null) {
+        if (title == null) {
             return null;
         }
         CustomGoalSetter frag = new CustomGoalSetter();
@@ -55,7 +50,6 @@ public class CustomGoalSetter extends DialogFragment implements TextView.OnEdito
         return v;
     }
 
-
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         try {
@@ -77,13 +71,13 @@ public class CustomGoalSetter extends DialogFragment implements TextView.OnEdito
             // Show soft keyboard
             this.window = getDialog().getWindow();
             this.newGoalTxt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                                                   @Override
-                                                   public void onFocusChange(View v, boolean hasFocus) {
-                                                       if (hasFocus) {
-                                                           window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                                                       }
-                                                   }
-                                               });
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                    }
+                }
+            });
             this.newGoalTxt.requestFocus();
             Log.d(TAG, "onViewCreated Success");
         } catch (Exception e) {
@@ -139,5 +133,9 @@ public class CustomGoalSetter extends DialogFragment implements TextView.OnEdito
         listener.onFinishEditDialog(goal);
         dismiss();
         return true;
+    }
+
+    public interface GoalPrompterListener {
+        void onFinishEditDialog(int goal);
     }
 }

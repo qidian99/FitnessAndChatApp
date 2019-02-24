@@ -22,20 +22,17 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
-import edu.ucsd.cse110.googlefitapp.Activity;
-import edu.ucsd.cse110.googlefitapp.StepCalendar;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 
 public class PlannedWalkAdapter implements FitnessService {
+    public static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "PlannedWalkAdapter";
-
-    boolean isCancelled = false;
-
     protected Activity plannedWalkActivity;
-    private int step = 0;
     protected int totalSteps = 0;
-    public static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
+    boolean isCancelled = false;
+    private int step = 0;
+
     public PlannedWalkAdapter(Activity activity) {
         this.plannedWalkActivity = activity;
     }
@@ -81,10 +78,12 @@ public class PlannedWalkAdapter implements FitnessService {
     }
 
     @Override
-    public void addInactiveSteps(int extraStep) {}
+    public void addInactiveSteps(int extraStep) {
+    }
 
     @Override
-    public void addActiveSteps(int step) {}
+    public void addActiveSteps(int step) {
+    }
 
     @Override
     public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
@@ -94,44 +93,6 @@ public class PlannedWalkAdapter implements FitnessService {
     @Override
     public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
         return null;
-    }
-
-    private class CountToTenAsyncTask extends AsyncTask<String, String, Void> {
-
-        @Override
-        protected Void doInBackground(String... sleepTime) {
-            while(!isCancelled) {
-
-                try {
-
-                    Thread.sleep(Integer.valueOf(sleepTime[0]));
-                    publishProgress();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {}
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected void onProgressUpdate(String... text) {
-
-            if (isCancelled) {
-                cancel(true);
-            } else {
-                Log.d(TAG, "onProgressUpdate Success");
-
-                updateStepCount();
-            }
-        }
     }
 
     private void startRecording() {
@@ -155,7 +116,6 @@ public class PlannedWalkAdapter implements FitnessService {
                     }
                 });
     }
-
 
     /**
      * Reads the current daily step total, computed from midnight of the current day on the device's
@@ -212,7 +172,7 @@ public class PlannedWalkAdapter implements FitnessService {
 
     }
 
-    public void mockDataPoint(){
+    public void mockDataPoint() {
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(plannedWalkActivity);
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
@@ -237,7 +197,7 @@ public class PlannedWalkAdapter implements FitnessService {
                             public void onSuccess(DataReadResponse dataReadResponse) {
                                 DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
                                 Log.d(TAG, "mockDataPoint dataSet.isEmpty() = " + dataSet.isEmpty());
-                                if(dataSet.isEmpty()) {
+                                if (dataSet.isEmpty()) {
                                     int stepCountDelta = 500;
                                     Calendar cal = StepCalendar.getInstance();
                                     long endTime = cal.getTimeInMillis();
@@ -276,7 +236,7 @@ public class PlannedWalkAdapter implements FitnessService {
                                     DataSet dataSet2 = DataSet.create(dataSource);
                                     DataPoint dataPoint =
                                             dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0)
-                                                    .getStartTime(TimeUnit.MILLISECONDS),dataSet.getDataPoints().get(0)
+                                                    .getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0)
                                                     .getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
                                     dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
                                     dataSet2.add(dataPoint);
@@ -285,7 +245,7 @@ public class PlannedWalkAdapter implements FitnessService {
                                     DataUpdateRequest request = new DataUpdateRequest.Builder()
                                             .setDataSet(dataSet2)
                                             .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS),
-                                                    dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS )
+                                                    dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
                                             .build();
 
                                     Fitness.getHistoryClient(plannedWalkActivity, GoogleSignIn.getLastSignedInAccount(plannedWalkActivity)).
@@ -294,12 +254,52 @@ public class PlannedWalkAdapter implements FitnessService {
                                 updateStepCount();
                             }
                         })
-                .addOnFailureListener(e -> {});
+                .addOnFailureListener(e -> {
+                });
     }
 
     @Override
     public int getRequestCode() {
         return GOOGLE_FIT_PERMISSIONS_REQUEST_CODE;
+    }
+
+    private class CountToTenAsyncTask extends AsyncTask<String, String, Void> {
+
+        @Override
+        protected Void doInBackground(String... sleepTime) {
+            while (!isCancelled) {
+
+                try {
+
+                    Thread.sleep(Integer.valueOf(sleepTime[0]));
+                    publishProgress();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onProgressUpdate(String... text) {
+
+            if (isCancelled) {
+                cancel(true);
+            } else {
+                Log.d(TAG, "onProgressUpdate Success");
+
+                updateStepCount();
+            }
+        }
     }
 
 }

@@ -1,7 +1,6 @@
 package edu.ucsd.cse110.googlefitapp;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -16,17 +15,14 @@ import android.widget.EditText;
 
 public class ManualStepSetter extends DialogFragment {
     private final String TAG = "ManualStepSetter";
-    public ManualStepSetter() {}
-    public interface ManualStepSetterListener {
-        void onFinishEditDialog(int[] inputStep);
-    }
-
     private Window window;
     private EditText stepText;
 
+    public ManualStepSetter() {
+    }
 
     public static ManualStepSetter newInstance(String title) {
-        if(title == null) {
+        if (title == null) {
             return null;
         }
         ManualStepSetter frag = new ManualStepSetter();
@@ -50,7 +46,6 @@ public class ManualStepSetter extends DialogFragment {
         }
         return v;
     }
-
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -114,5 +109,9 @@ public class ManualStepSetter extends DialogFragment {
         dismiss();
         return true;
 
+    }
+
+    public interface ManualStepSetterListener {
+        void onFinishEditDialog(int[] inputStep);
     }
 }

@@ -21,15 +21,54 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
-import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 public class MainActivity extends Activity implements HeightPrompter.HeightPrompterListener,
         CustomGoalSetter.GoalPrompterListener, ManualStepSetter.ManualStepSetterListener,
-        DatePickerDialog.OnDateSetListener{
-    private String fitnessServiceKey = "GOOGLE_FIT";
+        DatePickerDialog.OnDateSetListener {
     public static final String MAIN_SERVICE = "MAIN_SERVICE";
+    public static final String SHOW_STRIDE = "Your estimated stride length is %.2f\"";
+    public static final String SHOW_GOAL = "%d";
+    public static final String SHOW_STEP = "%d";
+    public static final String SHOW_STEPS_LEFT = "%d";
+    public static final String SHARED_PREFERENCE_NAME = "user_data";
+    public static final String KEY_MAGNITUDE = "magnitude";
+    public static final String KEY_METRIC = "metric";
+    public static final String KEY_GOAL = "goal";
+    public static final String KEY_STRIDE = "stride";
+    public static final int DEFAULT_GOAL = 5000;
+    public static final String TAG = "MAIN";
     private static final int REQUEST_CODE = 1000;
+    public static boolean firstTimeUser = true;
+    public static FitnessServiceFactory fitnessServiceFactory;
+    public static Calendar calendar = StepCalendar.getInstance();
+    SharedPreferences stepPref;
+    SharedPreferences statsPref;
+    SharedPreferences sharedPref;
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private String fitnessServiceKey = "GOOGLE_FIT";
+    private boolean switchToActive = false;
+    private boolean goalChangeable = false;
+    private boolean canShowHalfEncour = false;
+    private boolean canShowOverPrevEncour = false;
+    private int goal;
+    private float activeDistance;
+    private float activeSpeed;
+    private int activeMin;
+    private int activeSec;
+    private int activeSteps = 0;
+    private float strideLength;
+    private FitnessService fitnessService;
+    private double[] weeklyInactiveSteps = new double[7];
+    private double[] weeklyActiveSteps = new double[7];
+    private ArrayList<Observer> observers = new ArrayList<>();
+    private int currentStep;
+    private int lastStep;
+    private int day;
+    private int yesterday;
+    private int today;
+    private boolean notCleared;
 
     public SharedPreferences getStepPref() {
         return stepPref;
@@ -43,81 +82,32 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
         return sharedPref;
     }
 
-    SharedPreferences stepPref;
-    SharedPreferences statsPref;
-    SharedPreferences sharedPref;
-
-    public static final String SHOW_STRIDE = "Your estimated stride length is %.2f\"";
-
-    public static final String SHOW_GOAL = "%d";
-    public static final String SHOW_STEP = "%d";
-    public static final String SHOW_STEPS_LEFT = "%d";
-    public static final String SHARED_PREFERENCE_NAME = "user_data";
-    public static final String KEY_MAGNITUDE = "magnitude";
-    public static final String KEY_METRIC = "metric";
-    public static final String KEY_GOAL = "goal";
-    public static final String KEY_STRIDE = "stride";
-    public static final int DEFAULT_GOAL = 5000;
-    public static boolean firstTimeUser = true;
-
-    private boolean switchToActive = false;
-    private boolean goalChangeable = false;
-    private boolean canShowHalfEncour = false;
-    private boolean canShowOverPrevEncour = false;
-    private int goal;
-
-    private float activeDistance;
-    private float activeSpeed;
-    private int activeMin;
-    private int activeSec;
-    private int activeSteps = 0;
-
     public float getStrideLength() {
         return strideLength;
-    }
-
-    private float strideLength;
-
-    public static FitnessServiceFactory fitnessServiceFactory;
-    private FitnessService fitnessService;
-    private double[] weeklyInactiveSteps = new double[7];
-    private double[] weeklyActiveSteps = new double[7];
-    public static final String TAG = "MAIN";
-
-    public static Calendar calendar = StepCalendar.getInstance();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
-    private ArrayList<Observer> observers = new ArrayList<>();
-    private int currentStep;
-    private int lastStep;
-    private int day;
-    private int yesterday;
-    private int today;
-    private boolean notCleared;
-
-    public void setGoalChangeable(boolean goalChangeable) {
-        this.goalChangeable = goalChangeable;
     }
 
     public boolean getGoalChangeable() {
         return this.goalChangeable;
     }
 
-
-    public void setCanShowHalfEncour(boolean canShowHalfEncour) {
-        this.canShowHalfEncour = canShowHalfEncour;
+    public void setGoalChangeable(boolean goalChangeable) {
+        this.goalChangeable = goalChangeable;
     }
 
     public boolean getCanShowHalfEncour() {
         return this.canShowHalfEncour;
     }
 
-    public void setCanShowOverPrevEncour(boolean canShowOverPrevEncour) {
-        this.canShowOverPrevEncour = canShowOverPrevEncour;
+    public void setCanShowHalfEncour(boolean canShowHalfEncour) {
+        this.canShowHalfEncour = canShowHalfEncour;
     }
 
     public boolean getCanShowOverPrevEncour() {
         return this.canShowOverPrevEncour;
+    }
+
+    public void setCanShowOverPrevEncour(boolean canShowOverPrevEncour) {
+        this.canShowOverPrevEncour = canShowOverPrevEncour;
     }
 
     @Override
@@ -126,7 +116,7 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
         setContentView(R.layout.activity_main);
 
         // For testing
-        if(getIntent().getBooleanExtra("TEST", false)){
+        if (getIntent().getBooleanExtra("TEST", false)) {
             String mainServiceKey = getIntent().getStringExtra("TEST_SERVICE_MAIN");
             String stepCountServiceKey = getIntent().getStringExtra("TEST_SERVICE_STEP_COUNT");
             fitnessService = fitnessServiceFactory.create(mainServiceKey, this);
@@ -166,7 +156,7 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
 
         // Update goal
         int currentGoal = sharedPref.getInt(KEY_GOAL, -1);
-        if( currentGoal == -1 ){
+        if (currentGoal == -1) {
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putInt(KEY_GOAL, DEFAULT_GOAL);
             editor.apply();
@@ -249,7 +239,7 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
         int today = calendar.get(Calendar.DAY_OF_WEEK);
         int day = sharedPref.getInt("day", -1);
 
-        if(day != today) {
+        if (day != today) {
             goalChangeable = true;
             canShowHalfEncour = true;
             canShowOverPrevEncour = true;
@@ -290,9 +280,9 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
     }
 
     public void launchStepCountActivity() {
-        if(!fitnessService.hasPermission()){
+        if (!fitnessService.hasPermission()) {
             fitnessService.setup();
-        } else if(strideLength == 0) {
+        } else if (strideLength == 0) {
             showHeightPrompt();
         } else {
             Intent intent = new Intent(this, PlannedWalkActivity.class);
@@ -308,13 +298,13 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // User pressed the return button on their device -- no extras on intent
-        if(data == null)
+        if (data == null)
             return;
 
         Log.d(TAG, "switch back to main activity success");
 
         // Firstly it fetches active data from PlannedWalkActivity
-        if(switchToActive) {
+        if (switchToActive) {
             super.onActivityResult(requestCode, resultCode, data);
             stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
             statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
@@ -418,12 +408,12 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
         editor.putString(KEY_METRIC, inputText[1]);
 
         // Case 1: use centimeter as metric
-        if(Integer.parseInt(inputText[0]) == 0 ){
+        if (Integer.parseInt(inputText[0]) == 0) {
             strideLength = (float) (Integer.parseInt(inputText[1]) / 2.54 * 0.413);
         }
         // Case 2: use feet as metric
         else {
-            strideLength = (float) ((Integer.parseInt(inputText[1])*12 +
+            strideLength = (float) ((Integer.parseInt(inputText[1]) * 12 +
                     Integer.parseInt(inputText[2])) * 0.413);
         }
         editor.putFloat(KEY_STRIDE, strideLength);
@@ -461,7 +451,7 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
         this.calendar = calendar;
     }
 
-    public void mockCalendar(View view){
+    public void mockCalendar(View view) {
         System.out.println(fitnessService.getLast7DaysSteps(weeklyInactiveSteps, weeklyActiveSteps,
                 Calendar.getInstance()));
     }
@@ -471,7 +461,7 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
         StepCalendar.set(year, month, dayOfMonth);
         calendar = StepCalendar.getInstance();
         dateFormat.setCalendar(calendar);
-        Log.d(TAG, "New year: " + year + ", New month: " + (month+1) + ", New date: "
+        Log.d(TAG, "New year: " + year + ", New month: " + (month + 1) + ", New date: "
                 + dayOfMonth
                 + ", New day of Week: " + calendar.get(Calendar.DAY_OF_WEEK));
 
@@ -508,7 +498,7 @@ public class MainActivity extends Activity implements HeightPrompter.HeightPromp
         lastStep = getSharedPreferences("weekly_steps", Context.MODE_PRIVATE).getInt(String.valueOf(yesterday), 0);
         notCleared = sharedPref.getBoolean("graphNotCleared", true);
 
-        for(int i = 0; i < observers.size(); i++){
+        for (int i = 0; i < observers.size(); i++) {
             Observer observer = observers.get(i);
             observer.update(currentStep, lastStep, goal, day, yesterday, today, notCleared);
         }

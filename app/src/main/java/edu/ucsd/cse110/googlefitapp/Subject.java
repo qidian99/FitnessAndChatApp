@@ -2,7 +2,9 @@ package edu.ucsd.cse110.googlefitapp;
 
 public interface Subject {
     public void registerObserver(Observer o);
+
     public void removeObserver(Observer o);
+
     public void notifyObservers();
 
 }

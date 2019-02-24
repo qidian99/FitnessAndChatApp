@@ -12,7 +12,7 @@ public abstract class FitnessServiceFactory {
 
     public abstract void put(String key, BluePrint bluePrint);
 
-    public FitnessService create(String key, Activity activity){
+    public FitnessService create(String key, Activity activity) {
         Log.i(getTag(), String.format("creating Service with key %s", key));
         return blueprints.get(key).create(activity);
     }

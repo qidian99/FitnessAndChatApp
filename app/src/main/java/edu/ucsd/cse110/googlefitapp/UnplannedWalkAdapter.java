@@ -34,16 +34,16 @@ import java.util.concurrent.TimeUnit;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 
 public class UnplannedWalkAdapter implements FitnessService {
+    public static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.activedata";
+    public static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
+    public static Calendar calendar = MainActivity.calendar;
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "UnplannedWalkAdapter";
+    boolean isCancelled = false;
     private FitnessOptions fitnessOptions;
     private Activity activity;
     private DataType activeDataType;
-    public static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.activedata";
-    public static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
     private int currentStep;
-    boolean isCancelled = false;
-    public static Calendar calendar = MainActivity.calendar;
 
     public UnplannedWalkAdapter(Activity activity) {
         this.activity = activity;
@@ -88,7 +88,8 @@ public class UnplannedWalkAdapter implements FitnessService {
                                     Fitness.getConfigClient(activity, gsa).readDataType(ACTIVE_DT_NAME);
                             activeDataType = Tasks.await(pendingResult);
                             Log.d(TAG, "Active Data Type: " + activeDataType.toString());
-                            if(activeDataType == null) throw new Exception("failed to create new data type.");
+                            if (activeDataType == null)
+                                throw new Exception("failed to create new data type.");
                         }
                     } catch (ExecutionException e) {
                         e.printStackTrace();
@@ -430,12 +431,12 @@ public class UnplannedWalkAdapter implements FitnessService {
                                     Log.d(TAG, String.format("getLast7DaysSteps - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
                                     Bucket bucket = dataReadResponse.getBuckets().get(i);
                                     DataSet dtSet = bucket.getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
-                                    if(dtSet != null && !dtSet.isEmpty()){
+                                    if (dtSet != null && !dtSet.isEmpty()) {
                                         Log.d(TAG, "getLast7DaysSteps - dtSet steps = " + dtSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
                                     }
 
                                     DataSet dtSet2 = bucket.getDataSet(activeDataType);
-                                    if(dtSet2 != null && !dtSet2.isEmpty()){
+                                    if (dtSet2 != null && !dtSet2.isEmpty()) {
                                         Log.d(TAG, "getLast7DaysSteps - dtSet2 steps = " + dtSet2.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
                                     }
                                 }
@@ -463,7 +464,7 @@ public class UnplannedWalkAdapter implements FitnessService {
 
         @Override
         protected Void doInBackground(String... sleepTime) {
-            while(!isCancelled) {
+            while (!isCancelled) {
 
                 try {
                     Thread.sleep(Integer.valueOf(sleepTime[0]));
@@ -476,7 +477,8 @@ public class UnplannedWalkAdapter implements FitnessService {
         }
 
         @Override
-        protected void onPostExecute(Void result) {}
+        protected void onPostExecute(Void result) {
+        }
 
         @Override
         protected void onPreExecute() {

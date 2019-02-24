@@ -4,7 +4,7 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 
 import java.util.Calendar;
 
-public interface FitnessService{
+public interface FitnessService {
     int getRequestCode();
 
     void setup();

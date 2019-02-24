@@ -21,16 +21,13 @@ import android.widget.TextView;
 import java.util.Calendar;
 
 public class ManualDateSetter extends DialogFragment implements TextView.OnEditorActionListener {
-    public interface ManualDateSetterListener {
-        void onFinishEditDialog(Calendar[] inputText);
-    }
-
     private Window window;
     private EditText centText;
     private EditText ftText;
     private EditText inchText;
     private Spinner spinner;
-    public ManualDateSetter() {}
+    public ManualDateSetter() {
+    }
 
     public static ManualDateSetter newInstance(String title) {
         ManualDateSetter frag = new ManualDateSetter();
@@ -47,7 +44,6 @@ public class ManualDateSetter extends DialogFragment implements TextView.OnEdito
         getDialog().setTitle(getString(R.string.heightPrompt));
         return v;
     }
-
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -73,7 +69,7 @@ public class ManualDateSetter extends DialogFragment implements TextView.OnEdito
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 int idx = spinner.getSelectedItemPosition();
-                if( idx == 0 ){ // Use centimeters as metric
+                if (idx == 0) { // Use centimeters as metric
                     inchText.setVisibility(View.GONE);
                     ftText.setVisibility(View.GONE);
                     centText.setVisibility(View.VISIBLE);
@@ -99,9 +95,9 @@ public class ManualDateSetter extends DialogFragment implements TextView.OnEdito
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                    }
+                }
             }
-         });
+        });
         centText.requestFocus();
     }
 
@@ -150,5 +146,9 @@ public class ManualDateSetter extends DialogFragment implements TextView.OnEdito
         listener.onFinishEditDialog(new Calendar[]{Calendar.getInstance()});
         dismiss();
         return true;
+    }
+
+    public interface ManualDateSetterListener {
+        void onFinishEditDialog(Calendar[] inputText);
     }
 }
