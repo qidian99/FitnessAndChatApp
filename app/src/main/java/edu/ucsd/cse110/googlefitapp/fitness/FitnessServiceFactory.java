@@ -2,12 +2,13 @@ package edu.ucsd.cse110.googlefitapp.fitness;
 
 import android.util.Log;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import edu.ucsd.cse110.googlefitapp.Activity;
 
 public abstract class FitnessServiceFactory {
-    private Map<String, BluePrint> blueprints;
+    public static Map<String, BluePrint> blueprints = new HashMap<>();
 
     public abstract void put(String key, BluePrint bluePrint);
 

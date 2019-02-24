@@ -1,6 +1,5 @@
 package edu.ucsd.cse110.googlefitapp;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -32,9 +31,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import edu.ucsd.cse110.googlefitapp.Activity;
-import edu.ucsd.cse110.googlefitapp.MainActivity;
-import edu.ucsd.cse110.googlefitapp.StepCalendar;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 
 public class UnplannedWalkAdapter implements FitnessService {
@@ -45,7 +41,7 @@ public class UnplannedWalkAdapter implements FitnessService {
     private DataType activeDataType;
     public static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.activedata";
     public static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
-    private int step;
+    private int currentStep;
     boolean isCancelled = false;
     public static Calendar calendar = MainActivity.calendar;
 
@@ -140,7 +136,7 @@ public class UnplannedWalkAdapter implements FitnessService {
     }
 
     /**
-     * Reads the current daily step total, computed from midnight of the current day on the device's
+     * Reads the current daily currentStep total, computed from midnight of the current day on the device's
      * current timezone.
      */
     public void updateStepCount() {
@@ -177,8 +173,10 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                 ? 0
                                                 : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
 
-                                step = total;
+                                currentStep = total;
+                                activity.setStep(currentStep);
                                 activity.updateAll(total);
+                                activity.notifyObservers();
                                 Log.d(TAG, "Total steps in updateStepCount: " + total);
                             }
                         })
@@ -186,7 +184,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                         new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                Log.d(TAG, "There was a problem getting the step count.", e);
+                                Log.d(TAG, "There was a problem getting the currentStep count.", e);
                             }
                         });
     }
@@ -245,7 +243,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                         new DataSource.Builder()
                                                 .setAppPackageName(APP_PACKAGE_NAME)
                                                 .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
-                                                .setStreamName(TAG + " - step count")
+                                                .setStreamName(TAG + " - currentStep count")
                                                 .setType(DataSource.TYPE_RAW)
                                                 .build();
                                 DataSet dataSet2 = DataSet.create(dataSource);
@@ -278,7 +276,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                         new DataSource.Builder()
                                                 .setAppPackageName(APP_PACKAGE_NAME)
                                                 .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
-                                                .setStreamName(TAG + " - step count")
+                                                .setStreamName(TAG + " - currentStep count")
                                                 .setType(DataSource.TYPE_RAW)
                                                 .build();
                                 DataSet dataSet2 = DataSet.create(dataSource);
@@ -340,14 +338,14 @@ public class UnplannedWalkAdapter implements FitnessService {
                                             new DataSource.Builder()
                                                     .setAppPackageName(APP_PACKAGE_NAME)
                                                     .setDataType(activeDataType)
-                                                    .setStreamName(TAG + " - active step")
+                                                    .setStreamName(TAG + " - active currentStep")
                                                     .setType(DataSource.TYPE_RAW)
                                                     .build();
                                     DataSet dataSet2 = DataSet.create(dataSource);
                                     DataPoint dataPoint =
                                             dataSet2.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
                                     dataPoint.getValue(activeDataType.getFields().get(0)).setInt(step);
-//                                    step = stepCountDelta;
+//                                    currentStep = stepCountDelta;
                                     dataSet2.add(dataPoint);
 
                                     Log.d(TAG, String.format("addActiveSteps - Added %d active steps", step));
@@ -364,7 +362,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                             new DataSource.Builder()
                                                     .setAppPackageName(APP_PACKAGE_NAME)
                                                     .setDataType(activeDataType)
-                                                    .setStreamName(TAG + " - active step")
+                                                    .setStreamName(TAG + " - active currentStep")
                                                     .setType(DataSource.TYPE_RAW)
                                                     .build();
                                     DataSet dataSet2 = DataSet.create(dataSource);
@@ -491,39 +489,7 @@ public class UnplannedWalkAdapter implements FitnessService {
             if (isCancelled) {
                 cancel(true);
             } else {
-                Log.d(TAG, "onProgressUpdate start");
-                int today = calendar.get(Calendar.DAY_OF_WEEK);
-                int day = activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE).getInt("day", -1);
-
-                if(day != today) {
-                    Log.d(TAG, "onProgressUpdate new day encountered");
-                    activity.setGoalChangeable(true);
-                    activity.setCanShowHalfEncour(true);
-                    activity.setCanShowOverPrevEncour(true);
-                    activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE).edit().putInt("day", today).apply();
-                }
-
-                //call update steps here
                 updateStepCount();
-
-                if(step > activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
-                        Context.MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) / 2 && activity.getCanShowHalfEncour()){
-                    Log.d(TAG, "onProgressUpdate need show achieveHalfEncouragement");
-                    activity.showAchieveHalfEncouragement();
-                }
-
-                if(step > activity.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME,
-                        Context.MODE_PRIVATE).getInt(MainActivity.KEY_GOAL, 0) && activity.getGoalChangeable()){
-                    Log.d(TAG, "onProgressUpdate need show newGoalPrompt");
-                    activity.showNewGoalPrompt();
-                }
-
-                int yesterday = today - 1 >= 0 ? today - 1 : 6;
-                if(step > activity.getSharedPreferences("weekly_steps",
-                        Context.MODE_PRIVATE).getInt(String.valueOf(yesterday), 0) + 1000 && activity.getCanShowOverPrevEncour()) {
-                    Log.d(TAG, "onProgressUpdate need show OverPrevEncouragement");
-                    activity.showOverPrevEncouragement();
-                }
             }
         }
     }

@@ -5,7 +5,6 @@ import java.util.Map;
 
 public class GoogleFitnessServiceFactory extends FitnessServiceFactory {
     private static final String TAG = "[FitnessService]";
-    private static Map<String, BluePrint> blueprints = new HashMap<>();
 
     @Override
     public void put(String key, FitnessServiceFactory.BluePrint bluePrint) {
