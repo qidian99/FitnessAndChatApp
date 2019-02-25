@@ -21,10 +21,10 @@ import com.github.mikephil.charting.listener.OnChartGestureListener;
 
 import java.util.ArrayList;
 
-public class WeeklyStats extends AppCompatActivity {
+public class WeeklyStatsActivity extends AppCompatActivity {
 
-    private int goal;
     public static final String TAG = "WEEKLY_STATS";
+    private int goal;
     private ArrayList<BarEntry> barEntries;
     private LimitLine goalLine;
     private BarData barData;
@@ -34,8 +34,10 @@ public class WeeklyStats extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weekly_stats);
 
-        SharedPreferences sharedPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
-        goal = sharedPref.getInt("goal", 0);
+        SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+        SharedPreferences sharedPref = getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+
+        goal = sharedPref.getInt("goal", MainActivity.DEFAULT_GOAL);
 
         final BarChart barChart;
 
@@ -57,16 +59,20 @@ public class WeeklyStats extends AppCompatActivity {
         barChart.setTouchEnabled(true);
         barChart.setOnChartGestureListener(new OnChartGestureListener() {
             @Override
-            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {}
+            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+            }
 
             @Override
-            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) { }
+            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+            }
 
             @Override
-            public void onChartLongPressed(MotionEvent me) { }
+            public void onChartLongPressed(MotionEvent me) {
+            }
 
             @Override
-            public void onChartDoubleTapped(MotionEvent me) { }
+            public void onChartDoubleTapped(MotionEvent me) {
+            }
 
             @Override
             public void onChartSingleTapped(MotionEvent me) {
@@ -81,42 +87,45 @@ public class WeeklyStats extends AppCompatActivity {
 
                 Log.d(TAG, String.format("speed: %.1f, distance: %.1f -> active: %.1f + incidental: %.1f", speed, distance, activeDist, inciDist));
 
-                if(yInd == 1) {
-                    Toast.makeText(WeeklyStats.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, distance), Toast.LENGTH_LONG).show();
+                if (yInd == 1) {
+                    Toast.makeText(WeeklyStatsActivity.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, distance), Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(WeeklyStats.this,
+                    Toast.makeText(WeeklyStatsActivity.this,
                             String.format("Active walk distance: %.1f miles\nAverage speed: %.1f MPH", activeDist, speed),
                             Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
-            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) { }
+            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
+            }
 
             @Override
-            public void onChartScale(MotionEvent me, float scaleX, float scaleY) { }
+            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
+            }
 
             @Override
-            public void onChartTranslate(MotionEvent me, float dX, float dY) { }
+            public void onChartTranslate(MotionEvent me, float dX, float dY) {
+            }
         });
 
         barEntries = new ArrayList<BarEntry>();
 
         int max = 0;
 
-        for(int i = 1; i <= 7; i++) {
-            int activeSteps = sharedPref.getInt(String.valueOf(i + 7), 0);
-            int inactiveSteps = sharedPref.getInt(String.valueOf(i), 0) - activeSteps;
+        for (int i = 1; i <= 7; i++) {
+            int activeSteps = stepPref.getInt(String.valueOf(i + 7), 0);
+            int inactiveSteps = stepPref.getInt(String.valueOf(i), 0) - activeSteps;
 
             if (inactiveSteps + activeSteps > max) {
                 max = inactiveSteps + activeSteps;
             }
             Log.d(TAG, String.format("day: %d: incidental steps(%d), active steps(%d)", i, inactiveSteps, activeSteps));
 
-            barEntries.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i-1));
+            barEntries.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i - 1));
         }
 
-        if(max < goal) {
+        if (max < goal) {
             barChart.getAxisLeft().setAxisMaxValue(goal + 200);
             barChart.getAxisRight().setAxisMaxValue(goal + 200);
         } else {

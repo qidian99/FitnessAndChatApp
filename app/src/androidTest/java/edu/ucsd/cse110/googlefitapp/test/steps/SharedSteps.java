@@ -4,7 +4,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.espresso.matcher.ViewMatchers;
@@ -14,7 +13,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import cucumber.api.PendingException;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
@@ -22,11 +20,11 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
+import edu.ucsd.cse110.googlefitapp.PlannedWalkActivity;
 import edu.ucsd.cse110.googlefitapp.R;
-import edu.ucsd.cse110.googlefitapp.StepCountActivity;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
-import gherkin.cli.Main;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.content.Context.MODE_PRIVATE;
 import static android.support.test.InstrumentationRegistry.getTargetContext;
@@ -82,28 +80,9 @@ public class SharedSteps {
 
     @Before
     public void setup() {
-        FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return null;
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return new TestMainFitnessService(mainActivity);
-            }
-        });
-        FitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return new TestStepCountFitnessService(stepCountActivity);
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return null;
-            }
-        });
+        FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
+        googleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, activity -> new TestMainFitnessService());
+        googleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, activity -> new TestStepCountFitnessService());
 
         Intents.init();
         Intent intent = new Intent();
@@ -112,9 +91,6 @@ public class SharedSteps {
         intent.putExtra("TEST_SERVICE_STEP_COUNT", TEST_SERVICE_STEP_ACTIVITY);
         mActivityTestRule.launchActivity(intent);
         mActivityTestRule.getActivity().setFitnessServiceKey(TEST_SERVICE_STEP_ACTIVITY);
-
-//        nameIdMap.put("first", "number_1");
-//        nameIdMap.put("second", "number_2");
     }
 
     @After
@@ -265,7 +241,7 @@ public class SharedSteps {
         private static final String TAG = "[TestMainFitnessService]: ";
         private MainActivity mainActivity;
 
-        public TestMainFitnessService(MainActivity mainActivity) {
+        public TestMainFitnessService() {
             this.mainActivity = mainActivity;
         }
 
@@ -324,10 +300,10 @@ public class SharedSteps {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private StepCountActivity stepCountActivity;
+        private PlannedWalkActivity plannedWalkActivity;
 
-        public TestStepCountFitnessService(StepCountActivity stepCountActivity) {
-            this.stepCountActivity = stepCountActivity;
+        public TestStepCountFitnessService() {
+            this.plannedWalkActivity = plannedWalkActivity;
         }
 
         @Override
@@ -390,78 +366,6 @@ public class SharedSteps {
     }
 
     public void onHomeScreenAssertion(){
-//        assertThat(mActivityTestRule.getActivity(), notNullValue());
-//
-//        ViewInteraction startBtn = onView(
-//                allOf(withId(R.id.startBtn),
-//                        childAtPosition(
-//                                childAtPosition(
-//                                        withId(android.R.id.content),
-//                                        0),
-//                                0),
-//                        isDisplayed()));
-//        startBtn.check(matches(isDisplayed()));
-//
-//        ViewInteraction stepsLeft = onView(
-//                allOf(withId(R.id.stepsLeft),
-//                        childAtPosition(
-//                                childAtPosition(
-//                                        withId(android.R.id.content),
-//                                        0),
-//                                5),
-//                        isDisplayed()));
-//        stepsLeft.check(matches(isDisplayed()));
-//
-//        ViewInteraction textStepsMain = onView(
-//                allOf(withId(R.id.textStepsMain),
-//                        childAtPosition(
-//                                childAtPosition(
-//                                        withId(android.R.id.content),
-//                                        0),
-//                                4),
-//                        isDisplayed()));
-//        textStepsMain.check(matches(isDisplayed()));
-//
-//        ViewInteraction textGoal = onView(
-//                allOf(withId(R.id.textGoal),
-//                        childAtPosition(
-//                                childAtPosition(
-//                                        withId(android.R.id.content),
-//                                        0),
-//                                3),
-//                        isDisplayed()));
-//        textGoal.check(matches(isDisplayed()));
-//
-//        ViewInteraction weeklyButton = onView(
-//                allOf(withId(R.id.weeklyButton),
-//                        childAtPosition(
-//                                childAtPosition(
-//                                        withId(android.R.id.content),
-//                                        0),
-//                                6),
-//                        isDisplayed()));
-//        weeklyButton.check(matches(isDisplayed()));
-//
-//        ViewInteraction btnSetGoal = onView(
-//                allOf(withId(R.id.btnSetGoal),
-//                        childAtPosition(
-//                                childAtPosition(
-//                                        withId(android.R.id.content),
-//                                        0),
-//                                2),
-//                        isDisplayed()));
-//        btnSetGoal.check(matches(isDisplayed()));
-//
-//        ViewInteraction clearBtn = onView(
-//                allOf(withId(R.id.btnEndRecord),
-//                        childAtPosition(
-//                                childAtPosition(
-//                                        withId(android.R.id.content),
-//                                        0),
-//                                1),
-//                        isDisplayed()));
-//        clearBtn.check(matches(isDisplayed()));
-
     }
 
     private static Matcher<View> childAtPosition(

@@ -5,31 +5,21 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.ucsd.cse110.googlefitapp.MainActivity;
-import edu.ucsd.cse110.googlefitapp.StepCountActivity;
+import edu.ucsd.cse110.googlefitapp.Activity;
 
-public class FitnessServiceFactory {
+public abstract class FitnessServiceFactory {
+    static Map<String, BluePrint> blueprints = new HashMap<>();
 
-    private static final String TAG = "[FitnessServiceFactory]";
+    public abstract void put(String key, BluePrint bluePrint);
 
-    private static Map<String, BluePrint> blueprints = new HashMap<>();
-
-    public static void put(String key, BluePrint bluePrint) {
-        blueprints.put(key, bluePrint);
+    public FitnessService create(String key, Activity activity) {
+        Log.i(getTag(), String.format("creating Service with key %s", key));
+        return blueprints.get(key).create(activity);
     }
 
-    public static FitnessService create(String key, StepCountActivity stepCountActivity) {
-        Log.i(TAG, String.format("creating FitnessService with key %s", key));
-        return blueprints.get(key).create(stepCountActivity);
-    }
-
-    public static FitnessService create(String key, MainActivity mainActivity) {
-        Log.i(TAG, String.format("creating FitnessService with key %s", key));
-        return blueprints.get(key).create(mainActivity);
-    }
+    public abstract String getTag();
 
     public interface BluePrint {
-        FitnessService create(StepCountActivity stepCountActivity);
-        FitnessService create(MainActivity mainActivity);
+        FitnessService create(Activity activity);
     }
 }

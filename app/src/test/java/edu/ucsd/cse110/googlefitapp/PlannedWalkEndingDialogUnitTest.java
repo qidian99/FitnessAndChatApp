@@ -1,4 +1,5 @@
 package edu.ucsd.cse110.googlefitapp;
+
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -7,11 +8,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
-import static org.junit.Assert.*;
+import edu.ucsd.cse110.googlefitapp.dialog.PlannedWalkEndingDialog;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
-public class DataDisplayerUnitTest {
-    private DataDisplayer dataDisplayer;
+public class PlannedWalkEndingDialogUnitTest {
+    private PlannedWalkEndingDialog plannedWalkEndingDialog;
     private TextView display;
     private MainActivity mainActivity;
     private float distance = 10;
@@ -22,13 +28,13 @@ public class DataDisplayerUnitTest {
 
     @Before
     public void setUp() throws Exception {
-        dataDisplayer = DataDisplayer.newInstance("new instance", distance, speed, steps, min, sec);
+        plannedWalkEndingDialog = PlannedWalkEndingDialog.newInstance("new instance", distance, speed, steps, min, sec);
     }
 
     @Test
     public void testNullTitle() {
-        dataDisplayer = DataDisplayer.newInstance(null, distance, speed, steps, min, sec);
-        Bundle bundle = dataDisplayer.getArguments();
+        plannedWalkEndingDialog = PlannedWalkEndingDialog.newInstance(null, distance, speed, steps, min, sec);
+        Bundle bundle = plannedWalkEndingDialog.getArguments();
         assertNotNull(bundle);
         String title = bundle.getString("title");
         assertNull(title);
@@ -36,15 +42,15 @@ public class DataDisplayerUnitTest {
 
     @Test
     public void testEmptyObject() {
-        dataDisplayer = new DataDisplayer();
-        assertTrue(0 == dataDisplayer.getDistance());
-        assertTrue(0 == dataDisplayer.getSpeed());
+        plannedWalkEndingDialog = new PlannedWalkEndingDialog();
+        assertTrue(0 == plannedWalkEndingDialog.getDistance());
+        assertTrue(0 == plannedWalkEndingDialog.getSpeed());
     }
 
     @Test
     public void testNewInstance() {
-        assertNotNull(dataDisplayer);
-        Bundle bundle = dataDisplayer.getArguments();
+        assertNotNull(plannedWalkEndingDialog);
+        Bundle bundle = plannedWalkEndingDialog.getArguments();
         assertNotNull(bundle);
         String title = bundle.getString("title");
         assertEquals("new instance", title);
@@ -52,7 +58,7 @@ public class DataDisplayerUnitTest {
 
     @Test
     public void testIntData() {
-        String data = dataDisplayer.getData();
+        String data = plannedWalkEndingDialog.getData();
         assertNotNull(data);
         assertEquals("Steps: 10\n" +
                 "Time elapsed: 10' 10\"\n" +
@@ -62,8 +68,8 @@ public class DataDisplayerUnitTest {
 
     @Test
     public void testFloatData() {
-        dataDisplayer = DataDisplayer.newInstance("new instance", 10.15f, 20.15f, steps, min, sec);
-        String data = dataDisplayer.getData();
+        plannedWalkEndingDialog = PlannedWalkEndingDialog.newInstance("new instance", 10.15f, 20.15f, steps, min, sec);
+        String data = plannedWalkEndingDialog.getData();
         assertNotNull(data);
         assertEquals("Steps: 10\n" +
                 "Time elapsed: 10' 10\"\n" +

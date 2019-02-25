@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.intent.Intents;
-import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
@@ -25,9 +24,9 @@ import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
-import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
@@ -38,10 +37,7 @@ import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withSpinnerText;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.core.IsAnything.anything;
-import static org.hamcrest.core.StringContains.containsString;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
@@ -50,7 +46,7 @@ public class ManualEnterStepsScenarioTest {
     private static final String TEST_SERVICE_STEP_ACTIVITY = "TEST_SERVICE_STEP_ACTIVITY";
 
     private ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<MainActivity>(MainActivity
-            .class){
+            .class) {
         @Override
         protected void beforeActivityLaunched() {
             clearSharedPrefs(InstrumentationRegistry.getTargetContext());
@@ -58,28 +54,27 @@ public class ManualEnterStepsScenarioTest {
         }
     };
 
+    public static void clearSharedPrefs(Context context) {
+        SharedPreferences prefs =
+                context.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.commit();
+    }
+
     @Before
     public void setup() {
-        FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
+        googleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return null;
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return new TestMainFitnessService(mainActivity);
+            public FitnessService create(Activity activity) {
+                return new TestMainFitnessService(activity);
             }
         });
-        FitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        googleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return new TestStepCountFitnessService(stepCountActivity);
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return null;
+            public FitnessService create(Activity activity) {
+                return new TestStepCountFitnessService(activity);
             }
         });
 
@@ -97,7 +92,6 @@ public class ManualEnterStepsScenarioTest {
         mActivityTestRule.getActivity().finish();
         Intents.release();
     }
-
 
     /*
       Feature: Manually Record Steps Taken
@@ -124,7 +118,6 @@ public class ManualEnterStepsScenarioTest {
 
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
     }
-
 
     /*
      Scenario 2: User enters an invalid number when manually recording the steps taken
@@ -198,9 +191,9 @@ public class ManualEnterStepsScenarioTest {
 
     private class TestMainFitnessService implements FitnessService {
         private static final String TAG = "[TestMainFitnessService]: ";
-        private MainActivity mainActivity;
+        private Activity mainActivity;
 
-        public TestMainFitnessService(MainActivity mainActivity) {
+        public TestMainFitnessService(Activity mainActivity) {
             this.mainActivity = mainActivity;
         }
 
@@ -259,10 +252,10 @@ public class ManualEnterStepsScenarioTest {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private StepCountActivity stepCountActivity;
+        private Activity plannedWalkActivity;
 
-        public TestStepCountFitnessService(StepCountActivity stepCountActivity) {
-            this.stepCountActivity = stepCountActivity;
+        public TestStepCountFitnessService(Activity plannedWalkActivity) {
+            this.plannedWalkActivity = plannedWalkActivity;
         }
 
         @Override
@@ -314,13 +307,5 @@ public class ManualEnterStepsScenarioTest {
         public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
             return null;
         }
-    }
-
-    public static void clearSharedPrefs(Context context) {
-        SharedPreferences prefs =
-                context.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.clear();
-        editor.commit();
     }
 }

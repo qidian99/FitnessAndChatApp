@@ -19,11 +19,11 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,10 +31,9 @@ import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
-import edu.ucsd.cse110.googlefitapp.test.steps.SharedSteps;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -48,7 +47,7 @@ public class MainActivityUITest {
     private static final String TEST_SERVICE_STEP_ACTIVITY = "TEST_SERVICE_STEP_ACTIVITY";
 
     private ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<MainActivity>(MainActivity
-            .class){
+            .class) {
         @Override
         protected void beforeActivityLaunched() {
             clearSharedPrefs(InstrumentationRegistry.getTargetContext());
@@ -56,30 +55,38 @@ public class MainActivityUITest {
         }
     };
 
+    private static Matcher<View> childAtPosition(
+            final Matcher<View> parentMatcher, final int position) {
+
+        return new TypeSafeMatcher<View>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("Child at position " + position + " in parent ");
+                parentMatcher.describeTo(description);
+            }
+
+            @Override
+            public boolean matchesSafely(View view) {
+                ViewParent parent = view.getParent();
+                return parent instanceof ViewGroup && parentMatcher.matches(parent)
+                        && view.equals(((ViewGroup) parent).getChildAt(position));
+            }
+        };
+    }
+
+    public static void clearSharedPrefs(Context context) {
+        SharedPreferences prefs =
+                context.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.commit();
+    }
+
     @Before
     public void setup() {
-        FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return null;
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return new TestMainFitnessService(mainActivity);
-            }
-        });
-        FitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return new TestStepCountFitnessService(stepCountActivity);
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return null;
-            }
-        });
+        FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
+        googleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, activity -> new TestMainFitnessService(activity));
+        googleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, activity -> new TestStepCountFitnessService());
 
         Intents.init();
         Intent intent = new Intent();
@@ -98,12 +105,12 @@ public class MainActivityUITest {
 
     @Test
     public void mainActivityTest() {
-        
+
         ViewInteraction textView = onView(
                 allOf(withId(R.id.textGoal2), withText("CURRENT GOAL"),
                         childAtPosition(
                                 childAtPosition(
-                                        IsInstanceOf.<View>instanceOf(android.widget.TableLayout.class),
+                                        IsInstanceOf.instanceOf(android.widget.TableLayout.class),
                                         0),
                                 0),
                         isDisplayed()));
@@ -113,7 +120,7 @@ public class MainActivityUITest {
                 allOf(withId(R.id.textGoal2), withText("CURRENT GOAL"),
                         childAtPosition(
                                 childAtPosition(
-                                        IsInstanceOf.<View>instanceOf(android.widget.TableLayout.class),
+                                        IsInstanceOf.instanceOf(android.widget.TableLayout.class),
                                         0),
                                 0),
                         isDisplayed()));
@@ -123,7 +130,7 @@ public class MainActivityUITest {
                 allOf(withId(R.id.textGoal), withText("5000"),
                         childAtPosition(
                                 childAtPosition(
-                                        IsInstanceOf.<View>instanceOf(android.widget.TableLayout.class),
+                                        IsInstanceOf.instanceOf(android.widget.TableLayout.class),
                                         1),
                                 0),
                         isDisplayed()));
@@ -133,7 +140,7 @@ public class MainActivityUITest {
                 allOf(withId(R.id.textGoal), withText("5000"),
                         childAtPosition(
                                 childAtPosition(
-                                        IsInstanceOf.<View>instanceOf(android.widget.TableLayout.class),
+                                        IsInstanceOf.instanceOf(android.widget.TableLayout.class),
                                         1),
                                 0),
                         isDisplayed()));
@@ -164,7 +171,7 @@ public class MainActivityUITest {
         textView7.check(matches(isDisplayed()));
 
         ViewInteraction textView8 = onView(
-                allOf(withId(R.id.textStepsMain)));
+                Matchers.allOf(withId(R.id.textStepsMain)));
         textView8.check(matches(withText("Steps Taken")));
 
         ViewInteraction button = onView(
@@ -216,34 +223,14 @@ public class MainActivityUITest {
                                 5),
                         isDisplayed()));
         button5.check(matches(isDisplayed()));
-        
+
     }
-
-    private static Matcher<View> childAtPosition(
-            final Matcher<View> parentMatcher, final int position) {
-
-        return new TypeSafeMatcher<View>() {
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("Child at position " + position + " in parent ");
-                parentMatcher.describeTo(description);
-            }
-
-            @Override
-            public boolean matchesSafely(View view) {
-                ViewParent parent = view.getParent();
-                return parent instanceof ViewGroup && parentMatcher.matches(parent)
-                        && view.equals(((ViewGroup) parent).getChildAt(position));
-            }
-        };
-    }
-
 
     private class TestMainFitnessService implements FitnessService {
         private static final String TAG = "[TestMainFitnessService]: ";
-        private MainActivity mainActivity;
+        private Activity mainActivity;
 
-        public TestMainFitnessService(MainActivity mainActivity) {
+        TestMainFitnessService(Activity mainActivity) {
             this.mainActivity = mainActivity;
         }
 
@@ -302,10 +289,8 @@ public class MainActivityUITest {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private StepCountActivity stepCountActivity;
 
-        public TestStepCountFitnessService(StepCountActivity stepCountActivity) {
-            this.stepCountActivity = stepCountActivity;
+        TestStepCountFitnessService() {
         }
 
         @Override
@@ -357,13 +342,5 @@ public class MainActivityUITest {
         public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
             return null;
         }
-    }
-
-    public static void clearSharedPrefs(Context context) {
-        SharedPreferences prefs =
-                context.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.clear();
-        editor.commit();
     }
 }

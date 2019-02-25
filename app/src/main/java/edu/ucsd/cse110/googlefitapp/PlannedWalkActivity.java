@@ -1,38 +1,25 @@
 package edu.ucsd.cse110.googlefitapp;
-import android.app.Activity;
-import android.content.Context;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.health.SystemHealthManager;
-import android.renderscript.Element;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.fitness.Fitness;
-import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.result.DailyTotalResult;
-
-import java.security.spec.ECField;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import edu.ucsd.cse110.googlefitapp.adapter.PlannedWalkAdapter;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
-import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
-import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitAdapter;
+import edu.ucsd.cse110.googlefitapp.observer.Observer;
 
-public class StepCountActivity extends AppCompatActivity {
+public class PlannedWalkActivity extends Activity {
 
     public static final String FITNESS_SERVICE_KEY = "FITNESS_SERVICE_KEY";
 
-    private static final String TAG = "StepCountActivity";
+    private static final String TAG = "PlannedWalkActivity";
     private static final int RESULT_CODE = 1000;
 
     private TextView textSteps;
@@ -54,7 +41,7 @@ public class StepCountActivity extends AppCompatActivity {
         try {
             super.onRestart();
             fitnessService.startAsync();
-            Log.d(TAG,"start async success");
+            Log.d(TAG, "start async success");
         } catch (Exception e) {
             Log.d(TAG, "start async failed" + e.toString());
             e.printStackTrace();
@@ -84,7 +71,7 @@ public class StepCountActivity extends AppCompatActivity {
                             isTimePrinted = true;
                         }
 
-                        tv = (TextView)findViewById(R.id.timer_text);
+                        tv = (TextView) findViewById(R.id.timer_text);
 
                         setTime();
                         setDistance();
@@ -104,7 +91,7 @@ public class StepCountActivity extends AppCompatActivity {
         strideLen = getIntent().getFloatExtra("stride", 0);
 
         String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
-        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
+        fitnessService = MainActivity.fitnessServiceFactory.create(fitnessServiceKey, this);
         fitnessService.updateStepCount();
 
         Button btnUpdateSteps = findViewById(R.id.buttonUpdateSteps);
@@ -120,7 +107,7 @@ public class StepCountActivity extends AppCompatActivity {
         btnMockData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((GoogleFitAdapter) fitnessService).mockDataPoint();
+                ((PlannedWalkAdapter) fitnessService).mockDataPoint();
                 Log.d(TAG, "mock data point success");
             }
         });
@@ -173,7 +160,7 @@ public class StepCountActivity extends AppCompatActivity {
         SharedPreferences sharedPref = getSharedPreferences("stepCountData", MODE_PRIVATE);
         recordInitialStep = sharedPref.getBoolean("recordInitialStep", true);
 
-        if(recordInitialStep) {
+        if (recordInitialStep) {
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putInt("initialSteps", stepCount);
             editor.putBoolean("recordInitialStep", false);
@@ -191,10 +178,10 @@ public class StepCountActivity extends AppCompatActivity {
     }
 
     public void setSpeed() {
-        if(time == 0) {
+        if (time == 0) {
             speed = 0.0f;
         } else {
-            speed = distance/(float)time * 3600.0f;
+            speed = distance / (float) time * 3600.0f;
         }
         textSpeed.setText(String.format("%.1f MPH", speed));
     }
@@ -203,7 +190,7 @@ public class StepCountActivity extends AppCompatActivity {
         int min = time / 60;
         int sec = time % 60;
 
-        if(sec < 10) {
+        if (sec < 10) {
             tv.setText(String.format("%d:0%d", min, sec));
         } else {
             tv.setText(String.format("%d:%d", min, sec));
@@ -216,20 +203,21 @@ public class StepCountActivity extends AppCompatActivity {
         setSpeed();
     }
 
+    @Override
+    public void setStep(int currentStep) {
+        return;
+    }
+
     public void setStrideLen(float strideLen) {
         this.strideLen = strideLen;
     }
 
-    public void setDistance(float dist) {
-        this.distance = dist;
+    public int getTime() {
+        return time;
     }
 
     public void setTime(int time) {
         this.time = time;
-    }
-
-    public int getTime() {
-        return time;
     }
 
     public int getSteps() {
@@ -240,7 +228,26 @@ public class StepCountActivity extends AppCompatActivity {
         return distance;
     }
 
+    public void setDistance(float dist) {
+        this.distance = dist;
+    }
+
     public float getSpeed() {
         return speed;
+    }
+
+    @Override
+    public void registerObserver(Observer o) {
+
+    }
+
+    @Override
+    public void removeObserver(Observer o) {
+
+    }
+
+    @Override
+    public void notifyObservers() {
+
     }
 }

@@ -24,6 +24,7 @@ import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
+import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
 import static android.support.test.espresso.Espresso.onView;
@@ -45,7 +46,7 @@ public class CreateNewGoalScenarioTest {
     private static final String TEST_SERVICE_STEP_ACTIVITY = "TEST_SERVICE_STEP_ACTIVITY";
 
     private ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<MainActivity>(MainActivity
-            .class){
+            .class) {
         @Override
         protected void beforeActivityLaunched() {
             clearSharedPrefs(InstrumentationRegistry.getTargetContext());
@@ -53,28 +54,27 @@ public class CreateNewGoalScenarioTest {
         }
     };
 
+    public static void clearSharedPrefs(Context context) {
+        SharedPreferences prefs =
+                context.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.commit();
+    }
+
     @Before
     public void setup() {
-        FitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
+        googleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return null;
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return new TestMainFitnessService(mainActivity);
+            public FitnessService create(Activity activity) {
+                return new TestMainFitnessService(activity);
             }
         });
-        FitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
+        googleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
             @Override
-            public FitnessService create(StepCountActivity stepCountActivity) {
-                return new TestStepCountFitnessService(stepCountActivity);
-            }
-
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return null;
+            public FitnessService create(Activity activity) {
+                return new TestStepCountFitnessService(activity);
             }
         });
 
@@ -92,7 +92,6 @@ public class CreateNewGoalScenarioTest {
         mActivityTestRule.getActivity().finish();
         Intents.release();
     }
-
 
     /*
     Feature: Creating New Step Goals
@@ -151,7 +150,6 @@ public class CreateNewGoalScenarioTest {
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
         onView(withId(R.id.textGoal)).check(matches(withText("5500")));
     }
-
 
     /*
      Scenario 3: Choose to create custom a new goal and higher than before
@@ -246,10 +244,8 @@ public class CreateNewGoalScenarioTest {
       Choose to create custom a new goal and higher than before
         Given that user’s initial goal is 5000 steps a day
         And he or she walks over 5000 steps
-        And he or she will be given the option to change her daily goal
-        When he or she rejects the optional new goal which is 5500
-        Then the application asks the user if he or she wants to set custom goal
-        When he or she rejects to set custom goal
+
+        +
         Then the goal is not changed and still be 5000 steps
         And he or she will be directed to the home screen
         */
@@ -281,9 +277,9 @@ public class CreateNewGoalScenarioTest {
 
     private class TestMainFitnessService implements FitnessService {
         private static final String TAG = "[TestMainFitnessService]: ";
-        private MainActivity mainActivity;
+        private Activity mainActivity;
 
-        public TestMainFitnessService(MainActivity mainActivity) {
+        public TestMainFitnessService(Activity mainActivity) {
             this.mainActivity = mainActivity;
         }
 
@@ -300,7 +296,8 @@ public class CreateNewGoalScenarioTest {
         @Override
         public void updateStepCount() {
             Log.d(TAG, "update all texts");
-            mainActivity.updateAll(5000);
+            mainActivity.setStep(5000);
+            mainActivity.notifyObservers();
         }
 
         @Override
@@ -342,10 +339,10 @@ public class CreateNewGoalScenarioTest {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private StepCountActivity stepCountActivity;
+        private Activity plannedWalkActivity;
 
-        public TestStepCountFitnessService(StepCountActivity stepCountActivity) {
-            this.stepCountActivity = stepCountActivity;
+        public TestStepCountFitnessService(Activity plannedWalkActivity) {
+            this.plannedWalkActivity = plannedWalkActivity;
         }
 
         @Override
@@ -397,13 +394,5 @@ public class CreateNewGoalScenarioTest {
         public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
             return null;
         }
-    }
-
-    public static void clearSharedPrefs(Context context) {
-        SharedPreferences prefs =
-                context.getSharedPreferences(MainActivity.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.clear();
-        editor.commit();
     }
 }

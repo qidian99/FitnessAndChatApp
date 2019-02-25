@@ -36,4 +36,6 @@
     <string name="speed">speed</string>
     <string name="distance">distance</string>
     <string name="graphText">Tap on blue bar: display stats for active sessions of the day.\n\n\t\tTap on red bar: display stats from the rest of the day.</string>
+    <string name="lauchWeeklyStatsFailure">launchWeeklyStats fail:</string>
+    <string name="lauchWeeklyStatsSuccess">launchWeeklyStats success</string>
 </resources>

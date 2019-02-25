@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import java.util.Calendar;
 
+import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
+
 import static org.junit.Assert.assertEquals;
 
 public class StepCalendarUnitTest {
