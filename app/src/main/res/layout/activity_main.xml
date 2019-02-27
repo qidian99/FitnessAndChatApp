@@ -1,290 +1,315 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Use DrawerLayout as root container for activity -->
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/startBtn"
-        android:layout_width="170dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/start_btn_background"
-        android:fontFamily="@font/armata"
-        android:text="@string/startBtnStr"
-        android:textColor="@android:color/holo_green_light"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.578" />
+    <!-- Layout to contain contents of main body of screen (drawer will slide over this) -->
+    <FrameLayout
+        android:id="@+id/content_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+        <include
+            layout="@layout/toolbar"/>
+        <!--android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />-->
 
-    <TextView
-        android:id="@+id/textStepsMain"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"
-        android:fontFamily="@font/armata"
-        android:text="@string/displaySteps"
-        android:textColor="@android:color/holo_blue_bright"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.404" />
-
-
-    <TextView
-        android:id="@+id/textStepsMain2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"
-        android:fontFamily="casual"
-        android:text="@string/displaySteps"
-        android:textAllCaps="true"
-        android:textColor="@color/common_google_signin_btn_text_dark_focused"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.317" />
-
-    <TableLayout
-        android:id="@+id/tableLayout"
-        android:layout_width="320dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/startBtn">
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="10dp">
-
-            <Button
-                android:id="@+id/btnSetGoal"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="20dp"
-                android:background="@drawable/small_btn_background"
-                android:fontFamily="@font/armata"
-                android:minHeight="40dip"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:text="Set New Goal"
-                android:textColor="@android:color/holo_blue_bright"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btnSetStep"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:background="@drawable/small_btn_background"
-                android:fontFamily="@font/armata"
-                android:minHeight="40dip"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:text="ADD STEPS"
-                android:textColor="@android:color/holo_blue_bright"
-                android:textStyle="bold" />
-
-        </TableRow>
-
-        <TableRow
+        <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
             <Button
-                android:id="@+id/setHeightBtn"
-                android:layout_width="150dp"
+                android:id="@+id/startBtn"
+                android:layout_width="170dp"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="20dp"
-                android:background="@drawable/small_btn_background"
-                android:fontFamily="@font/armata"
-                android:minHeight="40dip"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:text="Re-enter Height"
-                android:textColor="@android:color/holo_blue_bright"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/weeklyButton"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:background="@drawable/small_btn_background"
-                android:fontFamily="@font/armata"
-                android:minHeight="40dip"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:text="Show Weekly"
-                android:textColor="@android:color/holo_blue_bright"
-                android:textStyle="bold" />
-        </TableRow>
-
-    </TableLayout>
-
-    <TableLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:stretchColumns="0,1"
-        app:layout_constraintBottom_toTopOf="@+id/textStepsMain"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:id="@+id/textGoal2"
-                android:layout_width="120dp"
-                android:layout_height="wrap_content"
-                android:layout_column="0"
                 android:layout_marginBottom="8dp"
-                android:fontFamily="casual"
-                android:gravity="center"
-                android:text="@string/displayGoal"
-                android:textAllCaps="true"
-                android:textColor="@color/common_google_signin_btn_text_dark_focused"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.813"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.28" />
-
-            <TextView
-                android:id="@+id/stepsLeft2"
-                android:layout_width="120dp"
-                android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:layout_marginBottom="8dp"
-                android:fontFamily="casual"
-                android:gravity="center"
-                android:text="@string/progressLeft"
-                android:textAllCaps="true"
-                android:textColor="@color/common_google_signin_btn_text_dark_focused"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.132"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.28" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:id="@+id/textGoal"
-                android:layout_width="120dp"
-                android:layout_height="wrap_content"
-                android:layout_column="0"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
+                android:background="@drawable/start_btn_background"
                 android:fontFamily="@font/armata"
-                android:gravity="center"
-                android:text="@string/displayGoal"
-                android:textAllCaps="false"
+                android:text="@string/startBtnStr"
                 android:textColor="@android:color/holo_green_light"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.813"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.28" />
+                app:layout_constraintVertical_bias="0.578" />
+
 
             <TextView
-                android:id="@+id/stepsLeft"
-                android:layout_width="120dp"
+                android:id="@+id/textStepsMain"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_column="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
                 android:layout_marginBottom="8dp"
                 android:fontFamily="@font/armata"
-                android:gravity="center"
-                android:text="@string/progressLeft"
-                android:textAllCaps="false"
-                android:textColor="@color/common_google_signin_btn_text_light_default"
-                android:textSize="18sp"
+                android:text="@string/displaySteps"
+                android:textColor="@android:color/holo_blue_bright"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.132"
+                app:layout_constraintHorizontal_bias="0.502"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.28" />
-
-        </TableRow>
-
-    </TableLayout>
-
-    <Button
-        android:id="@+id/mockCalBtn"
-        android:layout_width="127dp"
-        android:layout_height="41dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="8dp"
-        android:onClick="mockCalendar"
-        android:text="SET DATE"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.232"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayout"
-        app:layout_constraintVertical_bias="0.196" />
-
-    <TextView
-        android:id="@+id/textCal"
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="8dp"
-        android:ems="10"
-        android:hint="Date is set to"
-        android:inputType="number"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.802"
-        app:layout_constraintStart_toEndOf="@+id/mockCalBtn"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayout"
-        app:layout_constraintVertical_bias="0.333" />
+                app:layout_constraintVertical_bias="0.404" />
 
 
-</android.support.constraint.ConstraintLayout>
+            <TextView
+                android:id="@+id/textStepsMain2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="casual"
+                android:text="@string/displaySteps"
+                android:textAllCaps="true"
+                android:textColor="@color/common_google_signin_btn_text_dark_focused"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.317" />
+
+            <TableLayout
+                android:id="@+id/tableLayout"
+                android:layout_width="320dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/startBtn">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="10dp">
+
+                    <Button
+                        android:id="@+id/btnSetGoal"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="20dp"
+                        android:background="@drawable/small_btn_background"
+                        android:fontFamily="@font/armata"
+                        android:minHeight="40dip"
+                        android:paddingTop="2dp"
+                        android:paddingBottom="2dp"
+                        android:text="Set New Goal"
+                        android:textColor="@android:color/holo_blue_bright"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btnSetStep"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/small_btn_background"
+                        android:fontFamily="@font/armata"
+                        android:minHeight="40dip"
+                        android:paddingTop="2dp"
+                        android:paddingBottom="2dp"
+                        android:text="ADD STEPS"
+                        android:textColor="@android:color/holo_blue_bright"
+                        android:textStyle="bold" />
+
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <Button
+                        android:id="@+id/setHeightBtn"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="20dp"
+                        android:background="@drawable/small_btn_background"
+                        android:fontFamily="@font/armata"
+                        android:minHeight="40dip"
+                        android:paddingTop="2dp"
+                        android:paddingBottom="2dp"
+                        android:text="Re-enter Height"
+                        android:textColor="@android:color/holo_blue_bright"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/weeklyButton"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/small_btn_background"
+                        android:fontFamily="@font/armata"
+                        android:minHeight="40dip"
+                        android:paddingTop="2dp"
+                        android:paddingBottom="2dp"
+                        android:text="Show Weekly"
+                        android:textColor="@android:color/holo_blue_bright"
+                        android:textStyle="bold" />
+                </TableRow>
+
+            </TableLayout>
+
+            <TableLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:stretchColumns="0,1"
+                app:layout_constraintBottom_toTopOf="@+id/textStepsMain"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/textGoal2"
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="0"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="casual"
+                        android:gravity="center"
+                        android:text="@string/displayGoal"
+                        android:textAllCaps="true"
+                        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.813"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.28" />
+
+                    <TextView
+                        android:id="@+id/stepsLeft2"
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="casual"
+                        android:gravity="center"
+                        android:text="@string/progressLeft"
+                        android:textAllCaps="true"
+                        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.132"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.28" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/textGoal"
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="0"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="@font/armata"
+                        android:gravity="center"
+                        android:text="@string/displayGoal"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/holo_green_light"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.813"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.28" />
+
+                    <TextView
+                        android:id="@+id/stepsLeft"
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="@font/armata"
+                        android:gravity="center"
+                        android:text="@string/progressLeft"
+                        android:textAllCaps="false"
+                        android:textColor="@color/common_google_signin_btn_text_light_default"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.132"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.28" />
+
+                </TableRow>
+
+            </TableLayout>
+
+            <Button
+                android:id="@+id/mockCalBtn"
+                android:layout_width="127dp"
+                android:layout_height="41dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp"
+                android:onClick="mockCalendar"
+                android:text="SET DATE"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.232"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tableLayout"
+                app:layout_constraintVertical_bias="0.196" />
+
+            <TextView
+                android:id="@+id/textCal"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp"
+                android:ems="10"
+                android:hint="Date is set to"
+                android:inputType="number"
+                android:textSize="18sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.802"
+                app:layout_constraintStart_toEndOf="@+id/mockCalBtn"
+                app:layout_constraintTop_toBottomOf="@+id/tableLayout"
+                app:layout_constraintVertical_bias="0.333" />
+        </android.support.constraint.ConstraintLayout>
+    </FrameLayout>
+    <!-- Container for contents of drawer - use NavigationView to make configuration easier -->
+    <android.support.design.widget.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:menu="@menu/drawer_view"
+        app:headerLayout="@layout/nav_header"/>
+</android.support.v4.widget.DrawerLayout>
