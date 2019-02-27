@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "649265181546",
+    "firebase_url": "https://team4-ms2.firebaseio.com",
+    "project_id": "team4-ms2",
+    "storage_bucket": "team4-ms2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:649265181546:android:b5b6cc05ef515f2d",
+        "android_client_info": {
+          "package_name": "edu.ucsd.cse110.googlefitapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "649265181546-vo8kem0rq5ffe7lrd7h8btcc8dqlb0uj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.ucsd.cse110.googlefitapp",
+            "certificate_hash": "9aeac786bacda5b55e87001b7ee169720ab63e0f"
+          }
+        },
+        {
+          "client_id": "649265181546-o0ud0212qcsujlnieqmiv26kud9p19ae.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArsO2UCZauMBVc_U3Tkxt8_1kRhsOG8Z0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "649265181546-o0ud0212qcsujlnieqmiv26kud9p19ae.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
