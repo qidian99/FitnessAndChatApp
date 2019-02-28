@@ -19,6 +19,7 @@
         <activity android:name="edu.ucsd.cse110.team4personalbest.WeeklyStatsActivity"></activity>
         <activity android:name="edu.ucsd.cse110.team4personalbest.PlannedWalkActivity"></activity>
         <activity android:name="edu.ucsd.cse110.team4personalbest.NewFriendSignUp"></activity>
+        <activity android:name="edu.ucsd.cse110.team4personalbest.FriendChat"></activity>
 
         <meta-data
             android:name="preloaded_fonts"

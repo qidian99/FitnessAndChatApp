@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
@@ -159,7 +160,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
         mTitle.setText("PersonalBest");
 
-        ImageView addFriend = findViewById(R.id.friend);
+        ImageView addFriend = findViewById(R.id.friend_18);
         addFriend.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
@@ -204,7 +205,18 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         // set item as selected to persist highlight
                         menuItem.setChecked(true);
+                        // TODO: change logic here. Also, allow dynamically adding items to friend_24 list. Also, HIGHLIGHT unread messages
+                        switch (menuItem.getItemId()) {
+                            case R.id.gary:
+                            case R.id.wgg:
+                            case R.id.rick:
+                            case R.id.politz:
+                                Intent intent = new Intent(MainActivity.this, FriendChat.class);
+                                startActivity(intent);
+                        }
+                        //close navigation drawer
                         // close drawer when item is tapped
+                        // TODO: if you want to use a custom dialog for chatting, then may need not close the drawer
                         drawerLayout.closeDrawers();
 
                         // Add code here to update the UI based on the item selected
@@ -240,7 +252,8 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        actionbar.setHomeAsUpIndicator(R.drawable.friendlist);
+//        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
 
         // For testing
@@ -589,4 +602,5 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             observer.update(currentStep, lastStep, goal, day, yesterday, today, notCleared);
         }
     }
+
 }
