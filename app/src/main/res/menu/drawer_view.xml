@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/gary"
+            android:icon="@drawable/navi_menu"
+            android:title="Gary" />
+        <item
+            android:id="@+id/rick"
+            android:icon="@drawable/navi_menu"
+            android:title="Rick" />
+        <item
+            android:id="@+id/wgg"
+            android:icon="@drawable/navi_menu"
+            android:title="WGG" />
+        <item
+            android:id="@+id/politz"
+            android:icon="@drawable/navi_menu"
+            android:title="Politz" />
+    </group>
+</menu>

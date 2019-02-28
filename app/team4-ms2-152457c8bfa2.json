@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "team4-ms2",
+  "private_key_id": "152457c8bfa23a2c9829ef63ee53e91d665b900e",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDkn2jEIpUQa1u3\nusE72LSbQI+kwipH72KdH2IS8v54N3AkY3mxPE9xptLq3/YFw4AgaPNA45hP/ysx\nEZAe/odW1WrQJRXnwul+VtWZQqEbcCksskLjTBs/aEZZF4kROsz0toT5HIQLyGYj\n7+BVbMGPWg8lXzyBHjSykyfF9axuga2JkDQAOVm65AMVCXNz4efRbprENTtmkL2A\nCsqdrY3eJzNy5Sr9TMPQ7yLvWkvlmnkwLUslTxdjJngy+QiL0m0CqzOOA8oLSkFz\nllsZ5YXzDB5VzufMV2eT7URw7jenbZOBvak8zR1QShNma0IltlL8mVpOMC8vcOi5\nFkJENfoLAgMBAAECggEAB5uxsM9pp9REBxLjTs5HMtavTCWI8YTmKfW7Iq7+A3g7\n57l80iPsoLww2O0kFT3duYA7/pigrgTX0ngsbOsC0P7Cpi6xdLv4ELZ1cmxtkC6x\nUe+A5ODYijXrpWarc8okRUN0nLNa4+cvLhDAG+8Kywu+oCLMpFBwwG7nKZg3RtVW\nrVOVuBO54Qv3Htytoy95XnG4lF0Mw4VCYUR1xTqi+g8o9qLCvKRkDGOiVObz++WJ\nVI0BFni6RLsaak2jIWd1p+AqQCQCBBnGn/D0BQHddLRYHGBgsRze0jTqCsE+/xdy\nUJwVEaeMykxbMLIppw8FV8lErs5QUUVxCadlo18AOQKBgQD6MSpWgDXAWQSDFubj\nOpVddK7jDdti0h+XeVHJlr46OfTPzMZkN8j5/ro/g070UzXz9dSdiNwsobfcSMlG\n6ExhLEigJlKW3p6Ps3NBjZKnlvfjj4UYVjGmZYFnr/AJQB5eCtw6JJHXyooUV6bF\nVgyaO+hRmybjR68Bq9i5uHTHgwKBgQDp7g/iTFHCzHxBDEaYKt3EwAX1F4ID9hp9\nMy24SKkCpjCUrJzss3WhfInwoKMzAyNA3wpFQAeeGkkI9Sxlc0+MTlTtSnPS3GhX\nfMQFxjt96Sk0GBpmLqyWD/vA+5qIYoj/Ycl1ZE1QWSRkqDDPdygWcbIYEmYB2yLF\noxU1+7D02QKBgQDsrYf8rmqq3EsNa6Pdv3S/JPuwZVJtqJMkKyt4xXaNBHiX/4KK\nGc+w1wz/ukr9jJ4UfDC3GloWiqGw7NYjkut2XXsSrU4h1NUw4bSdhbz/dyxnhESH\nIjrzy0BggypSxeo0UpfFFQU2my6GUei880sWuKdsU5a1GQHwVc2+20T12wKBgQCz\nRldz9Us/f5jF/RNo8IkOjJ7EKyTfxk6cnokuTrj/p79ZYUPN/uZqQNgxydnocUIm\nKAhl8+EioEBSlhpVEV7oRuu9Aq7q7TElwx8y0a2sG/EQ1Fv+7UwkoNEuH2RZmzIk\njZtn1NuPdRF39pGZnVbihHWZDxiP2ZG3ZvkNavs9WQKBgA8CFiD6yJyddIESN2p4\nfOjMPddi3KPYBfMsQ3+dUBOpeKknpiu5/Q9JODvTB394yL7BDC5MUSzJG8MqP/UL\nh40NwLH1fpYV86PmxAwdiIeQMpRwqFJB2VHZHBtpwz3KupGGsFxJYLrSGXZ51MN/\nqbGnrxLPEx4amKmsPghjMTlg\n-----END PRIVATE KEY-----\n",
+  "client_email": "team4-circleci-service-account@team4-ms2.iam.gserviceaccount.com",
+  "client_id": "106995745502016185213",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/team4-circleci-service-account%40team4-ms2.iam.gserviceaccount.com"
+}
