@@ -27,7 +27,7 @@
         <!--&lt;!&ndash; Applies to views in their activated state (i.e checked or switches) &ndash;&gt;-->
         <!--<item name="colorControlActivated">@color/colorPrimary</item>-->
         <!--&lt;!&ndash; Applied to framework control highlights (i.e ripples or list selectors) &ndash;&gt;-->
-        <!--<item namef="colorControlHighlight">@color/colorPrimary</item>-->
+        <!--<item name="colorControlHighlight">@color/colorPrimary</item>-->
 
         <!-- Enable these below if you want clicking icons to trigger a ripple effect -->
         <!--
