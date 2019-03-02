@@ -445,7 +445,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             showNewGoalPrompt();
         }
 
-        fitnessService.addActiveSteps(activeSteps);
+        fitnessService.addActiveSteps(activeSteps, activeMin, activeSec, strideLength);
     }
 
     public void setFitnessServiceKey(String fitnessServiceKey) {

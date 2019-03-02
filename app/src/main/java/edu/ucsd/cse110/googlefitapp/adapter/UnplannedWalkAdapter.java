@@ -37,7 +37,21 @@ import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
+import static android.media.CamcorderProfile.get;
+
 public class UnplannedWalkAdapter implements FitnessService {
+    /*           .addField("ActiveSteps", Field.FORMAT_INT32)
+                .addField("ActiveMin", Field.FORMAT_INT32)
+                .addField("ActiveSec", Field.FORMAT_INT32)
+                .addField("ActiveDistance", Field.FORMAT_FLOAT)
+                .addField("ActiveSpeed", Field.FORMAT_FLOAT)
+                */
+    public static final int ACTIVE_STEP_INDEX = 0;
+    public static final int ACTIVE_MIN_INDEX = 1;
+    public static final int ACTIVE_SEC_INDEX = 2;
+    public static final int ACTIVE_DIST_INDEX = 3;
+    public static final int ACTIVE_SPEED_INDEX = 4;
+
     private static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.active";
     private static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
     public static Calendar calendar = MainActivity.calendar;
@@ -304,7 +318,7 @@ public class UnplannedWalkAdapter implements FitnessService {
     }
 
     @Override
-    public void addActiveSteps(final int step) {
+    public void addActiveSteps(final int step, final int min, final int sec, final float stride) {
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
@@ -345,7 +359,12 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 DataSet dataSet2 = DataSet.create(dataSource);
                                 DataPoint dataPoint =
                                         dataSet2.createDataPoint().setTimeInterval(startTime1, endTime1, TimeUnit.MILLISECONDS);
-                                dataPoint.getValue(activeDataType.getFields().get(0)).setInt(step);
+                                dataPoint.getValue(activeDataType.getFields().get(ACTIVE_STEP_INDEX)).setInt(step);
+                                dataPoint.getValue(activeDataType.getFields().get(ACTIVE_MIN_INDEX)).setInt(min);
+                                dataPoint.getValue(activeDataType.getFields().get(ACTIVE_SEC_INDEX)).setInt(sec);
+                                dataPoint.getValue(activeDataType.getFields().get(ACTIVE_SPEED_INDEX)).setFloat(step * stride / 63360.0f / (min / 60.0f + sec / 3600.0f));
+                                dataPoint.getValue(activeDataType.getFields().get(ACTIVE_DIST_INDEX)).setFloat(step * stride / 63360.0f);
+
 //                                    currentStep = stepCountDelta;
                                 dataSet2.add(dataPoint);
 
@@ -354,10 +373,30 @@ public class UnplannedWalkAdapter implements FitnessService {
 
                                 Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
                             } else {
-                                int newActiveStep = dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt() + step;
+                                /*
+                                        int totalActiveSteps = stepPref.getInt(String.valueOf(day + 7), 0) + activeSteps;
+                                        SharedPreferences.Editor editor = stepPref.edit();
+                                        editor.putInt(String.valueOf(day + 7), totalActiveSteps);
+                                        editor.apply();
+
+                                        // update avg speed and total distance
+                                        float currActiveSpeed = statsPref.getFloat(String.valueOf(day), 0.0f);
+                                        float totalActiveDist = totalActiveSteps * strideLength / 63360.0f;
+                                        Log.d(TAG, "Today's total active distance: " + totalActiveDist);
+
+                                        SharedPreferences.Editor statsEditor = statsPref.edit();
+                                        statsEditor.putFloat(String.valueOf(day), (currActiveSpeed + activeSpeed) / 2.0f);
+                                        Log.d(TAG, "Today's average active speed: " + (currActiveSpeed + activeSpeed) / 2.0f);
+                                 */
+                                DataPoint dtPoint = dataSet.getDataPoints().get(0);
+                                int newActiveStep = dtPoint.getValue(activeDataType.getFields().get(ACTIVE_STEP_INDEX)).asInt() + step;
+                                int newActiveMin = dtPoint.getValue(activeDataType.getFields().get(ACTIVE_MIN_INDEX)).asInt() + min;
+                                int newActiveSec = dtPoint.getValue(activeDataType.getFields().get(ACTIVE_SEC_INDEX)).asInt() + sec;
+                                float newActiveDist = dtPoint.getValue(activeDataType.getFields().get(ACTIVE_DIST_INDEX)).asFloat() + step * stride / 63360.0f;
+                                Log.e(TAG, "New Active dist: " + newActiveDist);
+                                float newActiveSpeed = newActiveDist / (newActiveMin / 60.0f + newActiveSec / 3600.0f);
                                 dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).setInt(newActiveStep);
                                 Log.e(TAG, "Total active steps in addActiveSteps: " + dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt());
-                                Log.e(TAG, dataSet.toString());
 
                                 // Create a data source
                                 DataSource dataSource =
@@ -370,8 +409,14 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 DataSet dataSet2 = DataSet.create(dataSource);
                                 DataPoint dataPoint =
                                         dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
-                                dataPoint.getValue(activeDataType.getFields().get(0)).setInt(newActiveStep);
+                                dataPoint.getValue(activeDataType.getFields().get(ACTIVE_STEP_INDEX)).setInt(newActiveStep);
+                                dataPoint.getValue(activeDataType.getFields().get(ACTIVE_MIN_INDEX)).setInt(newActiveMin);
+                                dataPoint.getValue(activeDataType.getFields().get(ACTIVE_SEC_INDEX)).setInt(newActiveSec);
+                                dataPoint.getValue(activeDataType.getFields().get(ACTIVE_SPEED_INDEX)).setFloat(newActiveSpeed);
+                                dataPoint.getValue(activeDataType.getFields().get(ACTIVE_DIST_INDEX)).setFloat(newActiveDist);
                                 dataSet2.add(dataPoint);
+                                Log.e(TAG, dataSet2.toString());
+
                                 DataUpdateRequest request = new DataUpdateRequest.Builder()
                                         .setDataSet(dataSet2)
                                         .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)

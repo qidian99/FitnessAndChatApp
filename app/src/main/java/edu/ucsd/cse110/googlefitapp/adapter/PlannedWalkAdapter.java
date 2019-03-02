@@ -79,7 +79,8 @@ public class PlannedWalkAdapter implements FitnessService {
     }
 
     @Override
-    public void addActiveSteps(int step) {
+    public void addActiveSteps(int step, int min, int sec, float stride) {
+
     }
 
     @Override

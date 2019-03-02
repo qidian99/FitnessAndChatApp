@@ -19,7 +19,7 @@ public interface FitnessService {
 
     void addInactiveSteps(int extraStep);
 
-    void addActiveSteps(int step);
+    void addActiveSteps(final int step, final int min, final int sec, final float stride);
 
     DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps);
 
