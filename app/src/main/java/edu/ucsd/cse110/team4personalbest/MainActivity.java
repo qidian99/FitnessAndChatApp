@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -31,6 +32,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Objects;
 
 import edu.ucsd.cse110.team4personalbest.adapter.PlannedWalkAdapter;
 import edu.ucsd.cse110.team4personalbest.adapter.UnplannedWalkAdapter;
@@ -146,7 +148,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressLint("DefaultLocale")
+    @SuppressLint({"DefaultLocale", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -156,12 +158,12 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         toolbar.setBackgroundColor(Color.parseColor("#008577"));
         setSupportActionBar(toolbar);
 
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
-        mTitle.setText("PersonalBest");
+        mTitle.setText(getString(R.string.PersonalBest));
 
         ImageView addFriend = findViewById(R.id.friend_18);
-        addFriend.setOnTouchListener(new View.OnTouchListener() {
+        addFriend.setOnTouchListener(new OnTouchListener() {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -194,8 +196,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
                 lauchFriendSignUpActivity();
             }
         });
-
-
 
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);

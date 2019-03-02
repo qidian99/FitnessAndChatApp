@@ -37,6 +37,7 @@ public class CustomGoalDialog extends DialogFragment implements TextView.OnEdito
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);
+        frag.setStyle(0, R.style.Dialog);
         return frag;
     }
 
@@ -45,13 +46,14 @@ public class CustomGoalDialog extends DialogFragment implements TextView.OnEdito
                              Bundle savedInstanceState) {
         View v = null;
         try {
-            v = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.fragment_set_goal, container, false);
             getDialog().setTitle(getString(R.string.setGoalPrompt));
+            v = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.fragment_set_goal, container, false);
             Log.d(TAG, "onCreateView Success");
         } catch (Exception e) {
             Log.d(TAG, "onCreateView Fail: " + e.toString());
             e.printStackTrace();
         }
+
         return v;
     }
 

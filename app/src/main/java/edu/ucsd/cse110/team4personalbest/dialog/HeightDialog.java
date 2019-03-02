@@ -42,6 +42,7 @@ public class HeightDialog extends DialogFragment implements TextView.OnEditorAct
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);
+        frag.setStyle(0, R.style.Dialog);
         return frag;
     }
 
@@ -136,7 +137,6 @@ public class HeightDialog extends DialogFragment implements TextView.OnEditorAct
                 AlertDialog.Builder builder1 = new AlertDialog.Builder(getContext());
                 builder1.setMessage(getString(R.string.invalidHeight));
                 builder1.setCancelable(false);
-
                 builder1.setPositiveButton(
                         "OK",
                         (dialog, id) -> {

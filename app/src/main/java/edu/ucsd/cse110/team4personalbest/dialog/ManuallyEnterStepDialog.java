@@ -31,6 +31,7 @@ public class ManuallyEnterStepDialog extends DialogFragment {
         Bundle args = new Bundle();
         args.putString("title", title);
         frag.setArguments(args);
+        frag.setStyle(0, R.style.Dialog);
         return frag;
     }
 
