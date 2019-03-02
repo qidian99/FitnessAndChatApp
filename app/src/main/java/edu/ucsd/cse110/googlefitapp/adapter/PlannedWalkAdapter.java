@@ -83,16 +83,6 @@ public class PlannedWalkAdapter implements FitnessService {
 
     }
 
-    @Override
-    public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
-        return null;
-    }
-
-    @Override
-    public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
-        return null;
-    }
-
     private void startRecording() {
         GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(plannedWalkActivity);
         if (lastSignedInAccount == null) {

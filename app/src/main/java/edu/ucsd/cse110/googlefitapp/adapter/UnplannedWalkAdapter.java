@@ -93,12 +93,12 @@ public class UnplannedWalkAdapter implements FitnessService {
 
             Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).readDataType(ACTIVE_DT_NAME).
                     addOnSuccessListener(dataType -> {
-                        Log.e(TAG, "Found data type: " + dataType);
-//                        activeDataType = dataType;
-                        CreateCustomDataType(gsa);
+                        Log.d(TAG, "Found data type: " + dataType);
+                        activeDataType = dataType;
+//                        CreateCustomDataType(gsa);
                     })
                     .addOnFailureListener(e -> {
-                        Log.e(TAG, "Datatype not found.");
+                        Log.d(TAG, "Datatype not found.");
 
                         CreateCustomDataType(gsa);
                     });
@@ -126,7 +126,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         Task<DataType> response =
                 Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).createCustomDataType(request)
                         .addOnSuccessListener((DataType dataType) -> {
-                            Log.e(TAG, "Sucessfully created new datatype: " + dataType.toString());
+                            Log.d(TAG, "Sucessfully created new datatype: " + dataType.toString());
                             activeDataType = dataType;
                             fitnessOptions = FitnessOptions.builder()
                                     .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -340,7 +340,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .addOnSuccessListener(
                         dataReadResponse -> {
                             DataSet dataSet = dataReadResponse.getDataSet(activeDataType);
-                            Log.e(TAG, "Fetched active data from google cloud. dataSet.isEmpty() = " + dataSet.isEmpty());
+                            Log.d(TAG, "Fetched active data from google cloud. dataSet.isEmpty() = " + dataSet.isEmpty());
                             if (dataSet.isEmpty()) {
                                 Calendar cal = StepCalendar.getInstance();
                                 long endTime1 = cal.getTimeInMillis();
@@ -368,8 +368,8 @@ public class UnplannedWalkAdapter implements FitnessService {
 //                                    currentStep = stepCountDelta;
                                 dataSet2.add(dataPoint);
 
-                                Log.e(TAG, String.format("addActiveSteps - Added %d active steps", step));
-                                Log.e(TAG, dataSet2.toString());
+                                Log.d(TAG, String.format("addActiveSteps - Added %d active steps", step));
+                                Log.d(TAG, dataSet2.toString());
 
                                 Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
                             } else {
@@ -393,10 +393,10 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 int newActiveMin = dtPoint.getValue(activeDataType.getFields().get(ACTIVE_MIN_INDEX)).asInt() + min;
                                 int newActiveSec = dtPoint.getValue(activeDataType.getFields().get(ACTIVE_SEC_INDEX)).asInt() + sec;
                                 float newActiveDist = dtPoint.getValue(activeDataType.getFields().get(ACTIVE_DIST_INDEX)).asFloat() + step * stride / 63360.0f;
-                                Log.e(TAG, "New Active dist: " + newActiveDist);
+                                Log.d(TAG, "New Active dist: " + newActiveDist);
                                 float newActiveSpeed = newActiveDist / (newActiveMin / 60.0f + newActiveSec / 3600.0f);
                                 dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).setInt(newActiveStep);
-                                Log.e(TAG, "Total active steps in addActiveSteps: " + dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt());
+                                Log.d(TAG, "Total active steps in addActiveSteps: " + dataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(0)).asInt());
 
                                 // Create a data source
                                 DataSource dataSource =
@@ -415,7 +415,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 dataPoint.getValue(activeDataType.getFields().get(ACTIVE_SPEED_INDEX)).setFloat(newActiveSpeed);
                                 dataPoint.getValue(activeDataType.getFields().get(ACTIVE_DIST_INDEX)).setFloat(newActiveDist);
                                 dataSet2.add(dataPoint);
-                                Log.e(TAG, dataSet2.toString());
+                                Log.d(TAG, dataSet2.toString());
 
                                 DataUpdateRequest request = new DataUpdateRequest.Builder()
                                         .setDataSet(dataSet2)
@@ -430,13 +430,43 @@ public class UnplannedWalkAdapter implements FitnessService {
                         });
     }
 
-    public DataReadRequest getLast7DaysSteps(Calendar cal) {
+    public DataReadRequest buildTotalStepRequest(Calendar cal) {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
         tempCal.set(Calendar.HOUR, 0);
         // Get last Sunday
-        tempCal.add(Calendar.DATE, -tempCal.get(Calendar.DAY_OF_WEEK + 1));
+//        tempCal.add(Calendar.DATE, -tempCal.get(Calendar.DAY_OF_WEEK) + 1);
+        tempCal.add(Calendar.DATE, -6);
+        long startTime = tempCal.getTimeInMillis();
+        // Get next Saturday
+        tempCal.add(Calendar.DATE, 7);
+        tempCal.add(Calendar.SECOND, -1);
+        long endTime = tempCal.getTimeInMillis();
+//        DataSource activeDataSource = new DataSource.Builder()
+//                .setAppPackageName(APP_PACKAGE_NAME)
+//                .setDataType(activeDataType)
+//                .setName(ACTIVE_DT_NAME)
+//                .setType(DataSource.TYPE_RAW)
+//                .build();
+        Log.d(TAG, "getLast7DaysSteps Initialize Success");
+        return new DataReadRequest.Builder()
+                .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
+                        DataType.AGGREGATE_STEP_COUNT_DELTA)
+//                .read(activeDataType)
+//                .read(activeDataSource)
+                .bucketByTime(1, TimeUnit.DAYS)
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
+    }
+
+    public DataReadRequest buildActiveStepRequest(Calendar cal) {
+        Calendar tempCal = (Calendar) cal.clone();
+        tempCal.set(Calendar.SECOND, 0);
+        tempCal.set(Calendar.MINUTE, 0);
+        tempCal.set(Calendar.HOUR, 0);
+        // Get last Sunday
+        tempCal.add(Calendar.DATE, -6);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.add(Calendar.DATE, 7);
@@ -450,8 +480,8 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .build();
         Log.d(TAG, "getLast7DaysSteps Initialize Success");
         return new DataReadRequest.Builder()
-                .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
-                        DataType.AGGREGATE_STEP_COUNT_DELTA)
+//                .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
+//                        DataType.AGGREGATE_STEP_COUNT_DELTA)
                 .read(activeDataType)
                 .read(activeDataSource)
                 .bucketByTime(1, TimeUnit.DAYS)
@@ -459,10 +489,11 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .build();
     }
 
-    @Override
     public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
-        DataReadRequest dataReadRequest = getLast7DaysSteps(cal);
+        DataReadRequest dataReadRequest = buildTotalStepRequest(cal);
+        DataReadRequest dataReadRequest2 = buildActiveStepRequest(cal);
+
         Task<DataReadResponse> dataReadResponseTask = Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
                 .readData(dataReadRequest)
                 .addOnSuccessListener(
@@ -482,13 +513,32 @@ public class UnplannedWalkAdapter implements FitnessService {
                             }
                         })
                 .addOnFailureListener(
-                        e -> {
+                        e -> {Log.e(TAG, "Fail to get the last 7 day total steps");
+                        });
+
+
+        Task<DataReadResponse> dataReadResponseTask2 = Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
+                .readData(dataReadRequest2)
+                .addOnSuccessListener(
+                        dataReadResponse -> {
+                            for (int i = 0; i < 7; i++) {
+                                Log.d(TAG, String.format("getLast7DaysSteps - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
+                                Bucket bucket = dataReadResponse.getBuckets().get(i);
+                                DataSet dtSet2 = bucket.getDataSet(activeDataType);
+                                if (dtSet2 != null && !dtSet2.isEmpty()) {
+                                    Log.d(TAG, "getLast7DaysSteps - dtSet2 steps = " + dtSet2);
+                                }
+                            }
+                        })
+                .addOnFailureListener(
+                        e -> {Log.e(TAG, "Fail to get the last 7 day active steps");
                         });
         return null;
     }
 
     public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
-        return getLast7DaysSteps(StepCalendar.getInstance());
+//        return getLast7DaysSteps(StepCalendar.getInstance());
+        return getLast7DaysSteps(weeklyInactiveSteps, weeklyActiveSteps, StepCalendar.getInstance());
     }
 
     @Override

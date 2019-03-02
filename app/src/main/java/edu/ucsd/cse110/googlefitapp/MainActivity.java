@@ -34,6 +34,7 @@ import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.adapter.PlannedWalkAdapter;
 import edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter;
+import edu.ucsd.cse110.googlefitapp.adapter.WeeklyStatsAdapter;
 import edu.ucsd.cse110.googlefitapp.dialog.CustomGoalDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.ManuallyEnterStepDialog;
@@ -264,6 +265,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             fitnessServiceFactory.put(MAIN_SERVICE, UnplannedWalkAdapter::new);
 
             fitnessServiceFactory.put(fitnessServiceKey, PlannedWalkAdapter::new);
+//            fitnessServiceFactory.put("WEEKLY_STATS", WeeklyStatsAdapter::new);
 
             fitnessService = fitnessServiceFactory.create(MAIN_SERVICE, this);
         }
@@ -550,8 +552,8 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     }
 
     public void mockCalendar(View view) {
-        System.out.println(fitnessService.getLast7DaysSteps(weeklyInactiveSteps, weeklyActiveSteps,
-                Calendar.getInstance()));
+//        System.out.println(fitnessService.getLast7DaysSteps(weeklyInactiveSteps, weeklyActiveSteps,
+//                Calendar.getInstance()));
     }
 
     @Override
