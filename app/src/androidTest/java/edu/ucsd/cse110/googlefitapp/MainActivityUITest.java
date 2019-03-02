@@ -216,11 +216,6 @@ public class MainActivityUITest {
 
         ViewInteraction button5 = onView(
                 allOf(withId(R.id.mockCalBtn),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(android.R.id.content),
-                                        0),
-                                5),
                         isDisplayed()));
         button5.check(matches(isDisplayed()));
 
@@ -272,18 +267,8 @@ public class MainActivityUITest {
         }
 
         @Override
-        public void addActiveSteps(int step) {
+        public void addActiveSteps(int step, int min, int sec, float stride) {
 
-        }
-
-        @Override
-        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
-            return null;
-        }
-
-        @Override
-        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
-            return null;
         }
     }
 
@@ -329,18 +314,8 @@ public class MainActivityUITest {
         }
 
         @Override
-        public void addActiveSteps(int step) {
+        public void addActiveSteps(int step, int min, int sec, float stride) {
 
-        }
-
-        @Override
-        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
-            return null;
-        }
-
-        @Override
-        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
-            return null;
         }
     }
 }

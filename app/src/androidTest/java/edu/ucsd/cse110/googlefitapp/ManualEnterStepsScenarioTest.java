@@ -235,18 +235,8 @@ public class ManualEnterStepsScenarioTest {
         }
 
         @Override
-        public void addActiveSteps(int step) {
+        public void addActiveSteps(int step, int min, int sec, float stride) {
 
-        }
-
-        @Override
-        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
-            return null;
-        }
-
-        @Override
-        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
-            return null;
         }
     }
 
@@ -294,18 +284,8 @@ public class ManualEnterStepsScenarioTest {
         }
 
         @Override
-        public void addActiveSteps(int step) {
+        public void addActiveSteps(int step, int min, int sec, float stride) {
 
-        }
-
-        @Override
-        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps) {
-            return null;
-        }
-
-        @Override
-        public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
-            return null;
         }
     }
 }
