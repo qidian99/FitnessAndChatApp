@@ -54,6 +54,7 @@ import edu.ucsd.cse110.googlefitapp.observer.EncouragementDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.GoalDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.GraphDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.Observer;
+import edu.ucsd.cse110.googlefitapp.chatroom.views.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.observer.StepDisplay;
 
 import static edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter.RC_SIGN_IN;
@@ -230,6 +231,15 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
                 lauchFriendSignUpActivity();
             }
         });
+
+        Button chatBtn = findViewById(R.id.chatroom);
+        chatBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                lauchChatroomActivity();
+            }
+        });
+
 
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -664,5 +674,11 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     }
     private void subscribeToNotificationsTopic(ChatMessaging chatMessaging) {
         chatMessaging.subscribe(this);
+    }
+
+    private void lauchChatroomActivity() {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivity(intent);
+        overridePendingTransition(R.anim.slide_r_to_l_enter, R.anim.slide_r_to_l_exit);
     }
 }
