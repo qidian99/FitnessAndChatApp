@@ -8,7 +8,9 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
+        testOptions.unitTests.includeAndroidResources = true
         testInstrumentationRunner getTestRunner()
+        multiDexEnabled true
 //        testInstrumentationRunner getTestRunner()
 //        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -85,8 +87,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:17.4.0'
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:design:28.0.0'
-
-
+    implementation 'com.android.support:multidex:1.0.3'
 }
 
 def getTestRunner() {
