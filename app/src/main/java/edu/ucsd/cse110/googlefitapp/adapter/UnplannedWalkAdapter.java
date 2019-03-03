@@ -40,7 +40,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -61,6 +64,9 @@ import edu.ucsd.cse110.googlefitapp.FriendChatActivity;
 import edu.ucsd.cse110.googlefitapp.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.R;
+import edu.ucsd.cse110.googlefitapp.chatroom.models.ChatPojo;
+import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
+import edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
@@ -92,6 +98,8 @@ public class UnplannedWalkAdapter implements FitnessService {
     private int currentStep;
     private GoogleSignInAccount gsa;
     public static final int RC_SIGN_IN = 9001;
+    private CollectionReference friendship;
+
     public UnplannedWalkAdapter(Activity activity) {
         this.activity = activity;
     }
@@ -668,13 +676,14 @@ public class UnplannedWalkAdapter implements FitnessService {
                 cancel(true);
             } else {
                 updateStepCount();
-                setUpFriendlist();
+//                setUpFriendlist();
             }
         }
     }
 
 
     private void setUpFriendlist() {
+        setFriendListListener();
         String uid = getUID();
 //        DocumentReference friendship = FirebaseFirestore.getInstance()
 //                .collection("friendship")
@@ -706,8 +715,7 @@ public class UnplannedWalkAdapter implements FitnessService {
 
         Map<String, Integer> IDMap = new HashMap<>();
 
-        CollectionReference friendship = FirebaseFirestore.getInstance()
-                .collection("friendship");
+
         friendship.get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -819,9 +827,26 @@ public class UnplannedWalkAdapter implements FitnessService {
                                             alertInvalidInput.show();
                                         } else {
                                             // open Chat
-                                            Intent intent = new Intent(activity, FriendChatActivity.class);
-                                            activity.startActivity(intent);
-                                            drawerLayout.closeDrawers();
+                                            String friendEmail = menuItem.getTitle().toString();
+                                            String userEmail = getEmail();
+                                            String chatroomName = userEmail.compareTo(friendEmail) > 0 ? friendEmail + "TO" + userEmail : userEmail + "TO" + friendEmail;
+                                            FirebaseAuth.getInstance().signInAnonymously()
+                                                    .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
+                                                        @Override
+                                                        public void onComplete( Task<AuthResult> task) {
+                                                            if (!task.isSuccessful()) {
+                                                                Log.e(TAG, "Error connecting to chat room");
+                                                            } else {
+                                                                Intent intent=new Intent(activity, ChatActivity.class);
+                                                                intent.putExtra(MyUtils.EXTRA_ROOM_NAME, chatroomName);
+                                                                intent.putExtra("friend", friendEmail);
+                                                                activity.startActivity(intent);                                                            }
+                                                        }
+                                                    });
+
+//                                            Intent intent = new Intent(activity, FriendChatActivity.class);
+//                                            activity.startActivity(intent);
+//                                            drawerLayout.closeDrawers();
 
                                         }
 
@@ -879,6 +904,21 @@ public class UnplannedWalkAdapter implements FitnessService {
 
                     }
                 });
+    }
+
+    private void setFriendListListener() {
+        if(friendship == null) {
+            friendship = FirebaseFirestore.getInstance()
+                    .collection("friendship");
+            friendship.addSnapshotListener((newChatSnapShot, error) -> {
+                if (error != null) {
+                    Log.e(TAG, error.getLocalizedMessage());
+                    return;
+                }
+
+                setUpFriendlist();
+            });
+        }
     }
 
     /**

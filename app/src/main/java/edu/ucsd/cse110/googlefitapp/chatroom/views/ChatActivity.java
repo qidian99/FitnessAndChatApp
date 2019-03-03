@@ -1,11 +1,17 @@
 package edu.ucsd.cse110.googlefitapp.chatroom.views;
 
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
+
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
@@ -21,15 +27,22 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private RecyclerView mRecyclerView;
     private String mRoomName;
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
         mRoomName=getIntent().getStringExtra(MyUtils.EXTRA_ROOM_NAME);
+        String friendEmail = getIntent().getStringExtra("friend");
+        ((TextView)findViewById(R.id.text_header)).setText(friendEmail);
         mChatPresenter =new ChatPresenter(this);
-        mChatPresenter.setListener(mRoomName);
-
+//        mChatPresenter.setListener(mRoomName);
+        CollectionReference chat = FirebaseFirestore.getInstance()
+                .collection("chatroom")
+                .document("room")
+                .collection(mRoomName);
+        mChatPresenter.setChat(chat);
         mEdittextChat=(EditText) findViewById(R.id.edittext_chat_message);
         mRecyclerView=(RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));

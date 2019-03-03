@@ -22,4 +22,12 @@ public class MessageModel {
         mMessages.add(chatPojo);
         callBacks.onModelUpdated(mMessages);
     }
+
+    public void addMessages(ChatPojo pojo, ModelCallBacks callBacks){
+        if (mMessages==null){
+            mMessages= new ArrayList<>();
+        }
+        mMessages.add(pojo);
+        callBacks.onModelUpdated(mMessages);
+    }
 }

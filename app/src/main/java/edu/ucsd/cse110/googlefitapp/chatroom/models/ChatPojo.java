@@ -1,6 +1,9 @@
 package edu.ucsd.cse110.googlefitapp.chatroom.models;
 
+import android.util.Log;
+
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.HashMap;
 
@@ -14,6 +17,14 @@ public class ChatPojo {
     private String message;
     private String senderId;
 
+
+    public ChatPojo(QueryDocumentSnapshot queryDocumentSnapshot){
+        this.msgKey= queryDocumentSnapshot.getId();
+        this.message=queryDocumentSnapshot.get("text").toString();
+        this.senderId=queryDocumentSnapshot.get("senderId").toString();
+        this.timeStamp=Long.parseLong(queryDocumentSnapshot.get("time").toString());
+        Log.e("POJO", "New chat history added: " + queryDocumentSnapshot.get("text"));
+    }
 
     public ChatPojo(DataSnapshot dataSnapshot){
         HashMap<String, Object> object = (HashMap<String, Object>) dataSnapshot.getValue();

@@ -1,14 +1,11 @@
 package edu.ucsd.cse110.googlefitapp.chatroom.utils;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -16,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.ucsd.cse110.googlefitapp.chatroom.interfaces.FirebaseCallBacks;
+import edu.ucsd.cse110.googlefitapp.chatroom.presenters.ChatPresenter;
 
 
 /**
@@ -24,7 +22,7 @@ import edu.ucsd.cse110.googlefitapp.chatroom.interfaces.FirebaseCallBacks;
 
 public class FirebaseManager implements ChildEventListener{
     private volatile static FirebaseManager sFirebaseManager;
-    private CollectionReference mMessageReference;
+    private CollectionReference chat;
     private FirebaseCallBacks mCallbacks;
 
     public static synchronized FirebaseManager getInstance(String roomName, FirebaseCallBacks callBacks) {
@@ -37,17 +35,17 @@ public class FirebaseManager implements ChildEventListener{
     }
 
     private FirebaseManager(String roomName, FirebaseCallBacks callBacks){
-//        mMessageReference = FirebaseDatabase.getInstance().getReference().child(roomName);
-        mMessageReference = FirebaseFirestore.getInstance().collection("chatroom").document("chat").collection(roomName);
+//        chat = FirebaseDatabase.getInstance().getReference().child(roomName);
+        chat = FirebaseFirestore.getInstance().collection("chatroom").document("room").collection(roomName);
         this.mCallbacks = callBacks;
     }
 
 //    public void addMessageListeners(){
-//        mMessageReference.addChildEventListener(this);
+//        chat.addChildEventListener(this);
 //    }
 //
 //    public void removeListeners(){
-//        mMessageReference.removeEventListener(this);
+//        chat.removeEventListener(this);
 //    }
 
     @Override
@@ -81,9 +79,24 @@ public class FirebaseManager implements ChildEventListener{
         map.put("time",System.currentTimeMillis());
         map.put("senderId", FirebaseAuth.getInstance().getCurrentUser().getUid());
 
-//        String keyToPush= mMessageReference.push().getKey();
-//        mMessageReference.child(keyToPush).setValue(map);
-        mMessageReference.push().setValue(map);
+//        String keyToPush= chat.push().getKey();
+//        chat.child(keyToPush).setValue(map);
+        chat.add(map);
+//        Log.e("FBMANAGER", keyToPush);
+        Log.e("FBMANAGER", map.toString());
+    }
+
+    public void sendMessageToFirebase(String message, ChatPresenter chatPresenter) {
+        Map<String,Object> map=new HashMap<>();
+        map.put("text",message);
+        map.put("time",System.currentTimeMillis());
+        map.put("senderId", FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+//        String keyToPush= chat.push().getKey();
+//        chat.child(keyToPush).setValue(map);
+        chat.add(map).addOnSuccessListener(result -> {
+        }).addOnFailureListener(error -> {
+        });
 //        Log.e("FBMANAGER", keyToPush);
         Log.e("FBMANAGER", map.toString());
     }
