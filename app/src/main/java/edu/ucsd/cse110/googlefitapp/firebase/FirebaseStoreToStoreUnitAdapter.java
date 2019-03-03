@@ -1,5 +1,7 @@
 package edu.ucsd.cse110.googlefitapp.firebase;
 
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -16,13 +18,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.ucsd.cse110.googlefitapp.FriendChat;
+import edu.ucsd.cse110.googlefitapp.FriendChatActivity;
 import edu.ucsd.cse110.googlefitapp.R;
 
 public class FirebaseStoreToStoreUnitAdapter implements StoreUnit {
     CollectionReference chat;
-    FriendChat activity;
-    public FirebaseStoreToStoreUnitAdapter(FriendChat activity){
+    FriendChatActivity activity;
+    public FirebaseStoreToStoreUnitAdapter(FriendChatActivity activity){
         chat = FirebaseFirestore.getInstance()
                 .collection(activity.COLLECTION_KEY)
                 .document(activity.DOCUMENT_KEY)
@@ -32,6 +34,7 @@ public class FirebaseStoreToStoreUnitAdapter implements StoreUnit {
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void initMessageUpdateListener() {
         chat.orderBy(activity.TIMESTAMP_KEY, Query.Direction.ASCENDING)

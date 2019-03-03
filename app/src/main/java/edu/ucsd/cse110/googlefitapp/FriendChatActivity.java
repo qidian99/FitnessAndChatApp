@@ -15,7 +15,7 @@ import edu.ucsd.cse110.googlefitapp.firebase.StoreUnit;
 import edu.ucsd.cse110.googlefitapp.firebase.TestMessaging;
 import edu.ucsd.cse110.googlefitapp.firebase.TestStore;
 
-public class FriendChat extends AppCompatActivity {
+public class FriendChatActivity extends AppCompatActivity {
 
     public static final String TAG = "FRIEND_CHAT";
     public static final String COLLECTION_KEY = "chats";
@@ -34,21 +34,23 @@ public class FriendChat extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend_chat);
+//
+//        boolean test = getIntent().getBooleanExtra("TEST", false);
+//        if(test){
+//            chatMessaging = new TestMessaging();
+//            chatStore = new TestStore(this);
+//        } else {
+//            chatMessaging = new FirebaseMessageToChatMessageAdapter();
+//            chatStore = new FirebaseStoreToStoreUnitAdapter(this);
+//        }
 
-        boolean test = getIntent().getBooleanExtra("TEST", false);
-        if(test){
-            chatMessaging = new TestMessaging();
-            chatStore = new TestStore(this);
-        } else {
-            chatMessaging = new FirebaseMessageToChatMessageAdapter();
-            chatStore = new FirebaseStoreToStoreUnitAdapter(this);
-        }
+        chatStore = new FirebaseStoreToStoreUnitAdapter(this);
 
         final SharedPreferences sharedpreferences = getSharedPreferences("FirebaseLabApp", Context.MODE_PRIVATE);
 
 
         from = sharedpreferences.getString(FROM_KEY, null);
-        subscribeToNotificationsTopic(chatMessaging);
+//        subscribeToNotificationsTopic(chatMessaging);
         chatStore.initMessageUpdateListener();
         findViewById(R.id.btn_send).setOnClickListener(view -> chatStore.sendMessage());
 
@@ -71,7 +73,7 @@ public class FriendChat extends AppCompatActivity {
         });
     }
 
-    private void subscribeToNotificationsTopic(ChatMessaging chatMessaging) {
-        chatMessaging.subscribe(this);
-    }
+//    private void subscribeToNotificationsTopic(ChatMessaging chatMessaging) {
+//        chatMessaging.subscribe(this);
+//    }
 }

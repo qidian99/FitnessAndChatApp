@@ -3,14 +3,14 @@ package edu.ucsd.cse110.googlefitapp.firebase;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import edu.ucsd.cse110.googlefitapp.FriendChat;
+import edu.ucsd.cse110.googlefitapp.FriendChatActivity;
 import edu.ucsd.cse110.googlefitapp.R;
 
 public class TestStore implements StoreUnit {
     TextView chatView;
-    FriendChat activity;
+    FriendChatActivity activity;
 
-    public TestStore(FriendChat activity){
+    public TestStore(FriendChatActivity activity){
         this.activity = activity;
         this.chatView = activity.findViewById(R.id.chat);
     }

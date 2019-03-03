@@ -1,15 +1,28 @@
 package edu.ucsd.cse110.googlefitapp.adapter;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SubMenu;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.fitness.ConfigApi;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.Bucket;
@@ -23,21 +36,36 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.request.DataUpdateRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
-import com.google.android.gms.fitness.result.DataTypeResult;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.Activity;
+import edu.ucsd.cse110.googlefitapp.FriendChatActivity;
+import edu.ucsd.cse110.googlefitapp.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
+import edu.ucsd.cse110.googlefitapp.R;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
 import static android.media.CamcorderProfile.get;
+import static android.view.View.INVISIBLE;
 
 public class UnplannedWalkAdapter implements FitnessService {
     /*           .addField("ActiveSteps", Field.FORMAT_INT32)
@@ -62,7 +90,8 @@ public class UnplannedWalkAdapter implements FitnessService {
     private Activity activity;
     private DataType activeDataType;
     private int currentStep;
-
+    private GoogleSignInAccount gsa;
+    public static final int RC_SIGN_IN = 9001;
     public UnplannedWalkAdapter(Activity activity) {
         this.activity = activity;
     }
@@ -75,41 +104,86 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
                 .build();
 
+//        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
+//            Toast.makeText(activity, "Authorization is needed to use this app", Toast.LENGTH_SHORT).show();
+////            GoogleSignIn.requestPermissions(
+////                    activity, // your activity
+////                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+////                    GoogleSignIn.getLastSignedInAccount(activity),
+////                    fitnessOptions);
+//            Intent intent = new Intent(activity, LoginActivity.class);
+//            activity.startActivity(intent);
+////            activity.finish();
+//        } else {
+
+
+
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
-            Toast.makeText(activity, "Authorization is needed to use this app", Toast.LENGTH_SHORT).show();
-            GoogleSignIn.requestPermissions(
-                    activity, // your activity
-                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(activity),
-                    fitnessOptions);
-        }
+            Intent intent = new Intent(activity, LoginActivity.class);
+            activity.startActivity(intent);
+        } else if(GoogleSignIn.getLastSignedInAccount(activity).getEmail() == null) {
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .build();
+            GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(activity, gso);
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            activity.startActivityForResult(signInIntent, RC_SIGN_IN);
 
-        updateStepCount();
-        startRecording();
+        } else {
+            updateStepCount();
+            startRecording();
 
 
-        try {
-            GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
+            try {
+                gsa = GoogleSignIn.getLastSignedInAccount(activity);
+//                ((TextView) activity.findViewById(R.id.TextCurrentAccount)).setText(gsa.getEmail());
+                Log.i(TAG, "Last Signed Account is: " + gsa);
+                Log.i(TAG, "Last Signed email is: " + gsa.getEmail());
+                Log.i(TAG, "Last Signed id is: " + gsa.getId());
+                Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).readDataType(ACTIVE_DT_NAME).
+                        addOnSuccessListener(dataType -> {
+                            Log.d(TAG, "Found data type: " + dataType);
+                            activeDataType = dataType;
+                            //                        CreateCustomDataType(gsa);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.d(TAG, "Datatype not found.");
 
-            Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).readDataType(ACTIVE_DT_NAME).
-                    addOnSuccessListener(dataType -> {
-                        Log.d(TAG, "Found data type: " + dataType);
-                        activeDataType = dataType;
-//                        CreateCustomDataType(gsa);
+                            CreateCustomDataType(gsa);
+                        });
+                //            Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).readDataType(this, "com.app.custom_data_type");
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            startAsync();
+
+            Map<String, Object> user = new HashMap<>();
+            user.put("email", gsa.getEmail());
+            user.put("id", gsa.getId());
+
+            FirebaseFirestore chat = FirebaseFirestore.getInstance();
+//                    .collection(activity.COLLECTION_KEY)
+//                    .document(activity.DOCUMENT_KEY)
+//                    .collection(activity.MESSAGES_KEY);
+
+            chat.collection("users").document(gsa.getId())
+                    .set(user)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d(TAG, "User information successfully written!");
+                        }
                     })
-                    .addOnFailureListener(e -> {
-                        Log.d(TAG, "Datatype not found.");
-
-                        CreateCustomDataType(gsa);
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w(TAG, "Error writing User information", e);
+                        }
                     });
-//            Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).readDataType(this, "com.app.custom_data_type");
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            setUpFriendlist();
         }
-
-
     }
 
     private void CreateCustomDataType(GoogleSignInAccount gsa) {
@@ -200,6 +274,11 @@ public class UnplannedWalkAdapter implements FitnessService {
                             activity.setStep(currentStep);
                             activity.updateAll(total);
                             activity.notifyObservers();
+                            activity.findViewById(R.id.spin_kit_steps_left).setVisibility(View.GONE);
+                            activity.findViewById(R.id.spin_kit_steps_taken).setVisibility(View.GONE);
+                            activity.findViewById(R.id.stepsLeft).setVisibility(View.VISIBLE);
+                            activity.findViewById(R.id.textStepsMain).setVisibility(View.VISIBLE);
+
                             Log.d(TAG, "Total steps in updateStepCount: " + total);
                         })
                 .addOnFailureListener(
@@ -430,6 +509,16 @@ public class UnplannedWalkAdapter implements FitnessService {
                         });
     }
 
+    @Override
+    public String getUID() {
+        return this.gsa.getId();
+    }
+
+    @Override
+    public String getEmail() {
+        return this.gsa.getEmail();
+    }
+
     public DataReadRequest buildTotalStepRequest(Calendar cal) {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
@@ -579,8 +668,247 @@ public class UnplannedWalkAdapter implements FitnessService {
                 cancel(true);
             } else {
                 updateStepCount();
+                setUpFriendlist();
             }
         }
     }
 
+
+    private void setUpFriendlist() {
+        String uid = getUID();
+//        DocumentReference friendship = FirebaseFirestore.getInstance()
+//                .collection("friendship")
+//                .document(uid);
+//        friendship.get()
+//                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                        if (task.isSuccessful()) {
+//                            List<String> singleWayFriendList = new ArrayList<>();
+//                            Map<String, Object> map = task.getResult().getData();
+//                            for (Map.Entry<String, Object> entry : map.entrySet()) {
+//                                singleWayFriendList.add(entry.getKey());
+//                                Log.e("TAG", "Your friend request sent: " + entry.getKey());
+//                            }
+//                            //Do what you want to do with your list
+//                        } else {
+//                            Log.e(TAG, "Error getting documents: ", task.getException());
+//                        }
+//                    }
+//
+//                });
+        // requests sent by you
+        List<String> singleWayFriendList = new ArrayList<>();
+        // both way
+        List<String> twoWayFriendList = new ArrayList<>();
+        // your friend sent you
+        List<String> friendRequestList = new ArrayList<>();
+
+        Map<String, Integer> IDMap = new HashMap<>();
+
+        CollectionReference friendship = FirebaseFirestore.getInstance()
+                .collection("friendship");
+        friendship.get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        int index = 0;
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Log.d(TAG, "Document: " + document.getData().toString());
+                            Log.d(TAG, "Document ID: " + document.getId());
+                            Map<String, Object> map = document.getData();
+                            if(document.getId().equals(uid)){
+                                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                                    if(!entry.getKey().equals("email") && (boolean)entry.getValue()) {
+                                        singleWayFriendList.add(entry.getKey());
+                                        Log.e("TAG", "Your friend request sent: " + entry.getKey());
+                                    }
+                                }
+                            } else {
+                                if(document.get(uid) != null && (boolean)document.get(uid)){
+                                    friendRequestList.add(document.getId());
+                                }
+                            }
+
+                            IDMap.put(document.getId(), index);
+                            index++;
+                        }
+
+                        for(String yourFriendRequest: singleWayFriendList) {
+                            friendRequestList.remove(yourFriendRequest);
+                        }
+
+                        //if(task.getResult().getDocuments())
+                        for(String singleFriend : singleWayFriendList){
+                            Log.e(TAG, ""+(task.getResult().getDocuments()==null));
+                            Log.e(TAG, "single friend"+singleFriend);
+                            Log.e(TAG, "ID map" + IDMap);
+                            if(IDMap.get(singleFriend) == null) {
+                                continue;
+                            }
+                            DocumentSnapshot friendSFriendlist = task.getResult().getDocuments().get(IDMap.get(singleFriend));
+                            Log.e(TAG, "friend: " + singleFriend + ", friend list: " + friendSFriendlist);
+                            Map<String, Object> map = friendSFriendlist.getData();
+                            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                                Log.e(TAG, "Your friend has friend " + entry.getKey());
+                                if(entry.getKey().equals(uid) && (boolean)entry.getValue()) {
+                                    Log.e("TAG", "Luckily, you are on your friend's friend list: " + friendSFriendlist.getId());
+                                    twoWayFriendList.add(singleFriend);
+                                }
+                            }
+
+                        }
+                        ((TextView) activity.findViewById(R.id.TextCurrentAccount)).setText(gsa.getDisplayName());
+                        Log.d(TAG, "Photo URL: " + gsa.getPhotoUrl());
+                        if(gsa.getPhotoUrl() != null) {
+                            new DownloadImageTask((ImageView) activity.findViewById(R.id.yourImage))
+                                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(gsa.getPhotoUrl()));
+                        }
+//                        ((ImageView) activity.findViewById(R.id.yourImage)).setImageURI(gsa.getPhotoUrl());
+                        // Set up drawer item
+                        NavigationView navView = (NavigationView) activity.findViewById(R.id.nav_view);
+                        DrawerLayout drawerLayout = activity.findViewById(R.id.drawer_layout);
+                        Menu m = navView.getMenu();
+                        m.clear();
+                        Map<String, String> emailToID = new HashMap<>();
+                        boolean newFriendRequest = false;
+                        for(String friend : friendRequestList) {
+                            SubMenu friendReqMenu = m.addSubMenu("Friend Request");
+                            String friendEmail = (String) task.getResult().getDocuments().get(IDMap.get(friend)).get("email");
+                            emailToID.put(friendEmail, friend);
+                            MenuItem item = friendReqMenu.add(friendEmail);
+                            newFriendRequest = true;
+                        }
+                        ImageView friendHint = activity.findViewById(R.id.hintFriend);
+                        if(newFriendRequest){
+                            friendHint.setVisibility(View.VISIBLE);
+                        } else {
+                            friendHint.setVisibility(View.INVISIBLE);
+                        }
+                        for(String friend : twoWayFriendList) {
+                            SubMenu friendListMenu = m.addSubMenu("Friend List");
+                            String friendEmail = (String) task.getResult().getDocuments().get(IDMap.get(friend)).get("email");
+                            emailToID.put(friendEmail, friend);
+                            MenuItem item = friendListMenu.add(friendEmail);
+                        }
+
+                        navView.setNavigationItemSelectedListener(
+                                new NavigationView.OnNavigationItemSelectedListener() {
+                                    @Override
+                                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                                        Log.e(TAG, "Menu Item selected 2: " + menuItem.getTitle() + "," + emailToID.get(menuItem.getTitle()) + ","+ singleWayFriendList.indexOf(emailToID.get(menuItem.getTitle())));
+                                        if(singleWayFriendList.indexOf(emailToID.get(menuItem.getTitle()))==-1){
+                                            Log.e(TAG, "Clicked friend request!");
+                                            // Dialog to accept / decline
+                                            AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
+                                            builder1.setMessage("Accept the friend request?");
+                                            builder1.setCancelable(false);
+
+                                            builder1.setPositiveButton(
+                                                    "Accept",
+                                                    (dialog, id) -> {
+                                                        dialog.cancel();
+                                                        acceptFriendRequest(emailToID.get(menuItem.getTitle()), menuItem);
+                                                    }).setNegativeButton("Decline",
+                                                    (dialog, id) -> {
+                                                        dialog.cancel();
+                                                        declineFriendRequest(emailToID.get(menuItem.getTitle()), menuItem);
+                                                    });
+
+                                            AlertDialog alertInvalidInput = builder1.create();
+                                            alertInvalidInput.show();
+                                        } else {
+                                            // open Chat
+                                            Intent intent = new Intent(activity, FriendChatActivity.class);
+                                            activity.startActivity(intent);
+                                            drawerLayout.closeDrawers();
+
+                                        }
+
+                                        //close navigation drawer
+                                        // close drawer when item is tapped
+                                        // TODO: if you want to use a custom dialog for chatting, then may need not close the drawer
+
+                                        return true;
+                                    }
+
+                                    private void acceptFriendRequest(String friendUid, MenuItem menuItem) {
+                                        Map<String, Object> map = new HashMap<>();
+                                        map.put(friendUid, true);
+                                        map.put("email", getEmail());
+
+                                        FirebaseFirestore.getInstance().collection("friendship").document(getUID()).set(map, SetOptions.merge())
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        Log.d(TAG, "Sucessfully added friend!");
+                                                        menuItem.setVisible(false);
+                                                        setUpFriendlist();
+                                                    }
+                                                })
+                                                .addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        Log.w(TAG, "Error adding friend", e);
+                                                    }
+                                                });
+                                    }
+
+                                    private void declineFriendRequest(String friendUid, MenuItem menuItem) {
+                                        Log.e(TAG, "friend's UID: " + friendUid);
+                                        Map<String, Object> map = new HashMap<>();
+                                        map.put(getUID(), false);
+                                        FirebaseFirestore.getInstance().collection("friendship").document(friendUid).set(map, SetOptions.merge())
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        Log.d(TAG, "Sucessfully declined friend request.");
+                                                        menuItem.setVisible(false);
+                                                        setUpFriendlist();
+                                                    }
+                                                })
+                                                .addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        Log.w(TAG, "Error declining friend request", e);
+                                                    }
+                                                });
+                                    }
+
+                                });
+
+                    }
+                });
+    }
+
+    /**
+     * Credit given to https://stackoverflow.com/questions/2471935/how-to-load-an-imageview-by-url-in-android
+     Example Use:
+     new DownloadImageTask((ImageView) activity.findViewById(R.id.yourImage))
+     .execute(someURL);
+     */
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
 }
