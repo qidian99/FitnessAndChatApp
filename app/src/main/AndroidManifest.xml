@@ -21,6 +21,8 @@
         <activity android:name="edu.ucsd.cse110.googlefitapp.NewFriendSignUpActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.FriendChatActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.LoginActivity"></activity>
+        <activity android:name="edu.ucsd.cse110.googlefitapp.chatroom.views.LoginActivity"></activity>
+        <activity android:name="edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity"></activity>
 
         <meta-data
             android:name="preloaded_fonts"
