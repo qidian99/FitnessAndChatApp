@@ -44,7 +44,7 @@ public class FriendChat extends AppCompatActivity {
             chatStore = new FirebaseStoreToStoreUnitAdapter(this);
         }
 
-        SharedPreferences sharedpreferences = getSharedPreferences("FirebaseLabApp", Context.MODE_PRIVATE);
+        final SharedPreferences sharedpreferences = getSharedPreferences("FirebaseLabApp", Context.MODE_PRIVATE);
 
 
         from = sharedpreferences.getString(FROM_KEY, null);
