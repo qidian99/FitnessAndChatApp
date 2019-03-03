@@ -27,6 +27,7 @@
         android:adjustViewBounds="true"
         android:clickable="true"
         android:src="@drawable/friend_24" />
+
     <!--android:theme="@style/ToolbarTheme"-->
 
 </android.support.v7.widget.Toolbar>

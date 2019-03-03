@@ -22,10 +22,15 @@ import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.ybq.android.spinkit.style.FadingCircle;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,12 +39,13 @@ import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.adapter.PlannedWalkAdapter;
 import edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter;
-import edu.ucsd.cse110.googlefitapp.adapter.WeeklyStatsAdapter;
 import edu.ucsd.cse110.googlefitapp.dialog.CustomGoalDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.ManuallyEnterStepDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.NewGoalDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.PlannedWalkEndingDialog;
+import edu.ucsd.cse110.googlefitapp.firebase.ChatMessaging;
+import edu.ucsd.cse110.googlefitapp.firebase.FirebaseMessageToChatMessageAdapter;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
@@ -49,6 +55,8 @@ import edu.ucsd.cse110.googlefitapp.observer.GoalDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.GraphDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.Observer;
 import edu.ucsd.cse110.googlefitapp.observer.StepDisplay;
+
+import static edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter.RC_SIGN_IN;
 
 public class MainActivity extends Activity implements HeightDialog.HeightPrompterListener,
         CustomGoalDialog.GoalPrompterListener, ManuallyEnterStepDialog.ManualStepSetterListener,
@@ -65,7 +73,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     public static final String KEY_STRIDE = "stride";
     public static final int DEFAULT_GOAL = 5000;
     public static final String TAG = "MAIN";
-    private static final int REQUEST_CODE = 1000;
+    private static final int ACTIVE_SESSION_REQUEST_CODE = 1000;
     public static boolean firstTimeUser = true;
     public static FitnessServiceFactory fitnessServiceFactory = new GoogleFitnessServiceFactory();
     public static Calendar calendar = StepCalendar.getInstance();
@@ -94,8 +102,10 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     private int day;
     private int today;
     private boolean notCleared;
-
     private DrawerLayout drawerLayout;
+    public static final String DOCUMENT_KEY = "chat1";
+    private FirebaseMessageToChatMessageAdapter chatMessaging;
+
 
     public SharedPreferences getStepPref() {
         return stepPref;
@@ -147,11 +157,33 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        fitnessService.setup();
+    }
+
+
     @SuppressLint({"DefaultLocale", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        chatMessaging = new FirebaseMessageToChatMessageAdapter();
+        subscribeToNotificationsTopic(chatMessaging);
+
+        ProgressBar progressBarLeft = (ProgressBar)findViewById(R.id.spin_kit_steps_left);
+        FadingCircle wave1 = new FadingCircle();
+        wave1.setColor(Color.parseColor("#90000000"));
+        progressBarLeft.setIndeterminateDrawable(wave1);
+        findViewById(R.id.stepsLeft).setVisibility(View.INVISIBLE);
+
+        ProgressBar progressBarTotal = (ProgressBar)findViewById(R.id.spin_kit_steps_taken);
+        FadingCircle wave2 = new FadingCircle();
+        wave2.setColor(Color.parseColor("#ff00ddff"));
+        progressBarTotal.setIndeterminateDrawable(wave2);
+        findViewById(R.id.textStepsMain).setVisibility(View.INVISIBLE);
+
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setBackgroundColor(Color.parseColor("#008577"));
@@ -160,6 +192,9 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
         mTitle.setText(getString(R.string.PersonalBest));
+
+        ImageView friendHint = findViewById(R.id.hintFriend);
+        friendHint.setVisibility(View.INVISIBLE);
 
         ImageView addFriend = findViewById(R.id.friend_18);
         addFriend.setOnTouchListener(new OnTouchListener() {
@@ -203,16 +238,17 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         // set item as selected to persist highlight
-                        menuItem.setChecked(true);
-                        // TODO: change logic here. Also, allow dynamically adding items to friend_24 list. Also, HIGHLIGHT unread messages
-                        switch (menuItem.getItemId()) {
-                            case R.id.gary:
-                            case R.id.wgg:
-                            case R.id.rick:
-                            case R.id.politz:
-                                Intent intent = new Intent(MainActivity.this, FriendChat.class);
+//                        menuItem.setChecked(true);
+                        Log.e(TAG, "Menu Item selected: " + menuItem.getTitle() + "," + menuItem.getMenuInfo());
+//                        // TODO: change logic here. Also, allow dynamically adding items to friend_24 list. Also, HIGHLIGHT unread messages
+//                        switch (menuItem.getItemId()) {
+//                            case R.id.gary:
+//                            case R.id.wgg:
+//                            case R.id.rick:
+//                            case R.id.politz:
+                                Intent intent = new Intent(MainActivity.this, FriendChatActivity.class);
                                 startActivity(intent);
-                        }
+//                        }
                         //close navigation drawer
                         // close drawer when item is tapped
                         // TODO: if you want to use a custom dialog for chatting, then may need not close the drawer
@@ -254,7 +290,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         actionbar.setHomeAsUpIndicator(R.drawable.friendlist);
 //        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
-
+//        setUpFriendlist();
         // For testing
         if (getIntent().getBooleanExtra("TEST", false)) {
             String mainServiceKey = getIntent().getStringExtra("TEST_SERVICE_MAIN");
@@ -271,7 +307,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         }
 
         fitnessService.setup();
-        fitnessService.startAsync();
 
         stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
         statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
@@ -334,10 +369,14 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         new GraphDisplay(this);
     }
 
+
     private void lauchFriendSignUpActivity() {
-        Intent intent = new Intent(MainActivity.this, NewFriendSignUp.class);
+        Intent intent = new Intent(MainActivity.this, NewFriendSignUpActivity.class);
+        intent.putExtra("uid", fitnessService.getUID());
+        intent.putExtra("email", fitnessService.getEmail());
         Log.d(TAG, "Async stopped");
         startActivity(intent);
+        overridePendingTransition(R.anim.slide_r_to_l_enter, R.anim.slide_r_to_l_exit);
     }
 
     private void checkForDayChange() {
@@ -381,7 +420,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             Intent intent = new Intent(this, PlannedWalkActivity.class);
             intent.putExtra(PlannedWalkActivity.FITNESS_SERVICE_KEY, fitnessServiceKey);
             intent.putExtra("stride", strideLength);
-            startActivityForResult(intent, REQUEST_CODE);
+            startActivityForResult(intent, ACTIVE_SESSION_REQUEST_CODE);
             switchToActive = true;
             fitnessService.stopAsync();
             Log.d(TAG, "Async stopped");
@@ -397,7 +436,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         Log.d(TAG, "switch back to main activity success");
 
         // Firstly it fetches active data from PlannedWalkActivity
-        if (switchToActive) {
+        if (requestCode == ACTIVE_SESSION_REQUEST_CODE) {
             super.onActivityResult(requestCode, resultCode, data);
             stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
             statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
@@ -418,6 +457,25 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             // Finally, update total steps, and display it on UI
             fitnessService.updateStepCount();
             fitnessService.startAsync();
+        } else if(requestCode == RC_SIGN_IN ){
+            // The Task returned from this call is always completed, no need to attach
+            // a listener.
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
+        }
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+
+            // Signed in successfully, show authenticated UI.
+//            updateUI(account);
+        } catch (ApiException e) {
+            // The ApiException status code indicates the detailed failure reason.
+            // Please refer to the GoogleSignInStatusCodes class reference for more information.
+            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+//            updateUI(null);
         }
     }
 
@@ -604,5 +662,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             observer.update(currentStep, lastStep, goal, day, yesterday, today, notCleared);
         }
     }
-
+    private void subscribeToNotificationsTopic(ChatMessaging chatMessaging) {
+        chatMessaging.subscribe(this);
+    }
 }

@@ -37,25 +37,25 @@ public class PlannedWalkAdapter implements FitnessService {
     }
 
     public void setup() {
-        FitnessOptions fitnessOptions = FitnessOptions.builder()
-                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-                .build();
-
-        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(plannedWalkActivity), fitnessOptions)) {
-            GoogleSignIn.requestPermissions(
-                    plannedWalkActivity, // your activity
-                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(plannedWalkActivity),
-                    fitnessOptions);
-        } else {
+//        FitnessOptions fitnessOptions = FitnessOptions.builder()
+//                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+//                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+//                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+//                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+//                .build();
+//
+//        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(plannedWalkActivity), fitnessOptions)) {
+//            GoogleSignIn.requestPermissions(
+//                    plannedWalkActivity, // your activity
+//                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+//                    GoogleSignIn.getLastSignedInAccount(plannedWalkActivity),
+//                    fitnessOptions);
+//        } else {
             updateStepCount();
             startRecording();
             //create the async task here to refresh every 2 seconds
             new CountToTenAsyncTask().execute(String.valueOf(2000));
-        }
+//        }
     }
 
     public void stopAsync() {
@@ -81,6 +81,16 @@ public class PlannedWalkAdapter implements FitnessService {
     @Override
     public void addActiveSteps(int step, int min, int sec, float stride) {
 
+    }
+
+    @Override
+    public String getUID() {
+        return null;
+    }
+
+    @Override
+    public String getEmail() {
+        return null;
     }
 
     private void startRecording() {

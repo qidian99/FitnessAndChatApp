@@ -8,4 +8,5 @@ public abstract class Activity extends AppCompatActivity implements Subject {
     public abstract void updateAll(int num);
 
     public abstract void setStep(int currentStep);
+
 }

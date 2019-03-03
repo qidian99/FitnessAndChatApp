@@ -163,6 +163,16 @@ public class WeeklyStatsAdapter implements FitnessService {
 
     }
 
+    @Override
+    public String getUID() {
+        return null;
+    }
+
+    @Override
+    public String getEmail() {
+        return null;
+    }
+
     public DataReadRequest buildTotalStepRequest(Calendar cal) {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);

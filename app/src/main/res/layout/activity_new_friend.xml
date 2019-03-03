@@ -1,108 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".NewFriendSignUpActivity">
 
-    <TableLayout
+
+    <TextView
+        android:id="@+id/txtAddfriend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp">
+        android:layout_marginTop="188dp"
+        android:fontFamily="serif"
+        android:gravity="center"
+        android:text="Add a New Friend"
+        android:textAllCaps="true"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_conversion_absoluteHeight="42dp"
+        tools:layout_conversion_absoluteWidth="243dp" />
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/txtAddfriend"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="casual"
-                android:gravity="center"
-                android:text="Add a New Friend"
-                android:textAllCaps="true"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
-    </TableLayout>
-
-    <TableLayout
-        android:id="@+id/tbLayoutFriend"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="50dp"
-        android:layout_marginRight="20dp"
-        android:stretchColumns="0,1"
-        tools:layout_marginTop="10dp">
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:id="@+id/txtFriendEmail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="0"
-                android:layout_marginTop="20dp"
-                android:fontFamily="casual"
-                android:text="Email"
-                android:textAllCaps="true"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:typeface="monospace" />
-
-            <EditText
-                android:id="@+id/enterFriendEmail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:layout_marginTop="20dp"
-                android:text="gary"
-                android:typeface="monospace" />
-        </TableRow>
-
-    </TableLayout>
-
-    <TableLayout
+    <TextView
+        android:id="@+id/txtFriendEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp">
+        android:fontFamily="casual"
+        android:text="Email"
+        android:textAllCaps="true"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:typeface="monospace"
+        app:layout_constraintBottom_toTopOf="@+id/btnSendFriendReq"
+        app:layout_constraintEnd_toStartOf="@+id/enterFriendEmail"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtAddfriend"
+        tools:layout_conversion_absoluteHeight="31dp"
+        tools:layout_conversion_absoluteWidth="56dp" />
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+    <EditText
+        android:id="@+id/enterFriendEmail"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="gary"
+        android:typeface="monospace"
+        app:layout_constraintBottom_toTopOf="@+id/btnSendFriendReq"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/txtFriendEmail"
+        app:layout_constraintTop_toBottomOf="@+id/txtAddfriend"
+        tools:layout_conversion_absoluteHeight="45dp"
+        tools:layout_conversion_absoluteWidth="50dp" />
 
-            <Button
-                android:id="@+id/buttonUpdateSteps"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Send Request" />
-        </TableRow>
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+    <Button
+        android:id="@+id/btnSendFriendReq"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="464dp"
+        android:background="@drawable/start_btn_background"
+        android:onClick="addFriend"
+        android:text="Send Request"
+        android:textColor="#FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.511"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_conversion_absoluteHeight="48dp"
+        tools:layout_conversion_absoluteWidth="200dp" />
 
-    </TableLayout>
 
     <Button
         android:id="@+id/btnEndRecord"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="464dp"
         android:background="@drawable/end_btn_background"
         android:onClick="goBackToHomeScreen"
-        android:text="Go Back To Home Screen" />
+        android:text="Go Back To Home Screen"
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.511"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_conversion_absoluteHeight="48dp"
+        tools:layout_conversion_absoluteWidth="200dp" />
 
-</LinearLayout>
+    <android.support.constraint.Group
+        android:id="@+id/group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="411dp"
+        android:layout_marginRight="411dp"
+        android:layout_marginBottom="731dp"
+        app:constraint_referenced_ids="btnSendFriendReq,btnEndRecord"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.17031631" />
+
+</android.support.constraint.ConstraintLayout>

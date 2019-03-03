@@ -225,6 +225,16 @@ public class CustomGoalScenarioTest {
         public void addActiveSteps(int step, int min, int sec, float stride) {
 
         }
+
+        @Override
+        public String getUID() {
+            return null;
+        }
+
+        @Override
+        public String getEmail() {
+            return null;
+        }
     }
 
     private class TestStepCountFitnessService implements FitnessService {
@@ -271,6 +281,16 @@ public class CustomGoalScenarioTest {
         @Override
         public void addActiveSteps(int step, int min, int sec, float stride) {
 
+        }
+
+        @Override
+        public String getUID() {
+            return null;
+        }
+
+        @Override
+        public String getEmail() {
+            return null;
         }
     }
 }
