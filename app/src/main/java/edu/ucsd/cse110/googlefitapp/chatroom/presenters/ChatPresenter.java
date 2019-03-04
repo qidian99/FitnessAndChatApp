@@ -105,7 +105,7 @@ public class ChatPresenter implements FirebaseCallBacks, ModelCallBacks {
 
     @Override
     public void onModelUpdated(ArrayList<ChatPojo> messages) {
-        if (messages.size()>0) {
+        if (mIChatView != null && messages.size() > 0) {
             mIChatView.updateList(messages);
         }
     }

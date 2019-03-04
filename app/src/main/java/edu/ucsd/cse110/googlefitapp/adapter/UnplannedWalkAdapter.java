@@ -780,8 +780,8 @@ public class UnplannedWalkAdapter implements FitnessService {
                         m.clear();
                         Map<String, String> emailToID = new HashMap<>();
                         boolean newFriendRequest = false;
+                        SubMenu friendReqMenu = m.addSubMenu("Friend Request");
                         for(String friend : friendRequestList) {
-                            SubMenu friendReqMenu = m.addSubMenu("Friend Request");
                             String friendEmail = (String) task.getResult().getDocuments().get(IDMap.get(friend)).get("email");
                             emailToID.put(friendEmail, friend);
                             MenuItem item = friendReqMenu.add(friendEmail);
@@ -793,8 +793,8 @@ public class UnplannedWalkAdapter implements FitnessService {
                         } else {
                             friendHint.setVisibility(View.INVISIBLE);
                         }
+                        SubMenu friendListMenu = m.addSubMenu("Friend List");
                         for(String friend : twoWayFriendList) {
-                            SubMenu friendListMenu = m.addSubMenu("Friend List");
                             String friendEmail = (String) task.getResult().getDocuments().get(IDMap.get(friend)).get("email");
                             emailToID.put(friendEmail, friend);
                             MenuItem item = friendListMenu.add(friendEmail);
