@@ -190,7 +190,9 @@ public class UnplannedWalkAdapter implements FitnessService {
                             Log.w(TAG, "Error writing User information", e);
                         }
                     });
-            setUpFriendlist();
+            if(friendship == null) {
+                setUpFriendlist();
+            }
         }
     }
 
@@ -840,6 +842,8 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                                 Intent intent=new Intent(activity, ChatActivity.class);
                                                                 intent.putExtra(MyUtils.EXTRA_ROOM_NAME, chatroomName);
                                                                 intent.putExtra("friend", friendEmail);
+                                                                intent.putExtra("from", userEmail);
+                                                                intent.putExtra("to", friendEmail);
                                                                 activity.startActivity(intent);                                                            }
                                                         }
                                                     });
@@ -868,7 +872,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                     public void onSuccess(Void aVoid) {
                                                         Log.d(TAG, "Sucessfully added friend!");
                                                         menuItem.setVisible(false);
-                                                        setUpFriendlist();
+//                                                        setUpFriendlist();
                                                     }
                                                 })
                                                 .addOnFailureListener(new OnFailureListener() {
@@ -889,7 +893,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                     public void onSuccess(Void aVoid) {
                                                         Log.d(TAG, "Sucessfully declined friend request.");
                                                         menuItem.setVisible(false);
-                                                        setUpFriendlist();
+//                                                        setUpFriendlist();
                                                     }
                                                 })
                                                 .addOnFailureListener(new OnFailureListener() {

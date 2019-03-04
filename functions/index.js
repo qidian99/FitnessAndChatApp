@@ -45,8 +45,8 @@ exports.sendChatNotifications = functions.firestore
      return "document was null or emtpy";
    });
 
-exports.sendChatNotifications = functions.firestore
-  .document('/chatroom/room/{roomName}')
+exports.sendFriendPushNotification = functions.firestore
+  .document('/chatroom/{roomName}/messages/{messageId}')
   .onCreate((snap, context) => {
     // Get an object with the current document value.
     // If the document does not exist, it has been deleted.
@@ -58,7 +58,7 @@ exports.sendChatNotifications = functions.firestore
           title: document.from + ' sent you a message',
           body: document.text
         },
-        topic: context.params.chatId
+        topic: 'chat1'
       };
 
       return admin.messaging().send(message)

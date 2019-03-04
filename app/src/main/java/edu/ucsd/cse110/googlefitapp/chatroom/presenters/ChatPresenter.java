@@ -81,9 +81,9 @@ public class ChatPresenter implements FirebaseCallBacks, ModelCallBacks {
 //
 //                    }
 
-    public void sendMessageToFirebase(String roomName, String message) {
+    public void sendMessageToFirebase(String roomName, String message, String from, String to) {
         if (!message.trim().equals("")){
-            FirebaseManager.getInstance(roomName,this).sendMessageToFirebase(message, this);
+            FirebaseManager.getInstance(roomName,this).sendMessageToFirebase(message, from, to, this);
         }
         mIChatView.clearEditText();
     }
