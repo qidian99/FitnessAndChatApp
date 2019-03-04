@@ -52,7 +52,6 @@ public class WeeklyStatsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weekly_stats);
 
-        FitnessServiceFactory fitnessServiceFactory = new GoogleFitnessServiceFactory();
         fitnessService = new WeeklyStatsAdapter(this);
         fitnessService.setup();
 
