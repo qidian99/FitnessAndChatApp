@@ -166,7 +166,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     @Override
     public void onResume(){
         super.onResume();
-        fitnessService.setup();
+        // fitnessService.setup();
     }
 
 

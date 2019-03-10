@@ -23,6 +23,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.fitness.ConfigClient;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.Bucket;
@@ -99,6 +100,7 @@ public class UnplannedWalkAdapter implements FitnessService {
     private GoogleSignInAccount gsa;
     public static final int RC_SIGN_IN = 9001;
     private CollectionReference friendship;
+    private ConfigClient configClient;
 
     public UnplannedWalkAdapter(Activity activity) {
         this.activity = activity;
@@ -128,6 +130,7 @@ public class UnplannedWalkAdapter implements FitnessService {
 
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
             Intent intent = new Intent(activity, LoginActivity.class);
+            Log.e(TAG, "start login activity");
             activity.startActivity(intent);
         } else if(GoogleSignIn.getLastSignedInAccount(activity).getEmail() == null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -138,17 +141,18 @@ public class UnplannedWalkAdapter implements FitnessService {
             activity.startActivityForResult(signInIntent, RC_SIGN_IN);
 
         } else {
+            gsa = GoogleSignIn.getLastSignedInAccount(activity);
+            configClient = Fitness.getConfigClient(activity, Objects.requireNonNull(gsa));
             updateStepCount();
             startRecording();
 
 
             try {
-                gsa = GoogleSignIn.getLastSignedInAccount(activity);
 //                ((TextView) activity.findViewById(R.id.TextCurrentAccount)).setText(gsa.getEmail());
                 Log.i(TAG, "Last Signed Account is: " + gsa);
                 Log.i(TAG, "Last Signed email is: " + gsa.getEmail());
                 Log.i(TAG, "Last Signed id is: " + gsa.getId());
-                Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).readDataType(ACTIVE_DT_NAME).
+                configClient.readDataType(ACTIVE_DT_NAME).
                         addOnSuccessListener(dataType -> {
                             Log.d(TAG, "Found data type: " + dataType);
                             activeDataType = dataType;
@@ -208,7 +212,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .build();
 
         Task<DataType> response =
-                Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).createCustomDataType(request)
+                configClient.createCustomDataType(request)
                         .addOnSuccessListener((DataType dataType) -> {
                             Log.d(TAG, "Sucessfully created new datatype: " + dataType.toString());
                             activeDataType = dataType;
@@ -233,8 +237,7 @@ public class UnplannedWalkAdapter implements FitnessService {
     }
 
     private void startRecording() {
-        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
-        if (lastSignedInAccount == null) {
+        if (gsa == null) {
             return;
         }
 
