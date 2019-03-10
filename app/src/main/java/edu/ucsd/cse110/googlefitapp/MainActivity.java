@@ -46,6 +46,7 @@ import edu.ucsd.cse110.googlefitapp.dialog.NewGoalDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.PlannedWalkEndingDialog;
 import edu.ucsd.cse110.googlefitapp.firebase.ChatMessaging;
 import edu.ucsd.cse110.googlefitapp.firebase.FirebaseMessageToChatMessageAdapter;
+import edu.ucsd.cse110.googlefitapp.firebase.TestMessaging;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
@@ -105,7 +106,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     private boolean notCleared;
     private DrawerLayout drawerLayout;
     public static final String DOCUMENT_KEY = "chat1";
-    private FirebaseMessageToChatMessageAdapter chatMessaging;
+    private ChatMessaging chatMessaging;
 
 
     public SharedPreferences getStepPref() {
@@ -122,6 +123,10 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
     public float getStrideLength() {
         return strideLength;
+    }
+
+    public void setGoal(int goal){
+        this.goal = goal;
     }
 
     public boolean getGoalChangeable() {
@@ -170,8 +175,23 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        chatMessaging = new FirebaseMessageToChatMessageAdapter();
-        subscribeToNotificationsTopic(chatMessaging);
+        // For testing
+        if (getIntent().getBooleanExtra("TEST", false)) {
+            String mainServiceKey = getIntent().getStringExtra("TEST_SERVICE_MAIN");
+            String stepCountServiceKey = getIntent().getStringExtra("TEST_SERVICE_STEP_COUNT");
+            fitnessService = fitnessServiceFactory.create(mainServiceKey, this);
+            setFitnessServiceKey(stepCountServiceKey);
+            chatMessaging = new TestMessaging();
+        } else { // Normal setup
+            fitnessServiceFactory.put(MAIN_SERVICE, UnplannedWalkAdapter::new);
+
+            fitnessServiceFactory.put(fitnessServiceKey, PlannedWalkAdapter::new);
+//            fitnessServiceFactory.put("WEEKLY_STATS", WeeklyStatsAdapter::new);
+
+            fitnessService = fitnessServiceFactory.create(MAIN_SERVICE, this);
+            chatMessaging = new FirebaseMessageToChatMessageAdapter();
+            subscribeToNotificationsTopic(chatMessaging);
+        }
 
         ProgressBar progressBarLeft = (ProgressBar)findViewById(R.id.spin_kit_steps_left);
         FadingCircle wave1 = new FadingCircle();
@@ -256,8 +276,8 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 //                            case R.id.wgg:
 //                            case R.id.rick:
 //                            case R.id.politz:
-                                Intent intent = new Intent(MainActivity.this, FriendChatActivity.class);
-                                startActivity(intent);
+                        Intent intent = new Intent(MainActivity.this, FriendChatActivity.class);
+                        startActivity(intent);
 //                        }
                         //close navigation drawer
                         // close drawer when item is tapped
@@ -301,20 +321,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 //        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
 //        setUpFriendlist();
-        // For testing
-        if (getIntent().getBooleanExtra("TEST", false)) {
-            String mainServiceKey = getIntent().getStringExtra("TEST_SERVICE_MAIN");
-            String stepCountServiceKey = getIntent().getStringExtra("TEST_SERVICE_STEP_COUNT");
-            fitnessService = fitnessServiceFactory.create(mainServiceKey, this);
-            setFitnessServiceKey(stepCountServiceKey);
-        } else { // Normal setup
-            fitnessServiceFactory.put(MAIN_SERVICE, UnplannedWalkAdapter::new);
-
-            fitnessServiceFactory.put(fitnessServiceKey, PlannedWalkAdapter::new);
-//            fitnessServiceFactory.put("WEEKLY_STATS", WeeklyStatsAdapter::new);
-
-            fitnessService = fitnessServiceFactory.create(MAIN_SERVICE, this);
-        }
 
         fitnessService.setup();
 
@@ -537,7 +543,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     private void showCustomStepPrompt() {
         FragmentManager fm = getSupportFragmentManager();
         ManuallyEnterStepDialog setStepDialogFragment = ManuallyEnterStepDialog.newInstance(getString(R.string.stepPrompt));
-        setStepDialogFragment.show(fm, "fragment_set_goal");
+        setStepDialogFragment.show(fm, "fragment_set_step");
     }
 
     public void showNewGoalPrompt() {

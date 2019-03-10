@@ -36,7 +36,7 @@ public class FirebaseManager implements ChildEventListener{
 
     private FirebaseManager(String roomName, FirebaseCallBacks callBacks){
 //        chat = FirebaseDatabase.getInstance().getReference().child(roomName);
-        chat = FirebaseFirestore.getInstance().collection("chatroom").document("room").collection(roomName);
+        chat = FirebaseFirestore.getInstance().collection("chatroom").document(roomName).collection("messages");
         this.mCallbacks = callBacks;
     }
 
@@ -86,11 +86,13 @@ public class FirebaseManager implements ChildEventListener{
         Log.e("FBMANAGER", map.toString());
     }
 
-    public void sendMessageToFirebase(String message, ChatPresenter chatPresenter) {
+    public void sendMessageToFirebase(String message, String from, String to, ChatPresenter chatPresenter) {
         Map<String,Object> map=new HashMap<>();
         map.put("text",message);
         map.put("time",System.currentTimeMillis());
         map.put("senderId", FirebaseAuth.getInstance().getCurrentUser().getUid());
+        map.put("from", from);
+        map.put("to", to);
 
 //        String keyToPush= chat.push().getKey();
 //        chat.child(keyToPush).setValue(map);

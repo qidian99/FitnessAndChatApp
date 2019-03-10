@@ -190,7 +190,9 @@ public class UnplannedWalkAdapter implements FitnessService {
                             Log.w(TAG, "Error writing User information", e);
                         }
                     });
-            setUpFriendlist();
+            if(friendship == null) {
+                setUpFriendlist();
+            }
         }
     }
 
@@ -707,11 +709,11 @@ public class UnplannedWalkAdapter implements FitnessService {
 //
 //                });
         // requests sent by you
-        List<String> singleWayFriendList = new ArrayList<>();
+        List<String> userToOtherList = new ArrayList<>();
+        // your friend sent you
+        List<String> otherToUserList = new ArrayList<>();
         // both way
         List<String> twoWayFriendList = new ArrayList<>();
-        // your friend sent you
-        List<String> friendRequestList = new ArrayList<>();
 
         Map<String, Integer> IDMap = new HashMap<>();
 
@@ -728,13 +730,14 @@ public class UnplannedWalkAdapter implements FitnessService {
                             if(document.getId().equals(uid)){
                                 for (Map.Entry<String, Object> entry : map.entrySet()) {
                                     if(!entry.getKey().equals("email") && (boolean)entry.getValue()) {
-                                        singleWayFriendList.add(entry.getKey());
-                                        Log.e("TAG", "Your friend request sent: " + entry.getKey());
+                                        userToOtherList.add(entry.getKey());
+                                        Log.e(TAG, "User to other id: " + entry.getKey());
                                     }
                                 }
                             } else {
                                 if(document.get(uid) != null && (boolean)document.get(uid)){
-                                    friendRequestList.add(document.getId());
+                                    otherToUserList.add(document.getId());
+                                    Log.e(TAG, "Other to user id: " + document.getId());
                                 }
                             }
 
@@ -742,30 +745,37 @@ public class UnplannedWalkAdapter implements FitnessService {
                             index++;
                         }
 
-                        for(String yourFriendRequest: singleWayFriendList) {
-                            friendRequestList.remove(yourFriendRequest);
+                        // Get Pure friend request from others
+                        for(String userToOtherRequest: userToOtherList) {
+                            otherToUserList.remove(userToOtherRequest);
                         }
 
                         //if(task.getResult().getDocuments())
-                        for(String singleFriend : singleWayFriendList){
-                            Log.e(TAG, ""+(task.getResult().getDocuments()==null));
-                            Log.e(TAG, "single friend"+singleFriend);
-                            Log.e(TAG, "ID map" + IDMap);
-                            if(IDMap.get(singleFriend) == null) {
+                        for(String userToOtherRequest : userToOtherList){
+//                            The line below is useless. task.getResult().getDocuments() is always not null - Enqi
+//                            Log.e(TAG, ""+(task.getResult().getDocuments()==null));
+                            Log.e(TAG, "single friend: " + userToOtherRequest);
+                            Log.e(TAG, "ID map " + IDMap);
+                            if(IDMap.get(userToOtherRequest) == null) {
                                 continue;
                             }
-                            DocumentSnapshot friendSFriendlist = task.getResult().getDocuments().get(IDMap.get(singleFriend));
-                            Log.e(TAG, "friend: " + singleFriend + ", friend list: " + friendSFriendlist);
+                            DocumentSnapshot friendSFriendlist = task.getResult().getDocuments().get(IDMap.get(userToOtherRequest));
+                            Log.e(TAG, "friend: " + userToOtherRequest + ", friend list: " + friendSFriendlist);
                             Map<String, Object> map = friendSFriendlist.getData();
                             for (Map.Entry<String, Object> entry : map.entrySet()) {
                                 Log.e(TAG, "Your friend has friend " + entry.getKey());
                                 if(entry.getKey().equals(uid) && (boolean)entry.getValue()) {
-                                    Log.e("TAG", "Luckily, you are on your friend's friend list: " + friendSFriendlist.getId());
-                                    twoWayFriendList.add(singleFriend);
+                                    Log.e(TAG, "Luckily, you are on your friend's friend list: " + friendSFriendlist.getId());
+                                    twoWayFriendList.add(userToOtherRequest);
                                 }
                             }
-
                         }
+
+                        for(String twoWayFriend: twoWayFriendList) {
+                            userToOtherList.remove(twoWayFriend);
+                            otherToUserList.remove(twoWayFriend);
+                        }
+
                         ((TextView) activity.findViewById(R.id.TextCurrentAccount)).setText(gsa.getDisplayName());
                         Log.d(TAG, "Photo URL: " + gsa.getPhotoUrl());
                         if(gsa.getPhotoUrl() != null) {
@@ -773,6 +783,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                     .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(gsa.getPhotoUrl()));
                         }
 //                        ((ImageView) activity.findViewById(R.id.yourImage)).setImageURI(gsa.getPhotoUrl());
+
                         // Set up drawer item
                         NavigationView navView = (NavigationView) activity.findViewById(R.id.nav_view);
                         DrawerLayout drawerLayout = activity.findViewById(R.id.drawer_layout);
@@ -780,32 +791,63 @@ public class UnplannedWalkAdapter implements FitnessService {
                         m.clear();
                         Map<String, String> emailToID = new HashMap<>();
                         boolean newFriendRequest = false;
-                        for(String friend : friendRequestList) {
-                            SubMenu friendReqMenu = m.addSubMenu("Friend Request");
-                            String friendEmail = (String) task.getResult().getDocuments().get(IDMap.get(friend)).get("email");
-                            emailToID.put(friendEmail, friend);
-                            MenuItem item = friendReqMenu.add(friendEmail);
-                            newFriendRequest = true;
+
+                        // Request friend view (User to Other)
+                        SubMenu reqFriendMenu = m.addSubMenu("Friend Request Sent");
+                        for(String friend : userToOtherList) {
+                            FirebaseFirestore.getInstance()
+                                    .collection("users").get()
+                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                            int count = 0;
+                                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                                String friendId = document.getId();
+                                                if(friendId.equals(friend)) {
+                                                    String friendEmail = (String) task.getResult().getDocuments().get(count).get("email");
+                                                    emailToID.put(friendEmail, friend);
+                                                    MenuItem item = reqFriendMenu.add(friendEmail);
+                                                }
+                                                count++;
+                                            }
+                                        }
+                                    });
                         }
+
+                        // Friend request view (Other to user)
+                        SubMenu friendReqMenu = m.addSubMenu("Friend Request Received");
+                        for(String friend : otherToUserList) {
+                            if(IDMap.get(friend) != null) {
+                                String friendEmail = (String) task.getResult().getDocuments().get(IDMap.get(friend)).get("email");
+                                emailToID.put(friendEmail, friend);
+                                MenuItem item = friendReqMenu.add(friendEmail);
+                                newFriendRequest = true;
+                            }
+                        }
+
                         ImageView friendHint = activity.findViewById(R.id.hintFriend);
                         if(newFriendRequest){
                             friendHint.setVisibility(View.VISIBLE);
                         } else {
                             friendHint.setVisibility(View.INVISIBLE);
                         }
+
+                        // Friend list view
+                        SubMenu friendListMenu = m.addSubMenu("Friend List");
                         for(String friend : twoWayFriendList) {
-                            SubMenu friendListMenu = m.addSubMenu("Friend List");
-                            String friendEmail = (String) task.getResult().getDocuments().get(IDMap.get(friend)).get("email");
-                            emailToID.put(friendEmail, friend);
-                            MenuItem item = friendListMenu.add(friendEmail);
+                            if(IDMap.get(friend) != null) {
+                                String friendEmail = (String) task.getResult().getDocuments().get(IDMap.get(friend)).get("email");
+                                emailToID.put(friendEmail, friend);
+                                MenuItem item = friendListMenu.add(friendEmail);
+                            }
                         }
 
                         navView.setNavigationItemSelectedListener(
                                 new NavigationView.OnNavigationItemSelectedListener() {
                                     @Override
                                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                                        Log.e(TAG, "Menu Item selected 2: " + menuItem.getTitle() + "," + emailToID.get(menuItem.getTitle()) + ","+ singleWayFriendList.indexOf(emailToID.get(menuItem.getTitle())));
-                                        if(singleWayFriendList.indexOf(emailToID.get(menuItem.getTitle()))==-1){
+//                                        Log.e(TAG, "Menu Item selected 2: " + menuItem.getTitle() + "," + emailToID.get(menuItem.getTitle()) + ","+ userToOtherList.indexOf(emailToID.get(menuItem.getTitle())));
+                                        if(otherToUserList.indexOf(emailToID.get(menuItem.getTitle()))!=-1){
                                             Log.e(TAG, "Clicked friend request!");
                                             // Dialog to accept / decline
                                             AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
@@ -825,7 +867,7 @@ public class UnplannedWalkAdapter implements FitnessService {
 
                                             AlertDialog alertInvalidInput = builder1.create();
                                             alertInvalidInput.show();
-                                        } else {
+                                        } else if(twoWayFriendList.indexOf(emailToID.get(menuItem.getTitle()))!=-1) {
                                             // open Chat
                                             String friendEmail = menuItem.getTitle().toString();
                                             String userEmail = getEmail();
@@ -840,6 +882,8 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                                 Intent intent=new Intent(activity, ChatActivity.class);
                                                                 intent.putExtra(MyUtils.EXTRA_ROOM_NAME, chatroomName);
                                                                 intent.putExtra("friend", friendEmail);
+                                                                intent.putExtra("from", userEmail);
+                                                                intent.putExtra("to", friendEmail);
                                                                 activity.startActivity(intent);                                                            }
                                                         }
                                                     });
@@ -868,7 +912,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                     public void onSuccess(Void aVoid) {
                                                         Log.d(TAG, "Sucessfully added friend!");
                                                         menuItem.setVisible(false);
-                                                        setUpFriendlist();
+//                                                        setUpFriendlist();
                                                     }
                                                 })
                                                 .addOnFailureListener(new OnFailureListener() {
@@ -889,7 +933,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                     public void onSuccess(Void aVoid) {
                                                         Log.d(TAG, "Sucessfully declined friend request.");
                                                         menuItem.setVisible(false);
-                                                        setUpFriendlist();
+//                                                        setUpFriendlist();
                                                     }
                                                 })
                                                 .addOnFailureListener(new OnFailureListener() {

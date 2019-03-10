@@ -26,6 +26,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private ChatPresenter mChatPresenter;
     private RecyclerView mRecyclerView;
     private String mRoomName;
+    private String from;
+    private String to;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -34,14 +36,16 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_chat);
 
         mRoomName=getIntent().getStringExtra(MyUtils.EXTRA_ROOM_NAME);
+        from=getIntent().getStringExtra("from");
+        to=getIntent().getStringExtra("to");
         String friendEmail = getIntent().getStringExtra("friend");
         ((TextView)findViewById(R.id.text_header)).setText(friendEmail);
         mChatPresenter =new ChatPresenter(this);
 //        mChatPresenter.setListener(mRoomName);
         CollectionReference chat = FirebaseFirestore.getInstance()
                 .collection("chatroom")
-                .document("room")
-                .collection(mRoomName);
+                .document(mRoomName)
+                .collection("messages");
         mChatPresenter.setChat(chat);
         mEdittextChat=(EditText) findViewById(R.id.edittext_chat_message);
         mRecyclerView=(RecyclerView) findViewById(R.id.recycler_view);
@@ -55,7 +59,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.button_send_message:
-                mChatPresenter.sendMessageToFirebase(mRoomName,mEdittextChat.getText().toString());
+                mChatPresenter.sendMessageToFirebase(mRoomName,mEdittextChat.getText().toString(), from, to);
                 break;
         }
     }
