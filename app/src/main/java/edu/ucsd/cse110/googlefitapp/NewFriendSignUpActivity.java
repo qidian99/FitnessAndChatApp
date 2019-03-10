@@ -2,10 +2,13 @@ package edu.ucsd.cse110.googlefitapp;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -16,13 +19,31 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
 
 public class NewFriendSignUpActivity extends AppCompatActivity {
     public static final String TAG = "NEW_FRIEND_ACTIVITY";
+    EditText friendEmailTxt;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_friend);
+        friendEmailTxt = findViewById(R.id.enterFriendEmail);
+        friendEmailTxt.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    addFriend(v);
+                    return true;
+                }
+                return false;
+            }
+        });
 
     }
 
@@ -32,12 +53,12 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
     }
 
     public void addFriend(View view){
-        EditText friendEmailTxt = findViewById(R.id.enterFriendEmail);
         String friendEmail = friendEmailTxt.getText().toString();
 
         // Check of valid email
-        if(isValidEmail(friendEmail)){
-            // TODO: show some alert, etc
+        if(!isValidEmail(friendEmail)){
+            showToast("Email is invalid");
+            return;
         }
 
         // Get all users from Database and match each of them with the email
@@ -61,8 +82,9 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
                                     friendUid = (String) document.getData().get("id");
                                 }
                             }
+
                             if(!userExist){
-                                // TODO: show some alert, etc
+                                showToast("User does not exist");
                                 return;
                             }
 
@@ -77,10 +99,11 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
 //                            friend.put("email", friendEmail);
                             friendship.set(friend).addOnSuccessListener(result -> {
                                 Log.e(TAG, "Friend request sent successfully");
+                                friendEmailTxt.setText("");
+                                showToast("Request Send");
                             }).addOnFailureListener(error -> {
                                 Log.e(TAG, error.getLocalizedMessage());
                             });
-
                         } else {
                             Log.e(TAG, "Error getting documents: ", task.getException());
                         }
@@ -89,8 +112,16 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
     }
 
     private boolean isValidEmail(String friendEmail) {
-        // TODO: add more rules!
-        return true;
+        // TODO: Use regex - edited by Enqi
+        String regex = "^[a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(friendEmail);
+        return m.matches();
+    }
+
+    private void showToast(String msg) {
+        Toast.makeText(this, msg,
+                Toast.LENGTH_SHORT).show();
     }
 
     @Override

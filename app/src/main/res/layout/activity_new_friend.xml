@@ -50,7 +50,7 @@
         android:id="@+id/enterFriendEmail"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:text="gary"
+        android:text=""
         android:typeface="monospace"
         app:layout_constraintBottom_toTopOf="@+id/btnSendFriendReq"
         app:layout_constraintEnd_toEndOf="parent"
@@ -58,22 +58,26 @@
         app:layout_constraintStart_toEndOf="@+id/txtFriendEmail"
         app:layout_constraintTop_toBottomOf="@+id/txtAddfriend"
         tools:layout_conversion_absoluteHeight="45dp"
-        tools:layout_conversion_absoluteWidth="50dp" />
+        tools:layout_conversion_absoluteWidth="50dp"
+        android:imeOptions="actionSend" />
 
 
     <Button
         android:id="@+id/btnSendFriendReq"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="464dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/start_btn_background"
         android:onClick="addFriend"
         android:text="Send Request"
         android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/btnEndRecord"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.511"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.874"
         tools:layout_conversion_absoluteHeight="48dp"
         tools:layout_conversion_absoluteWidth="200dp" />
 
