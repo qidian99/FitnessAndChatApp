@@ -11,4 +11,4 @@
 /build
 /captures
 .externalNativeBuild
-/functions/node_modules
+/functions/node_modules/
