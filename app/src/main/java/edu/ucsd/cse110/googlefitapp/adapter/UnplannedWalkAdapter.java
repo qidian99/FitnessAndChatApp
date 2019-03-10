@@ -793,7 +793,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                         boolean newFriendRequest = false;
 
                         // Request friend view (User to Other)
-                        SubMenu reqFriendMenu = m.addSubMenu("Request Sent");
+                        SubMenu reqFriendMenu = m.addSubMenu("Friend Request Sent");
                         for(String friend : userToOtherList) {
                             FirebaseFirestore.getInstance()
                                     .collection("users").get()
@@ -815,7 +815,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                         }
 
                         // Friend request view (Other to user)
-                        SubMenu friendReqMenu = m.addSubMenu("Friend Request");
+                        SubMenu friendReqMenu = m.addSubMenu("Friend Request Received");
                         for(String friend : otherToUserList) {
                             if(IDMap.get(friend) != null) {
                                 String friendEmail = (String) task.getResult().getDocuments().get(IDMap.get(friend)).get("email");
