@@ -1,5 +1,6 @@
 package edu.ucsd.cse110.googlefitapp;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -24,8 +25,6 @@ import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.adapter.WeeklyStatsAdapter;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
-import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
-import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 import edu.ucsd.cse110.googlefitapp.observer.Observer;
 
@@ -35,6 +34,10 @@ import static edu.ucsd.cse110.googlefitapp.MainActivity.SHARED_PREFERENCE_NAME;
 public class WeeklyStatsActivity extends Activity {
 
     public static final String TAG = "WEEKLY_STATS";
+    private static final String ACTIVE_WALK_FMT = "Active walk distance: %.1f miles\nAverage speed: %.1f MPH";
+    private static final String INCIDENTAL_WALK_FMT = "Incidental walk distance: %.1f miles \nfor a total of %.1f miles";
+    private static final String STATS_FMT = "speed: %.1f, distance: %.1f -> active: %.1f + incidental: %.1f";
+    private static final String DAILY_STATS_FMT = "day: %d: incidental steps(%d), active steps(%d)";
     private int goal;
     private ArrayList<BarEntry> barEntries;
     private LimitLine goalLine;
@@ -52,8 +55,12 @@ public class WeeklyStatsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weekly_stats);
 
-        fitnessService = new WeeklyStatsAdapter(this);
-        fitnessService.setup();
+        boolean test = getIntent().getBooleanExtra("testkey", false);
+
+        if (!test) {
+            fitnessService = new WeeklyStatsAdapter(this);
+            fitnessService.setup();
+        }
 
         SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
         SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
@@ -62,7 +69,7 @@ public class WeeklyStatsActivity extends Activity {
 
         final BarChart barChart;
 
-        barChart = (BarChart) findViewById(R.id.barGraph);
+        barChart = findViewById(R.id.barGraph);
         XAxis xAxis = barChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setLabelsToSkip(0);
@@ -104,24 +111,22 @@ public class WeeklyStatsActivity extends Activity {
                 }
                 int yInd = barChart.getHighlightByTouchPoint(me.getX(), me.getY()).getStackIndex();
 
-//                SharedPreferences statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
-//                float speed = statsPref.getFloat(String.valueOf(index + 1), 0.0f);
-//                float distance = statsPref.getFloat(String.valueOf(index + 8), 0.0f);
-//                float activeDist = statsPref.getFloat(String.valueOf(index + 15), 0.0f);
-//                float inciDist = distance - activeDist;
-
                 float speed = weeklyActiveSpeed[index];
                 float activeDist = weeklyActiveDistance[index];
                 float totalDist = stepToDistance(weeklyTotalSteps[index]);
                 float inciDist = totalDist - activeDist;
 
-                Log.d(TAG, String.format("speed: %.1f, distance: %.1f -> active: %.1f + incidental: %.1f", speed , totalDist, activeDist, inciDist));
+                if(inciDist < 0) {
+                    inciDist = 0;
+                }
+
+                Log.d(TAG, String.format(STATS_FMT, speed , totalDist, activeDist, inciDist));
 
                 if (yInd == 1) {
-                    Toast.makeText(WeeklyStatsActivity.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, totalDist), Toast.LENGTH_LONG).show();
+                    Toast.makeText(WeeklyStatsActivity.this, String.format(INCIDENTAL_WALK_FMT, inciDist, totalDist), Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(WeeklyStatsActivity.this,
-                            String.format("Active walk distance: %.1f miles\nAverage speed: %.1f MPH", activeDist, speed),
+                            String.format(ACTIVE_WALK_FMT, activeDist, speed),
                             Toast.LENGTH_LONG).show();
                 }
             }
@@ -146,42 +151,49 @@ public class WeeklyStatsActivity extends Activity {
         });
 
 //        setGraph();
-        new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
-
+        if(!test) {
+            new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
+        }
 
         Button button = findViewById(R.id.backToHome);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        button.setOnClickListener(view -> finish());
     }
 
-    private void setGraph() {
-        BarChart barChart = (BarChart) findViewById(R.id.barGraph);
-        barEntries = new ArrayList<BarEntry>();
+    private float stepToDistance(int steps) {
+        SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+        float strideLength = sharedPref.getFloat(KEY_STRIDE, 0);
+        return steps * strideLength / 63360.0f;
+    }
+
+    public void setGraph() {
+        BarChart barChart = findViewById(R.id.barGraph);
+        barEntries = new ArrayList<>();
 
         int max = 0;
 
         for (int i = 0; i < 7; i++) {
             int activeSteps = weeklyActiveSteps[i];
+
             int inactiveSteps = weeklyTotalSteps[i] - activeSteps;
+
+            if(inactiveSteps < 0) {
+                inactiveSteps = 0;
+            }
 
             if (inactiveSteps + activeSteps > max) {
                 max = inactiveSteps + activeSteps;
             }
-            Log.d(TAG, String.format("day: %d: incidental steps(%d), active steps(%d)", i, inactiveSteps, activeSteps));
+            Log.d(TAG, String.format(DAILY_STATS_FMT, i, inactiveSteps, activeSteps));
 
             barEntries.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i));
         }
 
         if (max < goal) {
-            barChart.getAxisLeft().setAxisMaxValue(goal + 200);
-            barChart.getAxisRight().setAxisMaxValue(goal + 200);
+            barChart.getAxisLeft().setAxisMaxValue(goal + 300);
+            barChart.getAxisRight().setAxisMaxValue(goal + 300);
         } else {
-            barChart.getAxisLeft().setAxisMaxValue(max + 200);
-            barChart.getAxisRight().setAxisMaxValue(max + 200);
+            barChart.getAxisLeft().setAxisMaxValue(max + 300);
+            barChart.getAxisRight().setAxisMaxValue(max + 300);
         }
 
         Log.d(TAG, String.format("graph maximum set success: %.1f", barChart.getAxisLeft().getAxisMaximum()));
@@ -204,6 +216,7 @@ public class WeeklyStatsActivity extends Activity {
         barChart.animateY(2000);
 
         goalLine = new LimitLine(goal);
+
         barChart.getAxisLeft().addLimitLine(goalLine);
         Log.d(TAG, String.format("goal line set success: %d", goal));
     }
@@ -239,6 +252,7 @@ public class WeeklyStatsActivity extends Activity {
         }
         return null;
     }
+
 
     @Override
     public void updateAll(int num) {
@@ -289,6 +303,11 @@ public class WeeklyStatsActivity extends Activity {
         this.activeStepRead = b;
     }
 
+    public void updateGoal() {
+        SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+        goal = sharedPref.getInt("goal", MainActivity.DEFAULT_GOAL);
+    }
+
     private class setGraphAsyncTask extends AsyncTask<String, String, Void> {
 
         private boolean isCancelled = false;
@@ -324,6 +343,7 @@ public class WeeklyStatsActivity extends Activity {
                 setGraph();
                 isCancelled = true;
                 cancel(true);
+
             } else {
                 Log.d(WeeklyStatsActivity.TAG, "Fetching weekly stats from server.");
                 // Set animation, etc.
