@@ -276,8 +276,8 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 //                            case R.id.wgg:
 //                            case R.id.rick:
 //                            case R.id.politz:
-                                Intent intent = new Intent(MainActivity.this, FriendChatActivity.class);
-                                startActivity(intent);
+                        Intent intent = new Intent(MainActivity.this, FriendChatActivity.class);
+                        startActivity(intent);
 //                        }
                         //close navigation drawer
                         // close drawer when item is tapped
