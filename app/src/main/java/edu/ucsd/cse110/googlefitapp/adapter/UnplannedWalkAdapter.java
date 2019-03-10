@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
@@ -67,6 +68,8 @@ import edu.ucsd.cse110.googlefitapp.R;
 import edu.ucsd.cse110.googlefitapp.chatroom.models.ChatPojo;
 import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
 import edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity;
+import edu.ucsd.cse110.googlefitapp.dialog.ManuallyEnterStepDialog;
+import edu.ucsd.cse110.googlefitapp.dialog.UserProfileDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
@@ -868,30 +871,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                             AlertDialog alertInvalidInput = builder1.create();
                                             alertInvalidInput.show();
                                         } else if(twoWayFriendList.indexOf(emailToID.get(menuItem.getTitle()))!=-1) {
-                                            // open Chat
-                                            String friendEmail = menuItem.getTitle().toString();
-                                            String userEmail = getEmail();
-                                            String chatroomName = userEmail.compareTo(friendEmail) > 0 ? friendEmail + "TO" + userEmail : userEmail + "TO" + friendEmail;
-                                            FirebaseAuth.getInstance().signInAnonymously()
-                                                    .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
-                                                        @Override
-                                                        public void onComplete( Task<AuthResult> task) {
-                                                            if (!task.isSuccessful()) {
-                                                                Log.e(TAG, "Error connecting to chat room");
-                                                            } else {
-                                                                Intent intent=new Intent(activity, ChatActivity.class);
-                                                                intent.putExtra(MyUtils.EXTRA_ROOM_NAME, chatroomName);
-                                                                intent.putExtra("friend", friendEmail);
-                                                                intent.putExtra("from", userEmail);
-                                                                intent.putExtra("to", friendEmail);
-                                                                activity.startActivity(intent);                                                            }
-                                                        }
-                                                    });
-
-//                                            Intent intent = new Intent(activity, FriendChatActivity.class);
-//                                            activity.startActivity(intent);
-//                                            drawerLayout.closeDrawers();
-
+                                            showUserProfilePrompt(getEmail(), menuItem.getTitle().toString());
                                         }
 
                                         //close navigation drawer
@@ -963,6 +943,13 @@ public class UnplannedWalkAdapter implements FitnessService {
                 setUpFriendlist();
             });
         }
+    }
+
+    private void showUserProfilePrompt(String userEmail, String friendEmail) {
+        FragmentManager fm = activity.getSupportFragmentManager();
+        UserProfileDialog setStepDialogFragment =
+                UserProfileDialog.newInstance(activity.getString(R.string.user_profile), userEmail, friendEmail, activity);
+        setStepDialogFragment.show(fm, "fragment_user_profile");
     }
 
     /**
