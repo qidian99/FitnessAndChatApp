@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.SystemClock;
 import android.view.MotionEvent;
+import android.view.animation.ScaleAnimation;
 import android.widget.Button;
 
 import com.github.mikephil.charting.charts.BarChart;
@@ -23,6 +24,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowToast;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+
+import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
 import static android.content.Context.MODE_PRIVATE;
 import static edu.ucsd.cse110.googlefitapp.MainActivity.KEY_STRIDE;
@@ -37,12 +41,16 @@ public class WeeklyStatsActivityUnitTest {
     private WeeklyStatsActivity weeklyStatsActivity;
     private Button button;
     private BarChart barChart;
+    private Calendar myCalander;
 
     @Before
     public void setUp() throws Exception {
+        StepCalendar.set(2019, 2, 8);
+        myCalander = StepCalendar.getInstance();
         Intent intent = new Intent(RuntimeEnvironment.application, WeeklyStatsActivity.class);
         intent.putExtra("testkey", true);
         weeklyStatsActivity = Robolectric.buildActivity(WeeklyStatsActivity.class, intent).create().get();
+        weeklyStatsActivity.setTempCal(myCalander);
         button = weeklyStatsActivity.findViewById(R.id.backToHome);
         barChart = weeklyStatsActivity.findViewById(R.id.barGraph);
     }
@@ -324,11 +332,13 @@ public class WeeklyStatsActivityUnitTest {
     @Test
     public void testBarData() {
         weeklyStatsActivity.setGraph();
+
         BarData barData = weeklyStatsActivity.getBarData();
         assertNotNull(barData);
-        assertEquals("Sun", barData.getXVals().get(0));
-        assertEquals("Mon", barData.getXVals().get(1));
-        assertEquals("Tues", barData.getXVals().get(2));
+
+        assertEquals("Fri", barData.getXVals().get(6));
+        assertEquals("Thurs", barData.getXVals().get(5));
+        assertEquals("Wed", barData.getXVals().get(4));
         assertEquals(Color.rgb(204, 229, 255), barData.getColors()[0]);
         assertEquals(Color.rgb(255, 204, 204), barData.getColors()[1]);
     }

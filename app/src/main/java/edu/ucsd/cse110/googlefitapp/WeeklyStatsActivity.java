@@ -49,6 +49,7 @@ public class WeeklyStatsActivity extends Activity {
     private float[] weeklyActiveDistance = new float[7];
     private boolean inactiveStepRead = false;
     private boolean activeStepRead = false;
+    private Calendar tempCal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -203,8 +204,11 @@ public class WeeklyStatsActivity extends Activity {
         barDataSet.setColors(new int[]{Color.rgb(204, 229, 255), Color.rgb(255, 204, 204)});
 
         ArrayList<String> days = new ArrayList<>();
-        Calendar tempCal = StepCalendar.getInstance();
-        for( int i = 0; i < 7; i ++ ){
+        if(tempCal == null) {
+            tempCal = StepCalendar.getInstance();
+        }
+
+        for( int i = 0; i < 7; i ++){
             tempCal.add(Calendar.DATE, 1);
             days.add(getDayOfWeekString(tempCal));
         }
@@ -306,6 +310,10 @@ public class WeeklyStatsActivity extends Activity {
     public void updateGoal() {
         SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         goal = sharedPref.getInt("goal", MainActivity.DEFAULT_GOAL);
+    }
+
+    public void setTempCal(Calendar cal) {
+        tempCal = cal;
     }
 
     private class setGraphAsyncTask extends AsyncTask<String, String, Void> {
