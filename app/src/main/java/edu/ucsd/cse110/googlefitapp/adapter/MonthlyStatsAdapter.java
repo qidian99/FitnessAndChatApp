@@ -148,6 +148,36 @@ public class MonthlyStatsAdapter implements FitnessService {
                             Log.d(TAG, "friend exists");
                             CollectionReference activeStepDB = stepStorage.document(friendId).collection("activeStep");
                             CollectionReference totalStepDB = stepStorage.document(friendId).collection("totalStep");
+                            CollectionReference userInfoDB = stepStorage.document(friendId).collection("userInfo");
+
+                            userInfoDB.document("goal").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.getResult() == null || task.getResult().getData() == null) {
+                                        activity.setFriendGoal(0);
+                                    } else {
+                                        Map<String, Object> map = task.getResult().getData();
+                                        Log.e(TAG, map.toString());
+                                        activity.setFriendGoal((int) (long) map.get("goal"));
+                                    }
+                                    activity.setInActiveStepRead(28, true);
+                                }
+                            });
+
+                            userInfoDB.document("strideLength").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.getResult() == null || task.getResult().getData() == null) {
+                                        activity.setFriendGoal(0);
+                                    } else {
+                                        Map<String, Object> map = task.getResult().getData();
+                                        Log.e(TAG, map.toString());
+                                        activity.setFriendStrideLength((float) (double) map.get("strideLength"));
+                                    }
+                                    activity.setInActiveStepRead(29, true);
+                                }
+                            });
+
                             for (int i = 0; i < 28; i++) {
                                 int year = tempCal.get(Calendar.YEAR);
                                 int month = tempCal.get(Calendar.MONTH) + 1;

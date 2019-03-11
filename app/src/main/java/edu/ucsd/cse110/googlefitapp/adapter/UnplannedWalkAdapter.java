@@ -274,10 +274,10 @@ public class UnplannedWalkAdapter implements FitnessService {
             currentClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
         }
 
-        if(Calendar.getInstance().get(Calendar.MINUTE) % 30 == 0 && !backedUp && activeDataType != null) {
+        if(Calendar.getInstance().get(Calendar.MINUTE) % 2 == 0 && !backedUp && activeDataType != null) {
             store28DaysSteps(tempCal);
             backedUp = true;
-        } else if(Calendar.getInstance().get(Calendar.MINUTE) % 30 != 0 ) {
+        } else if(Calendar.getInstance().get(Calendar.MINUTE) % 2 != 0 ) {
             backedUp = false;
         }
 
@@ -648,8 +648,22 @@ public class UnplannedWalkAdapter implements FitnessService {
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
         DataReadRequest dataReadRequest = build28daysTotalStepRequest(cal);
         DataReadRequest dataReadRequest2 = build28daysActiveStepRequest(cal);
+        storeStepAndGoal();
         storeTotalSteps(cal, gsa, dataReadRequest);
         storeActiveSteps(cal, gsa, dataReadRequest2);
+    }
+
+    private void storeStepAndGoal() {
+        CollectionReference userInfoDB = stepStorage.document(getUID()).collection("userInfo");
+        Map<String, Object> goalMap = new HashMap<>();
+        goalMap.put("goal", activity.getGoal());
+        userInfoDB.document("goal").set(goalMap);
+
+        Map<String, Object> strideLengthMap = new HashMap<>();
+        strideLengthMap.put("strideLength", activity.getStrideLength());
+        userInfoDB.document("strideLength").set(strideLengthMap);
+
+        Log.d(TAG, "Successfully store goal and stride length");
     }
 
     private void storeActiveSteps(Calendar cal, GoogleSignInAccount gsa, DataReadRequest dataReadRequest2) {
@@ -785,8 +799,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                             }
                         })
                 .addOnFailureListener(
-                        e -> {Log.e(TAG, "Fail to get the last 7 day total steps");
-                        });
+                        e -> Log.e(TAG, "Fail to get the last 7 day total steps"));
 
 
         Task<DataReadResponse> dataReadResponseTask2 = Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
@@ -803,8 +816,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                             }
                         })
                 .addOnFailureListener(
-                        e -> {Log.e(TAG, "Fail to get the last 7 day active steps");
-                        });
+                        e -> Log.e(TAG, "Fail to get the last 7 day active steps"));
         return null;
     }
 
