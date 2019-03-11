@@ -47,7 +47,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -59,6 +58,7 @@ import com.google.firebase.iid.InstanceIdResult;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +70,7 @@ import edu.ucsd.cse110.googlefitapp.FriendChatActivity;
 import edu.ucsd.cse110.googlefitapp.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.MyFirebaseMessagingService;
+import edu.ucsd.cse110.googlefitapp.NewFriendSignUpActivity;
 import edu.ucsd.cse110.googlefitapp.R;
 import edu.ucsd.cse110.googlefitapp.chatroom.models.ChatPojo;
 import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
@@ -83,12 +84,6 @@ import static android.media.CamcorderProfile.get;
 import static android.view.View.INVISIBLE;
 
 public class UnplannedWalkAdapter implements FitnessService {
-    /*           .addField("ActiveSteps", Field.FORMAT_INT32)
-                .addField("ActiveMin", Field.FORMAT_INT32)
-                .addField("ActiveSec", Field.FORMAT_INT32)
-                .addField("ActiveDistance", Field.FORMAT_FLOAT)
-                .addField("ActiveSpeed", Field.FORMAT_FLOAT)
-                */
     public static final int ACTIVE_STEP_INDEX = 0;
     public static final int ACTIVE_MIN_INDEX = 1;
     public static final int ACTIVE_SEC_INDEX = 2;
@@ -108,8 +103,10 @@ public class UnplannedWalkAdapter implements FitnessService {
     private GoogleSignInAccount gsa;
     public static final int RC_SIGN_IN = 9001;
     private CollectionReference friendship;
+    private CollectionReference stepStorage;
     private HistoryClient currentClient;
     private ConfigClient configClient;
+    private boolean backedUp = false;
 
     public UnplannedWalkAdapter(Activity activity) {
         this.activity = activity;
@@ -130,7 +127,7 @@ public class UnplannedWalkAdapter implements FitnessService {
 
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
             Intent intent = new Intent(activity, LoginActivity.class);
-            Log.e(TAG, "start login activity");
+            Log.d(TAG, "start login activity");
             activity.startActivity(intent);
         } else if(GoogleSignIn.getLastSignedInAccount(activity).getEmail() == null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -143,9 +140,6 @@ public class UnplannedWalkAdapter implements FitnessService {
         } else {
             gsa = GoogleSignIn.getLastSignedInAccount(activity);
             configClient = Fitness.getConfigClient(activity, Objects.requireNonNull(gsa));
-            updateStepCount();
-            startRecording();
-
 
             Intent intent = new Intent(activity, MyFirebaseMessagingService.class);
             activity.startService(intent);
@@ -156,14 +150,14 @@ public class UnplannedWalkAdapter implements FitnessService {
                     if (!task.isSuccessful()) {
                         Log.e(TAG, "Firebase authentication failed, please check your internet connection");
                     } else {
-                        Log.e(TAG, "Authentication succeeded");
+                        Log.d(TAG, "Authentication succeeded");
                         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
                         String uid = currentFirebaseUser.getUid();
                         FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( activity,  new OnSuccessListener<InstanceIdResult>() {
                             @Override
                             public void onSuccess(InstanceIdResult instanceIdResult) {
                                 String newToken = instanceIdResult.getToken();
-                                Log.e("newToken",newToken);
+                                Log.d("newToken",newToken);
                                 Map<String, Object> user = new HashMap<>();
                                 user.put("email", gsa.getEmail());
                                 user.put("id", gsa.getId());
@@ -171,9 +165,6 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 user.put("token", newToken);
 
                                 FirebaseFirestore chat = FirebaseFirestore.getInstance();
-//                    .collection(activity.COLLECTION_KEY)
-//                    .document(activity.DOCUMENT_KEY)
-//                    .collection(activity.MESSAGES_KEY);
 
                                 chat.collection("users").document(gsa.getId())
                                         .set(user)
@@ -192,6 +183,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 if(friendship == null) {
                                     setUpFriendlist();
                                 }
+                                setupStepStorage();
                             }
                         });
                     }
@@ -199,7 +191,6 @@ public class UnplannedWalkAdapter implements FitnessService {
             });
 
             try {
-//                ((TextView) activity.findViewById(R.id.TextCurrentAccount)).setText(gsa.getEmail());
                 Log.i(TAG, "Last Signed Account is: " + gsa);
                 Log.i(TAG, "Last Signed email is: " + gsa.getEmail());
                 Log.i(TAG, "Last Signed id is: " + gsa.getId());
@@ -207,22 +198,18 @@ public class UnplannedWalkAdapter implements FitnessService {
                         addOnSuccessListener(dataType -> {
                             Log.d(TAG, "Found data type: " + dataType);
                             activeDataType = dataType;
-                            //                        CreateCustomDataType(gsa);
                         })
                         .addOnFailureListener(e -> {
                             Log.d(TAG, "Datatype not found.");
 
                             CreateCustomDataType(gsa);
                         });
-                //            Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).readDataType(this, "com.app.custom_data_type");
-
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            updateStepCount();
+            startRecording();
             startAsync();
-
-
         }
     }
 
@@ -240,7 +227,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         Task<DataType> response =
                 configClient.createCustomDataType(request)
                         .addOnSuccessListener((DataType dataType) -> {
-                            Log.d(TAG, "Sucessfully created new datatype: " + dataType.toString());
+                            Log.d(TAG, "successfully created new datatype: " + dataType.toString());
                             activeDataType = dataType;
                             fitnessOptions = FitnessOptions.builder()
                                     .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -288,6 +275,22 @@ public class UnplannedWalkAdapter implements FitnessService {
         tempCal.set(Calendar.MINUTE, 59);
         tempCal.set(Calendar.HOUR_OF_DAY, 23);
         long endTime = tempCal.getTimeInMillis();
+
+        // Re-check if current client is null or noth
+        if(currentClient == null) {
+            GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+            if (lastSignedInAccount == null) {
+                return;
+            }
+            currentClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
+        }
+
+        if(Calendar.getInstance().get(Calendar.MINUTE) % 30 == 0 && !backedUp && activeDataType != null) {
+            store28DaysSteps(tempCal);
+            backedUp = true;
+        } else if(Calendar.getInstance().get(Calendar.MINUTE) % 30 != 0 ) {
+            backedUp = false;
+        }
 
         currentClient.readData(new DataReadRequest.Builder()
                         .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
@@ -562,30 +565,21 @@ public class UnplannedWalkAdapter implements FitnessService {
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
         tempCal.set(Calendar.HOUR_OF_DAY, 0);
-        // Get last Sunday
-//        tempCal.add(Calendar.DATE, -tempCal.get(Calendar.DAY_OF_WEEK) + 1);
         tempCal.add(Calendar.DATE, -6);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.add(Calendar.DATE, 7);
         tempCal.add(Calendar.SECOND, -1);
         long endTime = tempCal.getTimeInMillis();
-//        DataSource activeDataSource = new DataSource.Builder()
-//                .setAppPackageName(APP_PACKAGE_NAME)
-//                .setDataType(activeDataType)
-//                .setName(ACTIVE_DT_NAME)
-//                .setType(DataSource.TYPE_RAW)
-//                .build();
         Log.d(TAG, "getLast7DaysSteps Initialize Success");
         return new DataReadRequest.Builder()
                 .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
                         DataType.AGGREGATE_STEP_COUNT_DELTA)
-//                .read(activeDataType)
-//                .read(activeDataSource)
                 .bucketByTime(1, TimeUnit.DAYS)
                 .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                 .build();
     }
+
 
     public DataReadRequest buildActiveStepRequest(Calendar cal) {
         Calendar tempCal = (Calendar) cal.clone();
@@ -607,14 +601,176 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .build();
         Log.d(TAG, "getLast7DaysSteps Initialize Success");
         return new DataReadRequest.Builder()
-//                .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
-//                        DataType.AGGREGATE_STEP_COUNT_DELTA)
                 .read(activeDataType)
                 .read(activeDataSource)
                 .bucketByTime(1, TimeUnit.DAYS)
                 .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                 .build();
     }
+
+    public DataReadRequest build28daysTotalStepRequest(Calendar cal) {
+        Calendar tempCal = (Calendar) cal.clone();
+        tempCal.set(Calendar.SECOND, 0);
+        tempCal.set(Calendar.MINUTE, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
+        tempCal.add(Calendar.DATE, -27);
+        long startTime = tempCal.getTimeInMillis();
+        // Get next Saturday
+        tempCal.add(Calendar.DATE, 28);
+        tempCal.add(Calendar.SECOND, -1);
+        long endTime = tempCal.getTimeInMillis();
+        Log.d(TAG, "getLast7DaysSteps Initialize Success");
+        return new DataReadRequest.Builder()
+                .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
+                        DataType.AGGREGATE_STEP_COUNT_DELTA)
+                .bucketByTime(1, TimeUnit.DAYS)
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
+    }
+
+    public DataReadRequest build28daysActiveStepRequest(Calendar cal) {
+        Calendar tempCal = (Calendar) cal.clone();
+        tempCal.set(Calendar.SECOND, 0);
+        tempCal.set(Calendar.MINUTE, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
+        // Get last Sunday
+        tempCal.add(Calendar.DATE, -27);
+        long startTime = tempCal.getTimeInMillis();
+        // Get next Saturday
+        tempCal.add(Calendar.DATE, 28);
+        tempCal.add(Calendar.SECOND, -1);
+        long endTime = tempCal.getTimeInMillis();
+        DataSource activeDataSource = new DataSource.Builder()
+                .setAppPackageName(APP_PACKAGE_NAME)
+                .setDataType(activeDataType)
+                .setName(ACTIVE_DT_NAME)
+                .setType(DataSource.TYPE_RAW)
+                .build();
+        Log.d(TAG, "ActiveStepRequest Initialize Success");
+        return new DataReadRequest.Builder()
+                .read(activeDataType)
+                .read(activeDataSource)
+                .bucketByTime(1, TimeUnit.DAYS)
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
+    }
+
+    public void store28DaysSteps(Calendar cal) {
+        final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
+        DataReadRequest dataReadRequest = build28daysTotalStepRequest(cal);
+        DataReadRequest dataReadRequest2 = build28daysActiveStepRequest(cal);
+        storeTotalSteps(cal, gsa, dataReadRequest);
+        storeActiveSteps(cal, gsa, dataReadRequest2);
+    }
+
+    private void storeActiveSteps(Calendar cal, GoogleSignInAccount gsa, DataReadRequest dataReadRequest2) {
+        Calendar tempCal = (Calendar) cal.clone();
+        tempCal.add(Calendar.DATE, -27);
+
+        // Active steps data and store to firebase
+        Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
+                .readData(dataReadRequest2)
+                .addOnSuccessListener(
+                        dataReadResponse -> {
+                            Log.d(TAG, "UIDDDD: " + getUID());
+                            CollectionReference activeStepDB = stepStorage.document(getUID()).collection("activeStep");
+                            for (int i = 0; i < 28; i++) {
+                                Log.d(TAG, String.format("Active Step - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
+                                Bucket bucket = dataReadResponse.getBuckets().get(i);
+                                DataSet activeStepDataSet = bucket.getDataSets().get(1);
+                                Log.d(TAG, "" + (activeStepDataSet != null));
+                                Log.d(TAG, activeStepDataSet.toString());
+
+                                Log.d(TAG, String.format("getLast28DaysSteps - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
+                                int activeStep;
+                                float distance;
+                                float speed;
+                                if (activeStepDataSet != null && !activeStepDataSet.isEmpty()) {
+                                    Log.d(TAG, "getLast28DaysSteps - dtSet2 steps = " + activeStepDataSet);
+                                    activeStep = activeStepDataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(ACTIVE_STEP_INDEX)).asInt();
+                                    distance = activeStepDataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(ACTIVE_DIST_INDEX)).asFloat();
+                                    speed = activeStepDataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(ACTIVE_SPEED_INDEX)).asFloat();
+                                } else {
+                                    activeStep = 0;
+                                    distance = 0;
+                                    speed = 0;
+                                }
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("activeStep", activeStep);
+                                map.put("distance", distance);
+                                map.put("speed", speed);
+                                int year = tempCal.get(Calendar.YEAR);
+                                int month = tempCal.get(Calendar.MONTH) + 1;
+                                int day = tempCal.get(Calendar.DAY_OF_MONTH);
+                                String dateKey = year + "." + month + "." + day;
+                                activeStepDB.document(dateKey).set(map)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                Log.d(TAG, "Successfully store active step");
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Log.w(TAG, "Error store active step", e);
+                                            }
+                                        });
+                                tempCal.add(Calendar.DATE, 1);
+                            }
+                        })
+                .addOnFailureListener(
+                        e -> Log.e(TAG, "Fail to get the last 28 day active steps"));
+    }
+
+    private void storeTotalSteps(Calendar cal, GoogleSignInAccount gsa, DataReadRequest dataReadRequest) {
+        Calendar tempCal = (Calendar) cal.clone();
+        tempCal.add(Calendar.DATE, -27);
+
+        // Total step data store to firebase
+        Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
+                .readData(dataReadRequest)
+                .addOnSuccessListener(
+                        dataReadResponse -> {
+                            CollectionReference totalStepDB = stepStorage.document(getUID()).collection("totalStep");
+                            Log.d(TAG, "" + dataReadResponse.getBuckets().size());
+                            for (int i = 0; i < 28; i++) {
+                                Log.d(TAG, String.format("Total Step - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
+                                Bucket bucket = dataReadResponse.getBuckets().get(i);
+                                DataSet dtSet = bucket.getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
+                                int totalStep;
+                                if (dtSet != null && !dtSet.isEmpty()) {
+                                    totalStep = dtSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
+                                    Log.d(TAG, "getLast28DaysSteps - dtSet steps = " + totalStep);
+                                } else {
+                                    totalStep = 0;
+                                }
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("totalStep", totalStep);
+                                int year = tempCal.get(Calendar.YEAR);
+                                int month = tempCal.get(Calendar.MONTH) + 1;
+                                int day = tempCal.get(Calendar.DAY_OF_MONTH);
+                                String dateKey = year + "." + month + "." + day;
+                                totalStepDB.document(dateKey).set(map)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                Log.d(TAG, "Successfully store total step");
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Log.w(TAG, "Error store total step", e);
+                                            }
+                                        });
+                                tempCal.add(Calendar.DATE, 1);
+                            }
+                        })
+                .addOnFailureListener(
+                        e -> Log.e(TAG, "Fail to get the last 28 day total steps"));
+    }
+
 
     public DataReadRequest getLast7DaysSteps(double[] weeklyInactiveSteps, double[] weeklyActiveSteps, Calendar cal) {
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
@@ -714,27 +870,7 @@ public class UnplannedWalkAdapter implements FitnessService {
     private void setUpFriendlist() {
         setFriendListListener();
         String uid = getUID();
-//        DocumentReference friendship = FirebaseFirestore.getInstance()
-//                .collection("friendship")
-//                .document(uid);
-//        friendship.get()
-//                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                        if (task.isSuccessful()) {
-//                            List<String> singleWayFriendList = new ArrayList<>();
-//                            Map<String, Object> map = task.getResult().getData();
-//                            for (Map.Entry<String, Object> entry : map.entrySet()) {
-//                                singleWayFriendList.add(entry.getKey());
-//                                Log.e("TAG", "Your friend request sent: " + entry.getKey());
-//                            }
-//                            //Do what you want to do with your list
-//                        } else {
-//                            Log.e(TAG, "Error getting documents: ", task.getException());
-//                        }
-//                    }
-//
-//                });
+
         // requests sent by you
         List<String> userToOtherList = new ArrayList<>();
         // your friend sent you
@@ -758,13 +894,13 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 for (Map.Entry<String, Object> entry : map.entrySet()) {
                                     if(!entry.getKey().equals("email") && (boolean)entry.getValue()) {
                                         userToOtherList.add(entry.getKey());
-                                        Log.e(TAG, "User to other id: " + entry.getKey());
+                                        Log.d(TAG, "User to other id: " + entry.getKey());
                                     }
                                 }
                             } else {
                                 if(document.get(uid) != null && (boolean)document.get(uid)){
                                     otherToUserList.add(document.getId());
-                                    Log.e(TAG, "Other to user id: " + document.getId());
+                                    Log.d(TAG, "Other to user id: " + document.getId());
                                 }
                             }
 
@@ -777,22 +913,19 @@ public class UnplannedWalkAdapter implements FitnessService {
                             otherToUserList.remove(userToOtherRequest);
                         }
 
-                        //if(task.getResult().getDocuments())
                         for(String userToOtherRequest : userToOtherList){
-//                            The line below is useless. task.getResult().getDocuments() is always not null - Enqi
-//                            Log.e(TAG, ""+(task.getResult().getDocuments()==null));
-                            Log.e(TAG, "single friend: " + userToOtherRequest);
-                            Log.e(TAG, "ID map " + IDMap);
+                            Log.d(TAG, "single friend: " + userToOtherRequest);
+                            Log.d(TAG, "ID map " + IDMap);
                             if(IDMap.get(userToOtherRequest) == null) {
                                 continue;
                             }
                             DocumentSnapshot friendSFriendlist = task.getResult().getDocuments().get(IDMap.get(userToOtherRequest));
-                            Log.e(TAG, "friend: " + userToOtherRequest + ", friend list: " + friendSFriendlist);
+                            Log.d(TAG, "friend: " + userToOtherRequest + ", friend list: " + friendSFriendlist);
                             Map<String, Object> map = friendSFriendlist.getData();
                             for (Map.Entry<String, Object> entry : map.entrySet()) {
-                                Log.e(TAG, "Your friend has friend " + entry.getKey());
+                                Log.d(TAG, "Your friend has friend " + entry.getKey());
                                 if(entry.getKey().equals(uid) && (boolean)entry.getValue()) {
-                                    Log.e(TAG, "Luckily, you are on your friend's friend list: " + friendSFriendlist.getId());
+                                    Log.d(TAG, "Luckily, you are on your friend's friend list: " + friendSFriendlist.getId());
                                     twoWayFriendList.add(userToOtherRequest);
                                 }
                             }
@@ -875,7 +1008,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                     public boolean onNavigationItemSelected(MenuItem menuItem) {
 //                                        Log.e(TAG, "Menu Item selected 2: " + menuItem.getTitle() + "," + emailToID.get(menuItem.getTitle()) + ","+ userToOtherList.indexOf(emailToID.get(menuItem.getTitle())));
                                         if(otherToUserList.indexOf(emailToID.get(menuItem.getTitle()))!=-1){
-                                            Log.e(TAG, "Clicked friend request!");
+                                            Log.d(TAG, "Clicked friend request!");
                                             // Dialog to accept / decline
                                             AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
                                             builder1.setMessage("Accept the friend request?");
@@ -914,9 +1047,8 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
-                                                        Log.d(TAG, "Sucessfully added friend!");
+                                                        Log.d(TAG, "successfully added friend!");
                                                         menuItem.setVisible(false);
-//                                                        setUpFriendlist();
                                                     }
                                                 })
                                                 .addOnFailureListener(new OnFailureListener() {
@@ -928,16 +1060,15 @@ public class UnplannedWalkAdapter implements FitnessService {
                                     }
 
                                     private void declineFriendRequest(String friendUid, MenuItem menuItem) {
-                                        Log.e(TAG, "friend's UID: " + friendUid);
+                                        Log.d(TAG, "friend's UID: " + friendUid);
                                         Map<String, Object> map = new HashMap<>();
                                         map.put(getUID(), false);
                                         FirebaseFirestore.getInstance().collection("friendship").document(friendUid).set(map, SetOptions.merge())
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
-                                                        Log.d(TAG, "Sucessfully declined friend request.");
+                                                        Log.d(TAG, "successfully declined friend request.");
                                                         menuItem.setVisible(false);
-//                                                        setUpFriendlist();
                                                     }
                                                 })
                                                 .addOnFailureListener(new OnFailureListener() {
@@ -966,6 +1097,13 @@ public class UnplannedWalkAdapter implements FitnessService {
 
                 setUpFriendlist();
             });
+        }
+    }
+
+    private void setupStepStorage() {
+        if(stepStorage == null) {
+            stepStorage = FirebaseFirestore.getInstance()
+                    .collection("steps");
         }
     }
 
