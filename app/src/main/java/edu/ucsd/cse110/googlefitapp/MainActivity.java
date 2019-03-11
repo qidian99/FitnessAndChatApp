@@ -411,10 +411,10 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         try {
             Intent intent = new Intent(MainActivity.this, WeeklyStatsActivity.class);
             startActivity(intent);
-            Log.d(TAG, getString(R.string.lauchWeeklyStatsSuccess));
+            Log.d(TAG, getString(R.string.launchWeeklyStatsSuccess));
 
         } catch (Exception e) {
-            Log.d(TAG, getString(R.string.lauchWeeklyStatsFailure) + e.toString());
+            Log.d(TAG, getString(R.string.launchWeeklyStatsFailure) + e.toString());
             e.printStackTrace();
         }
     }

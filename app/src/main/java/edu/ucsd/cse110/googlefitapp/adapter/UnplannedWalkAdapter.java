@@ -26,6 +26,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
@@ -102,9 +103,15 @@ public class UnplannedWalkAdapter implements FitnessService {
     private GoogleSignInAccount gsa;
     public static final int RC_SIGN_IN = 9001;
     private CollectionReference friendship;
+    private HistoryClient currentClient;
 
     public UnplannedWalkAdapter(Activity activity) {
         this.activity = activity;
+        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+        if (lastSignedInAccount == null) {
+            return;
+        }
+        currentClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
     }
 
     public void setup() {
@@ -114,20 +121,6 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
                 .build();
-
-//        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
-//            Toast.makeText(activity, "Authorization is needed to use this app", Toast.LENGTH_SHORT).show();
-////            GoogleSignIn.requestPermissions(
-////                    activity, // your activity
-////                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-////                    GoogleSignIn.getLastSignedInAccount(activity),
-////                    fitnessOptions);
-//            Intent intent = new Intent(activity, LoginActivity.class);
-//            activity.startActivity(intent);
-////            activity.finish();
-//        } else {
-
-
 
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
             Intent intent = new Intent(activity, LoginActivity.class);
@@ -252,10 +245,6 @@ public class UnplannedWalkAdapter implements FitnessService {
      * current timezone.
      */
     public void updateStepCount() {
-        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
-        if (lastSignedInAccount == null) {
-            return;
-        }
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
@@ -267,8 +256,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         tempCal.set(Calendar.HOUR, 23);
         long endTime = tempCal.getTimeInMillis();
 
-        Fitness.getHistoryClient(activity, lastSignedInAccount)
-                .readData(new DataReadRequest.Builder()
+        currentClient.readData(new DataReadRequest.Builder()
                         .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
                                 DataType.AGGREGATE_STEP_COUNT_DELTA)
                         .bucketByTime(1, TimeUnit.DAYS)
@@ -306,6 +294,10 @@ public class UnplannedWalkAdapter implements FitnessService {
     @Override
     public void startAsync() {
         isCancelled = false;
+        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+        if (lastSignedInAccount == null) {
+            return;
+        }
         new UpdateStepAsyncTask().execute(String.valueOf(2000));
     }
 
@@ -654,7 +646,6 @@ public class UnplannedWalkAdapter implements FitnessService {
         @Override
         protected Void doInBackground(String... sleepTime) {
             while (!isCancelled) {
-
                 try {
                     Thread.sleep(Integer.valueOf(sleepTime[0]));
                     publishProgress();
