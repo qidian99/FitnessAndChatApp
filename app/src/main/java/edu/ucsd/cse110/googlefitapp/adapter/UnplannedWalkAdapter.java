@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,7 +57,6 @@ import com.google.firebase.iid.InstanceIdResult;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,22 +64,13 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.Activity;
-import edu.ucsd.cse110.googlefitapp.FriendChatActivity;
 import edu.ucsd.cse110.googlefitapp.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.MyFirebaseMessagingService;
-import edu.ucsd.cse110.googlefitapp.NewFriendSignUpActivity;
 import edu.ucsd.cse110.googlefitapp.R;
-import edu.ucsd.cse110.googlefitapp.chatroom.models.ChatPojo;
-import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
-import edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity;
-import edu.ucsd.cse110.googlefitapp.dialog.ManuallyEnterStepDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.UserProfileDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
-
-import static android.media.CamcorderProfile.get;
-import static android.view.View.INVISIBLE;
 
 public class UnplannedWalkAdapter implements FitnessService {
     public static final int ACTIVE_STEP_INDEX = 0;

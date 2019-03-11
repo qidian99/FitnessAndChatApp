@@ -4,29 +4,16 @@ import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
-import com.google.android.gms.fitness.data.Bucket;
-import com.google.android.gms.fitness.data.DataSet;
-import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.data.Field;
-import com.google.android.gms.fitness.request.DataReadRequest;
-import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -35,18 +22,12 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.MonthlyStatsActivity;
-import edu.ucsd.cse110.googlefitapp.MonthlyStatsActivity;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
-
-import static java.lang.StrictMath.toIntExact;
 
 public class MonthlyStatsAdapter implements FitnessService {
     public static final int ACTIVE_STEP_INDEX = 0;
@@ -159,9 +140,9 @@ public class MonthlyStatsAdapter implements FitnessService {
                                 activity.getMonthlyActiveSteps()[i] = 0;
                                 activity.getMonthlyActiveDistance()[i] = 0;
                                 activity.getMonthlyActiveSpeed()[i] = 0;
+                                activity.setInActiveStepRead(i, true);
+                                activity.setActiveStepRead(i, true);
                             }
-                            activity.setInActiveStepRead(true);
-                            activity.setActiveStepRead(true);
                         }
                         else { // If friend is in user db
                             Log.d(TAG, "friend exists");
@@ -183,7 +164,7 @@ public class MonthlyStatsAdapter implements FitnessService {
                                             Log.e(TAG, map.toString());
                                             activity.getMonthlyTotalSteps()[finalI] = (int) (long) map.get("totalStep");
                                         }
-                                        activity.setInActiveStepRead(true);
+                                        activity.setInActiveStepRead(finalI, true);
                                     }
                                 });
                                 activeStepDB.document(dateKey).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -200,7 +181,7 @@ public class MonthlyStatsAdapter implements FitnessService {
                                             activity.getMonthlyActiveDistance()[finalI] = (float) (double) map.get("distance");
                                             activity.getMonthlyActiveSpeed()[finalI] = (float) (double) map.get("speed");
                                         }
-                                        activity.setActiveStepRead(true);
+                                        activity.setActiveStepRead(finalI, true);
                                     }
                                 });
                                 tempCal.add(Calendar.DATE, 1);

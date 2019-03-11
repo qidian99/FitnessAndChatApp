@@ -43,8 +43,8 @@ public class MonthlyStatsActivity extends Activity {
     private int[] monthlyActiveSteps = new int[28];
     private float[] monthlyActiveSpeed = new float[28];
     private float[] monthlyActiveDistance = new float[28];
-    private boolean inactiveStepRead = false;
-    private boolean activeStepRead = false;
+    private boolean[] inactiveStepRead = new boolean[28];
+    private boolean[] activeStepRead = new boolean[28];
     private Calendar tempCal;
 
     @Override
@@ -111,7 +111,9 @@ public class MonthlyStatsActivity extends Activity {
 
                 float speed = monthlyActiveSpeed[index];
                 float activeDist = monthlyActiveDistance[index];
-                float totalDist = stepToDistance(monthlyTotalSteps[index]);
+                int totalStep = monthlyTotalSteps[index];
+                int activeStep = monthlyActiveSteps[index];
+                float totalDist =  activeDist * totalStep/activeStep;
                 float inciDist = totalDist - activeDist;
 
                 if(inciDist < 0) {
@@ -282,12 +284,12 @@ public class MonthlyStatsActivity extends Activity {
         return monthlyActiveDistance;
     }
 
-    public void setInActiveStepRead(boolean b) {
-        this.inactiveStepRead = b;
+    public void setInActiveStepRead(int index, boolean b) {
+        this.inactiveStepRead[index] = b;
     }
 
-    public void setActiveStepRead(boolean b) {
-        this.activeStepRead = b;
+    public void setActiveStepRead(int index, boolean b) {
+        this.activeStepRead[index] = b;
     }
 
     public void setTempCal(Calendar cal) {
@@ -328,7 +330,20 @@ public class MonthlyStatsActivity extends Activity {
 
         @Override
         protected void onProgressUpdate(String... text) {
-            if (MonthlyStatsActivity.this.activeStepRead && MonthlyStatsActivity.this.inactiveStepRead) {
+            boolean activeSetUp = true;
+            boolean inactiveSetUp = true;
+            for(int i = 0; i < 28; i ++) {
+                if(!MonthlyStatsActivity.this.activeStepRead[i]) {
+                    activeSetUp = false;
+                    break;
+                }
+                if(!MonthlyStatsActivity.this.inactiveStepRead[i]) {
+                    inactiveSetUp = false;
+                    break;
+                }
+
+            }
+            if (activeSetUp && inactiveSetUp) {
                 Log.d(MonthlyStatsActivity.TAG, "Sucessfully populate monthly stats arrays.");
                 findViewById(R.id.barGraph).setVisibility(View.VISIBLE);
                 findViewById(R.id.loadingPanel).setVisibility(View.GONE);
