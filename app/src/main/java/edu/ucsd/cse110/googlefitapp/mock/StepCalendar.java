@@ -5,9 +5,7 @@ import java.util.Calendar;
 public class StepCalendar {
     public static int appYear = Calendar.getInstance().get(Calendar.YEAR);
     public static int appMonth = Calendar.getInstance().get(Calendar.MONTH);
-    ;
     public static int appDate = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-    ;
 
     public static Calendar getInstance() {
         Calendar tempCal = Calendar.getInstance();

@@ -21,6 +21,8 @@ public class PlannedWalkActivity extends Activity {
 
     private static final String TAG = "PlannedWalkActivity";
     private static final int RESULT_CODE = 1000;
+    private static final String MILES_FMT = "%.1f miles";
+    private static final String DIST_FMT = "%.1f MPH";
 
     private TextView textSteps;
     private TextView textDist;
@@ -63,30 +65,27 @@ public class PlannedWalkActivity extends Activity {
         t.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!isTimePrinted) {
-                            Log.d(TAG, "timer started");
-                            isTimePrinted = true;
-                        }
-
-                        tv = (TextView) findViewById(R.id.timer_text);
-
-                        setTime();
-                        setDistance();
-                        setSpeed();
-                        time += 1;
+                runOnUiThread(() -> {
+                    if (!isTimePrinted) {
+                        Log.d(TAG, "timer started");
+                        isTimePrinted = true;
                     }
+
+                    tv = (TextView) findViewById(R.id.timer_text);
+
+                    setTime();
+                    setDistance();
+                    setSpeed();
+                    time += 1;
                 });
             }
         }, 0, 1000);
 
         textSteps = findViewById(R.id.textSteps);
         textDist = findViewById(R.id.textDistance);
-        textDist.setText(String.format("%.1f miles", distance));
+        textDist.setText(String.format(MILES_FMT, distance));
         textSpeed = findViewById(R.id.textSpeed);
-        textSpeed.setText(String.format("%.1f MPH", speed));
+        textSpeed.setText(String.format(DIST_FMT, speed));
 
         strideLen = getIntent().getFloatExtra("stride", 0);
 
@@ -95,37 +94,28 @@ public class PlannedWalkActivity extends Activity {
         fitnessService.updateStepCount();
 
         Button btnUpdateSteps = findViewById(R.id.buttonUpdateSteps);
-        btnUpdateSteps.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fitnessService.updateStepCount();
-                Log.d(TAG, "update step count success");
-            }
+        btnUpdateSteps.setOnClickListener(v -> {
+            fitnessService.updateStepCount();
+            Log.d(TAG, "update step count success");
         });
 
         Button btnMockData = findViewById(R.id.btnMockDt);
-        btnMockData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((PlannedWalkAdapter) fitnessService).mockDataPoint();
-                Log.d(TAG, "mock data point success");
-            }
+        btnMockData.setOnClickListener(v -> {
+            ((PlannedWalkAdapter) fitnessService).mockDataPoint();
+            Log.d(TAG, "mock data point success");
         });
 
         Button btnEndRecord = findViewById(R.id.btnEndRecord);
-        btnEndRecord.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fitnessService.stopAsync();
-                Intent homescreen = new Intent(getApplicationContext(), MainActivity.class);
-                homescreen.putExtra("speed", speed);
-                homescreen.putExtra("steps", steps);
-                homescreen.putExtra("min", time / 60);
-                homescreen.putExtra("second", time % 60);
-                homescreen.putExtra("distance", distance);
-                setResult(RESULT_CODE, homescreen);
-                finish();
-            }
+        btnEndRecord.setOnClickListener(v -> {
+            fitnessService.stopAsync();
+            Intent homescreen = new Intent(getApplicationContext(), MainActivity.class);
+            homescreen.putExtra("speed", speed);
+            homescreen.putExtra("steps", steps);
+            homescreen.putExtra("min", time / 60);
+            homescreen.putExtra("second", time % 60);
+            homescreen.putExtra("distance", distance);
+            setResult(RESULT_CODE, homescreen);
+            finish();
         });
 
         fitnessService.setup();
@@ -205,7 +195,7 @@ public class PlannedWalkActivity extends Activity {
 
     @Override
     public void setStep(int currentStep) {
-        return;
+        this.steps = currentStep;
     }
 
     public void setStrideLen(float strideLen) {

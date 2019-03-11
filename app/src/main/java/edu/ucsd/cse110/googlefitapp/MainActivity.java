@@ -105,7 +105,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     private int today;
     private boolean notCleared;
     private DrawerLayout drawerLayout;
-    public static final String DOCUMENT_KEY = "chat1";
+    public static final String DOCUMENT_KEY = "public_ntfcn";
     private ChatMessaging chatMessaging;
 
 
@@ -166,7 +166,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     @Override
     public void onResume(){
         super.onResume();
-        fitnessService.setup();
+        // fitnessService.setup();
     }
 
 
@@ -373,7 +373,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
         // Go to the bar chart activity.
         Button btnGoToWeekly = findViewById(R.id.weeklyButton);
-        System.out.println("started bar");
 
         btnGoToWeekly.setOnClickListener(v -> launchWeeklyStats());
 
@@ -411,10 +410,10 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         try {
             Intent intent = new Intent(MainActivity.this, WeeklyStatsActivity.class);
             startActivity(intent);
-            Log.d(TAG, getString(R.string.lauchWeeklyStatsSuccess));
+            Log.d(TAG, getString(R.string.launchWeeklyStatsSuccess));
 
         } catch (Exception e) {
-            Log.d(TAG, getString(R.string.lauchWeeklyStatsFailure) + e.toString());
+            Log.d(TAG, getString(R.string.launchWeeklyStatsFailure) + e.toString());
             e.printStackTrace();
         }
     }

@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
@@ -23,8 +24,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.fitness.ConfigClient;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
@@ -42,6 +45,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -49,6 +53,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -63,10 +69,13 @@ import edu.ucsd.cse110.googlefitapp.Activity;
 import edu.ucsd.cse110.googlefitapp.FriendChatActivity;
 import edu.ucsd.cse110.googlefitapp.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
+import edu.ucsd.cse110.googlefitapp.MyFirebaseMessagingService;
 import edu.ucsd.cse110.googlefitapp.R;
 import edu.ucsd.cse110.googlefitapp.chatroom.models.ChatPojo;
 import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
 import edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity;
+import edu.ucsd.cse110.googlefitapp.dialog.ManuallyEnterStepDialog;
+import edu.ucsd.cse110.googlefitapp.dialog.UserProfileDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
@@ -99,9 +108,16 @@ public class UnplannedWalkAdapter implements FitnessService {
     private GoogleSignInAccount gsa;
     public static final int RC_SIGN_IN = 9001;
     private CollectionReference friendship;
+    private HistoryClient currentClient;
+    private ConfigClient configClient;
 
     public UnplannedWalkAdapter(Activity activity) {
         this.activity = activity;
+        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+        if (lastSignedInAccount == null) {
+            return;
+        }
+        currentClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
     }
 
     public void setup() {
@@ -112,22 +128,9 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
                 .build();
 
-//        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
-//            Toast.makeText(activity, "Authorization is needed to use this app", Toast.LENGTH_SHORT).show();
-////            GoogleSignIn.requestPermissions(
-////                    activity, // your activity
-////                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
-////                    GoogleSignIn.getLastSignedInAccount(activity),
-////                    fitnessOptions);
-//            Intent intent = new Intent(activity, LoginActivity.class);
-//            activity.startActivity(intent);
-////            activity.finish();
-//        } else {
-
-
-
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
             Intent intent = new Intent(activity, LoginActivity.class);
+            Log.e(TAG, "start login activity");
             activity.startActivity(intent);
         } else if(GoogleSignIn.getLastSignedInAccount(activity).getEmail() == null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -138,17 +141,69 @@ public class UnplannedWalkAdapter implements FitnessService {
             activity.startActivityForResult(signInIntent, RC_SIGN_IN);
 
         } else {
+            gsa = GoogleSignIn.getLastSignedInAccount(activity);
+            configClient = Fitness.getConfigClient(activity, Objects.requireNonNull(gsa));
             updateStepCount();
             startRecording();
 
 
+            Intent intent = new Intent(activity, MyFirebaseMessagingService.class);
+            activity.startService(intent);
+
+            FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener( new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete( Task<AuthResult> task) {
+                    if (!task.isSuccessful()) {
+                        Log.e(TAG, "Firebase authentication failed, please check your internet connection");
+                    } else {
+                        Log.e(TAG, "Authentication succeeded");
+                        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
+                        String uid = currentFirebaseUser.getUid();
+                        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( activity,  new OnSuccessListener<InstanceIdResult>() {
+                            @Override
+                            public void onSuccess(InstanceIdResult instanceIdResult) {
+                                String newToken = instanceIdResult.getToken();
+                                Log.e("newToken",newToken);
+                                Map<String, Object> user = new HashMap<>();
+                                user.put("email", gsa.getEmail());
+                                user.put("id", gsa.getId());
+                                user.put("uid", uid);
+                                user.put("token", newToken);
+
+                                FirebaseFirestore chat = FirebaseFirestore.getInstance();
+//                    .collection(activity.COLLECTION_KEY)
+//                    .document(activity.DOCUMENT_KEY)
+//                    .collection(activity.MESSAGES_KEY);
+
+                                chat.collection("users").document(gsa.getId())
+                                        .set(user)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                Log.d(TAG, "User information successfully written!");
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Log.w(TAG, "Error writing User information", e);
+                                            }
+                                        });
+                                if(friendship == null) {
+                                    setUpFriendlist();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+
             try {
-                gsa = GoogleSignIn.getLastSignedInAccount(activity);
 //                ((TextView) activity.findViewById(R.id.TextCurrentAccount)).setText(gsa.getEmail());
                 Log.i(TAG, "Last Signed Account is: " + gsa);
                 Log.i(TAG, "Last Signed email is: " + gsa.getEmail());
                 Log.i(TAG, "Last Signed id is: " + gsa.getId());
-                Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).readDataType(ACTIVE_DT_NAME).
+                configClient.readDataType(ACTIVE_DT_NAME).
                         addOnSuccessListener(dataType -> {
                             Log.d(TAG, "Found data type: " + dataType);
                             activeDataType = dataType;
@@ -167,32 +222,7 @@ public class UnplannedWalkAdapter implements FitnessService {
             }
             startAsync();
 
-            Map<String, Object> user = new HashMap<>();
-            user.put("email", gsa.getEmail());
-            user.put("id", gsa.getId());
 
-            FirebaseFirestore chat = FirebaseFirestore.getInstance();
-//                    .collection(activity.COLLECTION_KEY)
-//                    .document(activity.DOCUMENT_KEY)
-//                    .collection(activity.MESSAGES_KEY);
-
-            chat.collection("users").document(gsa.getId())
-                    .set(user)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Log.d(TAG, "User information successfully written!");
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w(TAG, "Error writing User information", e);
-                        }
-                    });
-            if(friendship == null) {
-                setUpFriendlist();
-            }
         }
     }
 
@@ -208,7 +238,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .build();
 
         Task<DataType> response =
-                Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).createCustomDataType(request)
+                configClient.createCustomDataType(request)
                         .addOnSuccessListener((DataType dataType) -> {
                             Log.d(TAG, "Sucessfully created new datatype: " + dataType.toString());
                             activeDataType = dataType;
@@ -233,8 +263,7 @@ public class UnplannedWalkAdapter implements FitnessService {
     }
 
     private void startRecording() {
-        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
-        if (lastSignedInAccount == null) {
+        if (gsa == null) {
             return;
         }
 
@@ -249,23 +278,18 @@ public class UnplannedWalkAdapter implements FitnessService {
      * current timezone.
      */
     public void updateStepCount() {
-        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
-        if (lastSignedInAccount == null) {
-            return;
-        }
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.set(Calendar.SECOND, 59);
         tempCal.set(Calendar.MINUTE, 59);
-        tempCal.set(Calendar.HOUR, 23);
+        tempCal.set(Calendar.HOUR_OF_DAY, 23);
         long endTime = tempCal.getTimeInMillis();
 
-        Fitness.getHistoryClient(activity, lastSignedInAccount)
-                .readData(new DataReadRequest.Builder()
+        currentClient.readData(new DataReadRequest.Builder()
                         .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
                                 DataType.AGGREGATE_STEP_COUNT_DELTA)
                         .bucketByTime(1, TimeUnit.DAYS)
@@ -303,6 +327,10 @@ public class UnplannedWalkAdapter implements FitnessService {
     @Override
     public void startAsync() {
         isCancelled = false;
+        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+        if (lastSignedInAccount == null) {
+            return;
+        }
         new UpdateStepAsyncTask().execute(String.valueOf(2000));
     }
 
@@ -317,12 +345,12 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.set(Calendar.SECOND, 59);
         tempCal.set(Calendar.MINUTE, 59);
-        tempCal.set(Calendar.HOUR, 23);
+        tempCal.set(Calendar.HOUR_OF_DAY, 23);
         long endTime = tempCal.getTimeInMillis();
         Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
                 .readData(new DataReadRequest.Builder()
@@ -343,7 +371,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 0);
                                 long startTime1 = cal.getTimeInMillis();
 
                                 DataSource dataSource =
@@ -378,7 +406,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 0);
                                 long startTime1 = cal.getTimeInMillis();
 
                                 DataSource dataSource =
@@ -411,12 +439,12 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.set(Calendar.SECOND, 59);
         tempCal.set(Calendar.MINUTE, 59);
-        tempCal.set(Calendar.HOUR, 23);
+        tempCal.set(Calendar.HOUR_OF_DAY, 23);
         long endTime = tempCal.getTimeInMillis();
         // Read active data
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
@@ -435,7 +463,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 0);
                                 long startTime1 = cal.getTimeInMillis();
 
                                 DataSource dataSource =
@@ -533,7 +561,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
 //        tempCal.add(Calendar.DATE, -tempCal.get(Calendar.DAY_OF_WEEK) + 1);
         tempCal.add(Calendar.DATE, -6);
@@ -563,7 +591,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
         tempCal.add(Calendar.DATE, -6);
         long startTime = tempCal.getTimeInMillis();
@@ -651,7 +679,6 @@ public class UnplannedWalkAdapter implements FitnessService {
         @Override
         protected Void doInBackground(String... sleepTime) {
             while (!isCancelled) {
-
                 try {
                     Thread.sleep(Integer.valueOf(sleepTime[0]));
                     publishProgress();
@@ -868,30 +895,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                             AlertDialog alertInvalidInput = builder1.create();
                                             alertInvalidInput.show();
                                         } else if(twoWayFriendList.indexOf(emailToID.get(menuItem.getTitle()))!=-1) {
-                                            // open Chat
-                                            String friendEmail = menuItem.getTitle().toString();
-                                            String userEmail = getEmail();
-                                            String chatroomName = userEmail.compareTo(friendEmail) > 0 ? friendEmail + "TO" + userEmail : userEmail + "TO" + friendEmail;
-                                            FirebaseAuth.getInstance().signInAnonymously()
-                                                    .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
-                                                        @Override
-                                                        public void onComplete( Task<AuthResult> task) {
-                                                            if (!task.isSuccessful()) {
-                                                                Log.e(TAG, "Error connecting to chat room");
-                                                            } else {
-                                                                Intent intent=new Intent(activity, ChatActivity.class);
-                                                                intent.putExtra(MyUtils.EXTRA_ROOM_NAME, chatroomName);
-                                                                intent.putExtra("friend", friendEmail);
-                                                                intent.putExtra("from", userEmail);
-                                                                intent.putExtra("to", friendEmail);
-                                                                activity.startActivity(intent);                                                            }
-                                                        }
-                                                    });
-
-//                                            Intent intent = new Intent(activity, FriendChatActivity.class);
-//                                            activity.startActivity(intent);
-//                                            drawerLayout.closeDrawers();
-
+                                            showUserProfilePrompt(getEmail(), menuItem.getTitle().toString());
                                         }
 
                                         //close navigation drawer
@@ -963,6 +967,13 @@ public class UnplannedWalkAdapter implements FitnessService {
                 setUpFriendlist();
             });
         }
+    }
+
+    private void showUserProfilePrompt(String userEmail, String friendEmail) {
+        FragmentManager fm = activity.getSupportFragmentManager();
+        UserProfileDialog setStepDialogFragment =
+                UserProfileDialog.newInstance(activity.getString(R.string.user_profile), userEmail, friendEmail, activity);
+        setStepDialogFragment.show(fm, "fragment_user_profile");
     }
 
     /**

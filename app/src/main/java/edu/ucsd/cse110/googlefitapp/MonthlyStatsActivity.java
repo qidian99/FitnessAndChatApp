@@ -23,7 +23,7 @@ import com.github.mikephil.charting.listener.OnChartGestureListener;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import edu.ucsd.cse110.googlefitapp.adapter.WeeklyStatsAdapter;
+import edu.ucsd.cse110.googlefitapp.adapter.MonthlyStatsAdapter;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 import edu.ucsd.cse110.googlefitapp.observer.Observer;
@@ -31,22 +31,18 @@ import edu.ucsd.cse110.googlefitapp.observer.Observer;
 import static edu.ucsd.cse110.googlefitapp.MainActivity.KEY_STRIDE;
 import static edu.ucsd.cse110.googlefitapp.MainActivity.SHARED_PREFERENCE_NAME;
 
-public class WeeklyStatsActivity extends Activity {
+public class MonthlyStatsActivity extends Activity {
 
-    public static final String TAG = "WEEKLY_STATS";
-    private static final String ACTIVE_WALK_FMT = "Active walk distance: %.1f miles\nAverage speed: %.1f MPH";
-    private static final String INCIDENTAL_WALK_FMT = "Incidental walk distance: %.1f miles \nfor a total of %.1f miles";
-    private static final String STATS_FMT = "speed: %.1f, distance: %.1f -> active: %.1f + incidental: %.1f";
-    private static final String DAILY_STATS_FMT = "day: %d: incidental steps(%d), active steps(%d)";
+    public static final String TAG = "MONTHLY_STATS";
     private int goal;
     private ArrayList<BarEntry> barEntries;
     private LimitLine goalLine;
     private BarData barData;
     private FitnessService fitnessService;
-    private int[] weeklyTotalSteps = new int[7];
-    private int[] weeklyActiveSteps = new int[7];
-    private float[] weeklyActiveSpeed = new float[7];
-    private float[] weeklyActiveDistance = new float[7];
+    private int[] monthlyTotalSteps = new int[28];
+    private int[] monthlyActiveSteps = new int[28];
+    private float[] monthlyActiveSpeed = new float[28];
+    private float[] monthlyActiveDistance = new float[28];
     private boolean inactiveStepRead = false;
     private boolean activeStepRead = false;
     private Calendar tempCal;
@@ -54,16 +50,15 @@ public class WeeklyStatsActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_weekly_stats);
+        setContentView(R.layout.activity_monthly_stats);
 
         boolean test = getIntent().getBooleanExtra("testkey", false);
 
-        if (!test) {
-            fitnessService = new WeeklyStatsAdapter(this);
+        if(!test) {
+            fitnessService = new MonthlyStatsAdapter(this);
             fitnessService.setup();
         }
 
-        SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
         SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
 
         goal = sharedPref.getInt("goal", MainActivity.DEFAULT_GOAL);
@@ -107,27 +102,27 @@ public class WeeklyStatsActivity extends Activity {
             @Override
             public void onChartSingleTapped(MotionEvent me) {
                 int index = barChart.getHighlightByTouchPoint(me.getX(), me.getY()).getXIndex();
-                if(index >= 7){
+                if(index >= 28){
                     Log.d(TAG, "Invalid index touched.");
                     return;
                 }
                 int yInd = barChart.getHighlightByTouchPoint(me.getX(), me.getY()).getStackIndex();
 
-                float speed = weeklyActiveSpeed[index];
-                float activeDist = weeklyActiveDistance[index];
-                float totalDist = stepToDistance(weeklyTotalSteps[index]);
+                float speed = monthlyActiveSpeed[index];
+                float activeDist = monthlyActiveDistance[index];
+                float totalDist = stepToDistance(monthlyTotalSteps[index]);
                 float inciDist = totalDist - activeDist;
 
                 if(inciDist < 0) {
                     inciDist = 0;
                 }
 
-                Log.d(TAG, String.format(STATS_FMT, speed , totalDist, activeDist, inciDist));
+                Log.d(TAG, String.format("speed: %.1f, distance: %.1f -> active: %.1f + incidental: %.1f", speed , totalDist, activeDist, inciDist));
 
                 if (yInd == 1) {
-                    Toast.makeText(WeeklyStatsActivity.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, totalDist), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MonthlyStatsActivity.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, totalDist), Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(WeeklyStatsActivity.this,
+                    Toast.makeText(MonthlyStatsActivity.this,
                             String.format("Active walk distance: %.1f miles\nAverage speed: %.1f MPH", activeDist, speed),
                             Toast.LENGTH_SHORT).show();
                 }
@@ -157,26 +152,27 @@ public class WeeklyStatsActivity extends Activity {
             new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
         }
 
-        Button button = findViewById(R.id.backToHome);
-        button.setOnClickListener(view -> finish());
-    }
 
-    private float stepToDistance(int steps) {
-        SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
-        float strideLength = sharedPref.getFloat(KEY_STRIDE, 0);
-        return steps * strideLength / 63360.0f;
+        Button button = findViewById(R.id.backToHome);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 
     public void setGraph() {
         BarChart barChart = findViewById(R.id.barGraph);
         barEntries = new ArrayList<>();
 
+        ArrayList<BarEntry> tmp = new ArrayList<>();
+
         int max = 0;
 
-        for (int i = 0; i < 7; i++) {
-            int activeSteps = weeklyActiveSteps[i];
-
-            int inactiveSteps = weeklyTotalSteps[i] - activeSteps;
+        for (int i = 0; i < 28; i++) {
+            int activeSteps = monthlyActiveSteps[i];
+            int inactiveSteps = monthlyTotalSteps[i] - activeSteps;
 
             if(inactiveSteps < 0) {
                 inactiveSteps = 0;
@@ -185,8 +181,11 @@ public class WeeklyStatsActivity extends Activity {
             if (inactiveSteps + activeSteps > max) {
                 max = inactiveSteps + activeSteps;
             }
-            Log.d(TAG, String.format(DAILY_STATS_FMT, i, inactiveSteps, activeSteps));
+            Log.d(TAG, String.format("day: %d: incidental steps(%d), active steps(%d)", i, inactiveSteps, activeSteps));
 
+            if(i < 4) {
+                tmp.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i));
+            }
             barEntries.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i));
         }
 
@@ -209,8 +208,8 @@ public class WeeklyStatsActivity extends Activity {
             tempCal = StepCalendar.getInstance();
         }
 
-        for( int i = 0; i < 7; i ++ ){
-            days.add(0, getDayOfWeekString(tempCal));
+        for( int i = 0; i < 28; i ++ ){
+            days.add(0, getDayOfMonthString(tempCal));
             tempCal.add(Calendar.DATE, -1);
         }
 
@@ -218,10 +217,13 @@ public class WeeklyStatsActivity extends Activity {
 
         barChart.setData(barData);
 
+//        for(BarEntry entry: tmp) {
+//            System.out.println(barChart.getBarBounds(entry).centerX() + " " + barChart.getBarBounds(entry).centerY());
+//        }
+
         barChart.animateY(2000);
 
         goalLine = new LimitLine(goal);
-
         barChart.getAxisLeft().addLimitLine(goalLine);
         Log.d(TAG, String.format("goal line set success: %d", goal));
     }
@@ -238,26 +240,9 @@ public class WeeklyStatsActivity extends Activity {
         return barData;
     }
 
-    public static String getDayOfWeekString(Calendar cal){
-        switch(cal.get(Calendar.DAY_OF_WEEK)){
-            case 1:
-                return "Sun";
-            case 2:
-                return "Mon";
-            case 3:
-                return "Tues";
-            case 4:
-                return "Wed";
-            case 5:
-                return "Thurs";
-            case 6:
-                return "Fri";
-            case 7:
-                return "Sat";
-        }
-        return null;
+    public static String getDayOfMonthString(Calendar cal){
+        return String.valueOf(cal.get(Calendar.DAY_OF_MONTH));
     }
-
 
     @Override
     public void updateAll(int num) {
@@ -284,20 +269,20 @@ public class WeeklyStatsActivity extends Activity {
 
     }
 
-    public int[] getWeeklyTotalSteps() {
-        return weeklyTotalSteps;
+    public int[] getMonthlyTotalSteps() {
+        return monthlyTotalSteps;
     }
 
-    public int[] getWeeklyActiveSteps() {
-        return weeklyActiveSteps;
+    public int[] getMonthlyActiveSteps() {
+        return monthlyActiveSteps;
     }
 
-    public float[] getWeeklyActiveSpeed() {
-        return weeklyActiveSpeed;
+    public float[] getMonthlyActiveSpeed() {
+        return monthlyActiveSpeed;
     }
 
-    public float[] getWeeklyActiveDistance() {
-        return weeklyActiveDistance;
+    public float[] getMonthlyActiveDistance() {
+        return monthlyActiveDistance;
     }
 
     public void setInActiveStepRead(boolean b) {
@@ -308,13 +293,13 @@ public class WeeklyStatsActivity extends Activity {
         this.activeStepRead = b;
     }
 
+    public void setTempCal(Calendar cal) {
+        tempCal = cal;
+    }
+
     public void updateGoal() {
         SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
         goal = sharedPref.getInt("goal", MainActivity.DEFAULT_GOAL);
-    }
-
-    public void setTempCal(Calendar cal) {
-        tempCal = cal;
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -346,16 +331,15 @@ public class WeeklyStatsActivity extends Activity {
 
         @Override
         protected void onProgressUpdate(String... text) {
-            if (WeeklyStatsActivity.this.activeStepRead && WeeklyStatsActivity.this.inactiveStepRead) {
-                Log.d(WeeklyStatsActivity.TAG, "Sucessfully populate weekly stats arrays.");
+            if (MonthlyStatsActivity.this.activeStepRead && MonthlyStatsActivity.this.inactiveStepRead) {
+                Log.d(MonthlyStatsActivity.TAG, "Sucessfully populate monthly stats arrays.");
                 findViewById(R.id.barGraph).setVisibility(View.VISIBLE);
                 findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                 setGraph();
                 isCancelled = true;
                 cancel(true);
-
             } else {
-                Log.d(WeeklyStatsActivity.TAG, "Fetching weekly stats from server.");
+                Log.d(MonthlyStatsActivity.TAG, "Fetching monthly stats from server.");
                 // Set animation, etc.
             }
         }

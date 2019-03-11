@@ -2,6 +2,7 @@ package edu.ucsd.cse110.googlefitapp;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -12,6 +13,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.apache.tools.ant.Main;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +24,7 @@ import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.shadows.ShadowToast;
 
 import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
+import edu.ucsd.cse110.googlefitapp.dialog.PlannedWalkEndingDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
@@ -83,6 +86,21 @@ public class HeightDialogUnitTest {
     @Test
     public void testSetHeightDialogTag() {
         assertEquals("fragment_prompt_height",dialogFragment.getTag());
+    }
+
+    @Test
+    public void testNullTitle() {
+        HeightDialog heightDialog = HeightDialog.newInstance(null);
+        assertNull(heightDialog);
+    }
+
+    @Test
+    public void testTitle() {
+        HeightDialog heightDialog = HeightDialog.newInstance("title");
+        Bundle bundle = heightDialog.getArguments();
+        Assert.assertNotNull(bundle);
+        String title = bundle.getString("title");
+        assertEquals("title", title);
     }
 
     private class TestFitnessService implements FitnessService {

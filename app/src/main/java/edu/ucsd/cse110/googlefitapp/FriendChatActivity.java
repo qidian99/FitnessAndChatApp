@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import edu.ucsd.cse110.googlefitapp.firebase.ChatMessaging;
 import edu.ucsd.cse110.googlefitapp.firebase.FirebaseMessageToChatMessageAdapter;
@@ -34,6 +35,9 @@ public class FriendChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend_chat);
+
+        boolean test = getIntent().getBooleanExtra("testkey", false);
+
 //
 //        boolean test = getIntent().getBooleanExtra("TEST", false);
 //        if(test){
@@ -43,34 +47,55 @@ public class FriendChatActivity extends AppCompatActivity {
 //            chatMessaging = new FirebaseMessageToChatMessageAdapter();
 //            chatStore = new FirebaseStoreToStoreUnitAdapter(this);
 //        }
+        if (!test) {
+            chatStore = new FirebaseStoreToStoreUnitAdapter(this);
 
-        chatStore = new FirebaseStoreToStoreUnitAdapter(this);
-
-        final SharedPreferences sharedpreferences = getSharedPreferences("FirebaseLabApp", Context.MODE_PRIVATE);
+            final SharedPreferences sharedpreferences = getSharedPreferences("FirebaseLabApp", Context.MODE_PRIVATE);
 
 
-        from = sharedpreferences.getString(FROM_KEY, null);
+            from = sharedpreferences.getString(FROM_KEY, null);
 //        subscribeToNotificationsTopic(chatMessaging);
-        chatStore.initMessageUpdateListener();
-        findViewById(R.id.btn_send).setOnClickListener(view -> chatStore.sendMessage());
+            chatStore.initMessageUpdateListener();
+            findViewById(R.id.btn_send).setOnClickListener(view -> chatStore.sendMessage());
 
-        EditText nameView = findViewById((R.id.user_name));
-        nameView.setText(from);
-        nameView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            EditText nameView = findViewById((R.id.user_name));
+            nameView.setText(from);
+            nameView.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                from = s.toString();
-                sharedpreferences.edit().putString(FROM_KEY, from).apply();
-            }
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    from = s.toString();
+                    sharedpreferences.edit().putString(FROM_KEY, from).apply();
+                }
 
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
+        } else {
+            final SharedPreferences sharedpreferences = getSharedPreferences("FirebaseLabApp", Context.MODE_PRIVATE);
+            from = sharedpreferences.getString(FROM_KEY, null);
+            EditText nameView = findViewById((R.id.user_name));
+            nameView.setText(from);
+            nameView.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    from = s.toString();
+                    sharedpreferences.edit().putString(FROM_KEY, from).apply();
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
+        }
     }
 
 //    private void subscribeToNotificationsTopic(ChatMessaging chatMessaging) {
