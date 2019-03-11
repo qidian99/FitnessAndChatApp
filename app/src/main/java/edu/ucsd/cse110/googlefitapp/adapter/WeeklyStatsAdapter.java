@@ -20,6 +20,7 @@ import com.google.android.gms.tasks.Task;
 
 import java.util.Calendar;
 import java.util.Objects;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.MainActivity;
@@ -177,16 +178,17 @@ public class WeeklyStatsAdapter implements FitnessService {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
 //        tempCal.add(Calendar.DATE, -tempCal.get(Calendar.DAY_OF_WEEK) + 1);
         tempCal.add(Calendar.DATE, -6);
         long startTime = tempCal.getTimeInMillis();
+        Log.e(TAG, "START TIMEEEEEEEEEEE total " + startTime);
         // Get next Saturday
         tempCal.add(Calendar.DATE, 7);
         tempCal.add(Calendar.SECOND, -1);
         long endTime = tempCal.getTimeInMillis();
-//        DataSource activeDataSource = new DataSource.Builder()
+//        DataSource activeDataSource = new DataSource.Builder() 1552248000608000000, 1552274808405000000
 //                .setAppPackageName(APP_PACKAGE_NAME)
 //                .setDataType(activeDataType)
 //                .setName(ACTIVE_DT_NAME)
@@ -207,10 +209,12 @@ public class WeeklyStatsAdapter implements FitnessService {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
         tempCal.add(Calendar.DATE, -6);
         long startTime = tempCal.getTimeInMillis();
+        Log.e(TAG, "START TIMEEEEEEEEEEE active " + startTime);
+
         // Get next Saturday
         tempCal.add(Calendar.DATE, 7);
         tempCal.add(Calendar.SECOND, -1);

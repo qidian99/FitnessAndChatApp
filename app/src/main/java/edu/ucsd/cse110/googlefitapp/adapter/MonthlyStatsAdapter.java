@@ -167,7 +167,7 @@ public class MonthlyStatsAdapter implements FitnessService {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
         tempCal.add(Calendar.DATE, -27);
         long startTime = tempCal.getTimeInMillis();
@@ -188,7 +188,7 @@ public class MonthlyStatsAdapter implements FitnessService {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
         tempCal.add(Calendar.DATE, -6);
         long startTime = tempCal.getTimeInMillis();

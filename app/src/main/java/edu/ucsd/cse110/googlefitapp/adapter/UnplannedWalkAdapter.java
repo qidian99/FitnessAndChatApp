@@ -312,12 +312,12 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.set(Calendar.SECOND, 59);
         tempCal.set(Calendar.MINUTE, 59);
-        tempCal.set(Calendar.HOUR, 23);
+        tempCal.set(Calendar.HOUR_OF_DAY, 23);
         long endTime = tempCal.getTimeInMillis();
         Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
                 .readData(new DataReadRequest.Builder()
@@ -338,7 +338,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 0);
                                 long startTime1 = cal.getTimeInMillis();
 
                                 DataSource dataSource =
@@ -373,7 +373,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 0);
                                 long startTime1 = cal.getTimeInMillis();
 
                                 DataSource dataSource =
@@ -406,12 +406,12 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.set(Calendar.SECOND, 59);
         tempCal.set(Calendar.MINUTE, 59);
-        tempCal.set(Calendar.HOUR, 23);
+        tempCal.set(Calendar.HOUR_OF_DAY, 23);
         long endTime = tempCal.getTimeInMillis();
         // Read active data
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
@@ -430,7 +430,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 0);
                                 long startTime1 = cal.getTimeInMillis();
 
                                 DataSource dataSource =
@@ -528,7 +528,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
 //        tempCal.add(Calendar.DATE, -tempCal.get(Calendar.DAY_OF_WEEK) + 1);
         tempCal.add(Calendar.DATE, -6);
@@ -558,7 +558,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
         tempCal.add(Calendar.DATE, -6);
         long startTime = tempCal.getTimeInMillis();
