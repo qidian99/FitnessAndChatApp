@@ -1,6 +1,7 @@
 package edu.ucsd.cse110.googlefitapp;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -8,6 +9,7 @@ import android.widget.Button;
 
 import junit.framework.TestCase;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +17,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
+import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.NewGoalDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
@@ -73,6 +76,29 @@ public class NewGoalDialogUnitTest {
     public void testHeightDialogTag() {
         assertEquals("fragment_set_new_goal", dialogFragment.getTag());
     }
+
+    @Test
+    public void testNew() {
+        NewGoalDialog newGoalDialog = new NewGoalDialog(1000);
+        assertEquals(1000, newGoalDialog.getCurrentGoal());
+    }
+
+    @Test
+    public void testNullTitle() {
+        NewGoalDialog newGoalDialog = NewGoalDialog.newInstance(null, 10000);
+        assertNull(newGoalDialog);
+    }
+
+    @Test
+    public void testTitle() {
+        NewGoalDialog newGoalDialog = NewGoalDialog.newInstance("title", 10000);
+        Bundle bundle = newGoalDialog.getArguments();
+        Assert.assertNotNull(bundle);
+        String title = bundle.getString("title");
+        assertEquals("title", title);
+        assertEquals(10000, newGoalDialog.getCurrentGoal());
+    }
+
 
     private class TestFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountActFitnessService]: ";

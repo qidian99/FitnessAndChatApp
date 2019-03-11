@@ -373,7 +373,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
         // Go to the bar chart activity.
         Button btnGoToWeekly = findViewById(R.id.weeklyButton);
-        System.out.println("started bar");
 
         btnGoToWeekly.setOnClickListener(v -> launchWeeklyStats());
 

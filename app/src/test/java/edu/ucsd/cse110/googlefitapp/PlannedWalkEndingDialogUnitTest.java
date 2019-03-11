@@ -18,8 +18,6 @@ import static org.junit.Assert.assertTrue;
 @RunWith(RobolectricTestRunner.class)
 public class PlannedWalkEndingDialogUnitTest {
     private PlannedWalkEndingDialog plannedWalkEndingDialog;
-    private TextView display;
-    private MainActivity mainActivity;
     private float distance = 10;
     private float speed = 10;
     private int steps = 10;
@@ -45,6 +43,12 @@ public class PlannedWalkEndingDialogUnitTest {
         plannedWalkEndingDialog = new PlannedWalkEndingDialog();
         assertTrue(0 == plannedWalkEndingDialog.getDistance());
         assertTrue(0 == plannedWalkEndingDialog.getSpeed());
+        String data = plannedWalkEndingDialog.getData();
+        assertNotNull(data);
+        assertEquals("Steps: 0\n" +
+                "Time elapsed: 0' 0\"\n" +
+                "Distance: 0.0 miles\n" +
+                "Speed: 0.0 miles/hour", data);
     }
 
     @Test
@@ -67,6 +71,17 @@ public class PlannedWalkEndingDialogUnitTest {
     }
 
     @Test
+    public void testZeroData() {
+        plannedWalkEndingDialog = PlannedWalkEndingDialog.newInstance("new instance", 0, 0, 0, 0, 0);
+        String data = plannedWalkEndingDialog.getData();
+        assertNotNull(data);
+        assertEquals("Steps: 0\n" +
+                "Time elapsed: 0' 0\"\n" +
+                "Distance: 0.0 miles\n" +
+                "Speed: 0.0 miles/hour", data);
+    }
+
+    @Test
     public void testFloatData() {
         plannedWalkEndingDialog = PlannedWalkEndingDialog.newInstance("new instance", 10.15f, 20.15f, steps, min, sec);
         String data = plannedWalkEndingDialog.getData();
@@ -76,4 +91,5 @@ public class PlannedWalkEndingDialogUnitTest {
                 "Distance: 10.1 miles\n" +
                 "Speed: 20.1 miles/hour", data);
     }
+
 }

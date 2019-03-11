@@ -19,6 +19,8 @@ public class ManuallyEnterStepDialog extends DialogFragment {
     private final String TAG = "ManuallyEnterStepDialog";
     private Window window;
     private EditText stepText;
+    private View view;
+    private Button posBtn;
 
     public ManuallyEnterStepDialog() {
     }
@@ -58,7 +60,7 @@ public class ManuallyEnterStepDialog extends DialogFragment {
             setCancelable(true);
 
             stepText = view.findViewById(R.id.num_steps);
-            Button posBtn = view.findViewById(R.id.stepPosBtn);
+            posBtn = view.findViewById(R.id.stepPosBtn);
 
             posBtn.setOnClickListener(v -> finishEnterStep());
 
@@ -75,6 +77,8 @@ public class ManuallyEnterStepDialog extends DialogFragment {
             Log.d(TAG, "onViewCreated Fail: " + e.toString());
             e.printStackTrace();
         }
+        this.view = view;
+
     }
 
     public boolean finishEnterStep() {
@@ -116,5 +120,9 @@ public class ManuallyEnterStepDialog extends DialogFragment {
 
     public interface ManualStepSetterListener {
         void onFinishEditDialog(int[] inputStep);
+    }
+
+    public View getButton() {
+        return posBtn;
     }
 }

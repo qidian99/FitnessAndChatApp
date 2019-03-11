@@ -195,7 +195,7 @@ public class PlannedWalkActivity extends Activity {
 
     @Override
     public void setStep(int currentStep) {
-        return;
+        this.steps = currentStep;
     }
 
     public void setStrideLen(float strideLen) {
