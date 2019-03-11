@@ -44,6 +44,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -51,6 +52,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -65,6 +68,7 @@ import edu.ucsd.cse110.googlefitapp.Activity;
 import edu.ucsd.cse110.googlefitapp.FriendChatActivity;
 import edu.ucsd.cse110.googlefitapp.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
+import edu.ucsd.cse110.googlefitapp.MyFirebaseMessagingService;
 import edu.ucsd.cse110.googlefitapp.R;
 import edu.ucsd.cse110.googlefitapp.chatroom.models.ChatPojo;
 import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
@@ -149,6 +153,55 @@ public class UnplannedWalkAdapter implements FitnessService {
             updateStepCount();
             startRecording();
 
+            MyFirebaseMessagingService fbService = new MyFirebaseMessagingService(activity);
+
+            FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener( new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete( Task<AuthResult> task) {
+                    if (!task.isSuccessful()) {
+                        Log.e(TAG, "Firebase authentication failed, please check your internet connection");
+                    } else {
+                        Log.e(TAG, "Authentication succeeded");
+                        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
+                        String uid = currentFirebaseUser.getUid();
+                        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( activity,  new OnSuccessListener<InstanceIdResult>() {
+                            @Override
+                            public void onSuccess(InstanceIdResult instanceIdResult) {
+                                String newToken = instanceIdResult.getToken();
+                                Log.e("newToken",newToken);
+                                Map<String, Object> user = new HashMap<>();
+                                user.put("email", gsa.getEmail());
+                                user.put("id", gsa.getId());
+                                user.put("uid", uid);
+                                user.put("token", newToken);
+
+                                FirebaseFirestore chat = FirebaseFirestore.getInstance();
+//                    .collection(activity.COLLECTION_KEY)
+//                    .document(activity.DOCUMENT_KEY)
+//                    .collection(activity.MESSAGES_KEY);
+
+                                chat.collection("users").document(gsa.getId())
+                                        .set(user)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                Log.d(TAG, "User information successfully written!");
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Log.w(TAG, "Error writing User information", e);
+                                            }
+                                        });
+                                if(friendship == null) {
+                                    setUpFriendlist();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
 
             try {
 //                ((TextView) activity.findViewById(R.id.TextCurrentAccount)).setText(gsa.getEmail());
@@ -174,32 +227,7 @@ public class UnplannedWalkAdapter implements FitnessService {
             }
             startAsync();
 
-            Map<String, Object> user = new HashMap<>();
-            user.put("email", gsa.getEmail());
-            user.put("id", gsa.getId());
 
-            FirebaseFirestore chat = FirebaseFirestore.getInstance();
-//                    .collection(activity.COLLECTION_KEY)
-//                    .document(activity.DOCUMENT_KEY)
-//                    .collection(activity.MESSAGES_KEY);
-
-            chat.collection("users").document(gsa.getId())
-                    .set(user)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Log.d(TAG, "User information successfully written!");
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w(TAG, "Error writing User information", e);
-                        }
-                    });
-            if(friendship == null) {
-                setUpFriendlist();
-            }
         }
     }
 
