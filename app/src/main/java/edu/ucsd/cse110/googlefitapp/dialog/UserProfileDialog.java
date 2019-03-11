@@ -111,7 +111,7 @@ public class UserProfileDialog extends DialogFragment {
 
             statsBtn.setOnClickListener(v -> {
                 dismiss();
-                launchMonthlyStats();
+                launchMonthlyStats(friendEmail);
                 Log.d(TAG, "onViewCreated click stats");
             });
 
@@ -247,9 +247,10 @@ public class UserProfileDialog extends DialogFragment {
         }
     }
 
-    private void launchMonthlyStats() {
+    private void launchMonthlyStats(String friendEmail) {
         try {
             Intent intent = new Intent(activity, MonthlyStatsActivity.class);
+            intent.putExtra("friendEmail", friendEmail);
             startActivity(intent);
             Log.d(TAG, getString(R.string.launchMonthlyStatsSuccess));
 

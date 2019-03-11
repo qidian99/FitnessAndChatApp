@@ -84,12 +84,6 @@ import static android.media.CamcorderProfile.get;
 import static android.view.View.INVISIBLE;
 
 public class UnplannedWalkAdapter implements FitnessService {
-    /*           .addField("ActiveSteps", Field.FORMAT_INT32)
-                .addField("ActiveMin", Field.FORMAT_INT32)
-                .addField("ActiveSec", Field.FORMAT_INT32)
-                .addField("ActiveDistance", Field.FORMAT_FLOAT)
-                .addField("ActiveSpeed", Field.FORMAT_FLOAT)
-                */
     public static final int ACTIVE_STEP_INDEX = 0;
     public static final int ACTIVE_MIN_INDEX = 1;
     public static final int ACTIVE_SEC_INDEX = 2;
@@ -133,7 +127,7 @@ public class UnplannedWalkAdapter implements FitnessService {
 
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
             Intent intent = new Intent(activity, LoginActivity.class);
-            Log.e(TAG, "start login activity");
+            Log.d(TAG, "start login activity");
             activity.startActivity(intent);
         } else if(GoogleSignIn.getLastSignedInAccount(activity).getEmail() == null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -156,14 +150,14 @@ public class UnplannedWalkAdapter implements FitnessService {
                     if (!task.isSuccessful()) {
                         Log.e(TAG, "Firebase authentication failed, please check your internet connection");
                     } else {
-                        Log.e(TAG, "Authentication succeeded");
+                        Log.d(TAG, "Authentication succeeded");
                         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
                         String uid = currentFirebaseUser.getUid();
                         FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( activity,  new OnSuccessListener<InstanceIdResult>() {
                             @Override
                             public void onSuccess(InstanceIdResult instanceIdResult) {
                                 String newToken = instanceIdResult.getToken();
-                                Log.e("newToken",newToken);
+                                Log.d("newToken",newToken);
                                 Map<String, Object> user = new HashMap<>();
                                 user.put("email", gsa.getEmail());
                                 user.put("id", gsa.getId());
@@ -291,10 +285,10 @@ public class UnplannedWalkAdapter implements FitnessService {
             currentClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
         }
 
-        if(Calendar.getInstance().get(Calendar.MINUTE) % 2 == 0 && !backedUp && activeDataType != null) {
+        if(Calendar.getInstance().get(Calendar.MINUTE) % 30 == 0 && !backedUp && activeDataType != null) {
             store28DaysSteps(tempCal);
             backedUp = true;
-        } else {
+        } else if(Calendar.getInstance().get(Calendar.MINUTE) % 30 != 0 ) {
             backedUp = false;
         }
 
@@ -354,7 +348,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR_OF_DAY, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 1);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.set(Calendar.SECOND, 59);
@@ -380,7 +374,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR_OF_DAY, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 1);
                                 long startTime1 = cal.getTimeInMillis();
 
                                 DataSource dataSource =
@@ -448,7 +442,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR_OF_DAY, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 1);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.set(Calendar.SECOND, 59);
@@ -472,7 +466,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR_OF_DAY, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 1);
                                 long startTime1 = cal.getTimeInMillis();
 
                                 DataSource dataSource =
@@ -678,7 +672,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .readData(dataReadRequest2)
                 .addOnSuccessListener(
                         dataReadResponse -> {
-                            Log.e(TAG, "UIDDDD: " + getUID());
+                            Log.d(TAG, "UIDDDD: " + getUID());
                             CollectionReference activeStepDB = stepStorage.document(getUID()).collection("activeStep");
                             for (int i = 0; i < 28; i++) {
                                 Log.d(TAG, String.format("Active Step - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
@@ -900,13 +894,13 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 for (Map.Entry<String, Object> entry : map.entrySet()) {
                                     if(!entry.getKey().equals("email") && (boolean)entry.getValue()) {
                                         userToOtherList.add(entry.getKey());
-                                        Log.e(TAG, "User to other id: " + entry.getKey());
+                                        Log.d(TAG, "User to other id: " + entry.getKey());
                                     }
                                 }
                             } else {
                                 if(document.get(uid) != null && (boolean)document.get(uid)){
                                     otherToUserList.add(document.getId());
-                                    Log.e(TAG, "Other to user id: " + document.getId());
+                                    Log.d(TAG, "Other to user id: " + document.getId());
                                 }
                             }
 
@@ -920,18 +914,18 @@ public class UnplannedWalkAdapter implements FitnessService {
                         }
 
                         for(String userToOtherRequest : userToOtherList){
-                            Log.e(TAG, "single friend: " + userToOtherRequest);
-                            Log.e(TAG, "ID map " + IDMap);
+                            Log.d(TAG, "single friend: " + userToOtherRequest);
+                            Log.d(TAG, "ID map " + IDMap);
                             if(IDMap.get(userToOtherRequest) == null) {
                                 continue;
                             }
                             DocumentSnapshot friendSFriendlist = task.getResult().getDocuments().get(IDMap.get(userToOtherRequest));
-                            Log.e(TAG, "friend: " + userToOtherRequest + ", friend list: " + friendSFriendlist);
+                            Log.d(TAG, "friend: " + userToOtherRequest + ", friend list: " + friendSFriendlist);
                             Map<String, Object> map = friendSFriendlist.getData();
                             for (Map.Entry<String, Object> entry : map.entrySet()) {
-                                Log.e(TAG, "Your friend has friend " + entry.getKey());
+                                Log.d(TAG, "Your friend has friend " + entry.getKey());
                                 if(entry.getKey().equals(uid) && (boolean)entry.getValue()) {
-                                    Log.e(TAG, "Luckily, you are on your friend's friend list: " + friendSFriendlist.getId());
+                                    Log.d(TAG, "Luckily, you are on your friend's friend list: " + friendSFriendlist.getId());
                                     twoWayFriendList.add(userToOtherRequest);
                                 }
                             }
@@ -1014,7 +1008,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                     public boolean onNavigationItemSelected(MenuItem menuItem) {
 //                                        Log.e(TAG, "Menu Item selected 2: " + menuItem.getTitle() + "," + emailToID.get(menuItem.getTitle()) + ","+ userToOtherList.indexOf(emailToID.get(menuItem.getTitle())));
                                         if(otherToUserList.indexOf(emailToID.get(menuItem.getTitle()))!=-1){
-                                            Log.e(TAG, "Clicked friend request!");
+                                            Log.d(TAG, "Clicked friend request!");
                                             // Dialog to accept / decline
                                             AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
                                             builder1.setMessage("Accept the friend request?");
@@ -1066,7 +1060,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                     }
 
                                     private void declineFriendRequest(String friendUid, MenuItem menuItem) {
-                                        Log.e(TAG, "friend's UID: " + friendUid);
+                                        Log.d(TAG, "friend's UID: " + friendUid);
                                         Map<String, Object> map = new HashMap<>();
                                         map.put(getUID(), false);
                                         FirebaseFirestore.getInstance().collection("friendship").document(friendUid).set(map, SetOptions.merge())

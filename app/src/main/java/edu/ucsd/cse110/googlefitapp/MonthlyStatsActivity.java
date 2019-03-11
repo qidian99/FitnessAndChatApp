@@ -53,9 +53,10 @@ public class MonthlyStatsActivity extends Activity {
         setContentView(R.layout.activity_monthly_stats);
 
         boolean test = getIntent().getBooleanExtra("testkey", false);
+        String friendEmail = getIntent().getStringExtra("friendEmail");
 
         if(!test) {
-            fitnessService = new MonthlyStatsAdapter(this);
+            fitnessService = new MonthlyStatsAdapter(this, friendEmail);
             fitnessService.setup();
         }
 
@@ -216,10 +217,6 @@ public class MonthlyStatsActivity extends Activity {
         barData = new BarData(days, barDataSet);
 
         barChart.setData(barData);
-
-//        for(BarEntry entry: tmp) {
-//            System.out.println(barChart.getBarBounds(entry).centerX() + " " + barChart.getBarBounds(entry).centerY());
-//        }
 
         barChart.animateY(2000);
 

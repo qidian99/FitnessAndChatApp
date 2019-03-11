@@ -248,7 +248,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         addFriend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                lauchFriendSignUpActivity();
+                launchFriendSignUpActivity();
             }
         });
 
@@ -385,7 +385,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     }
 
 
-    private void lauchFriendSignUpActivity() {
+    private void launchFriendSignUpActivity() {
         Intent intent = new Intent(MainActivity.this, NewFriendSignUpActivity.class);
         intent.putExtra("uid", fitnessService.getUID());
         intent.putExtra("email", fitnessService.getEmail());

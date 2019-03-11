@@ -258,8 +258,8 @@ public class WeeklyStatsAdapter implements FitnessService {
                                 } else {
                                     activity.getWeeklyTotalSteps()[i] = 0;
                                 }
-                                activity.setInActiveStepRead(true);
                             }
+                            activity.setInActiveStepRead(true);
                         })
                 .addOnFailureListener(
                         e -> {Log.e(TAG, "Fail to get the last 7 day total steps");
@@ -289,8 +289,8 @@ public class WeeklyStatsAdapter implements FitnessService {
                                     activity.getWeeklyActiveDistance()[i] = 0;
                                     activity.getWeeklyActiveSpeed()[i] = 0;
                                 }
-                                activity.setActiveStepRead(true);
                             }
+                            activity.setActiveStepRead(true);
                         })
                 .addOnFailureListener(
                         e -> {Log.e(TAG, "Fail to get the last 7 day active steps");
