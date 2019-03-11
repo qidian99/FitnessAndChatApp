@@ -153,7 +153,9 @@ public class UnplannedWalkAdapter implements FitnessService {
             updateStepCount();
             startRecording();
 
-            MyFirebaseMessagingService fbService = new MyFirebaseMessagingService(activity);
+
+            Intent intent = new Intent(activity, MyFirebaseMessagingService.class);
+            activity.startService(intent);
 
             FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener( new OnCompleteListener<AuthResult>() {
                 @Override
