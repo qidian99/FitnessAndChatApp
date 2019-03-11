@@ -189,6 +189,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 if(friendship == null) {
                                     setUpFriendlist();
                                 }
+                                setupStepStorage();
                             }
                         });
                     }
@@ -621,7 +622,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         tempCal.add(Calendar.DATE, -27);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
-        tempCal.add(Calendar.DATE, 7);
+        tempCal.add(Calendar.DATE, 28);
         tempCal.add(Calendar.SECOND, -1);
         long endTime = tempCal.getTimeInMillis();
         Log.d(TAG, "getLast7DaysSteps Initialize Success");
@@ -677,6 +678,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                 .readData(dataReadRequest2)
                 .addOnSuccessListener(
                         dataReadResponse -> {
+                            Log.e(TAG, "UIDDDD: " + getUID());
                             CollectionReference activeStepDB = stepStorage.document(getUID()).collection("activeStep");
                             for (int i = 0; i < 28; i++) {
                                 Log.d(TAG, String.format("Active Step - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
@@ -704,7 +706,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 map.put("distance", distance);
                                 map.put("speed", speed);
                                 int year = tempCal.get(Calendar.YEAR);
-                                int month = tempCal.get(Calendar.MONTH);
+                                int month = tempCal.get(Calendar.MONTH) + 1;
                                 int day = tempCal.get(Calendar.DAY_OF_MONTH);
                                 String dateKey = year + "." + month + "." + day;
                                 activeStepDB.document(dateKey).set(map)
@@ -752,7 +754,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 Map<String, Object> map = new HashMap<>();
                                 map.put("totalStep", totalStep);
                                 int year = tempCal.get(Calendar.YEAR);
-                                int month = tempCal.get(Calendar.MONTH);
+                                int month = tempCal.get(Calendar.MONTH) + 1;
                                 int day = tempCal.get(Calendar.DAY_OF_MONTH);
                                 String dateKey = year + "." + month + "." + day;
                                 totalStepDB.document(dateKey).set(map)
