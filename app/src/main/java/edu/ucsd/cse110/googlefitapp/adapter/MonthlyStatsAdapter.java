@@ -46,6 +46,8 @@ import edu.ucsd.cse110.googlefitapp.MonthlyStatsActivity;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
+import static java.lang.StrictMath.toIntExact;
+
 public class MonthlyStatsAdapter implements FitnessService {
     public static final int ACTIVE_STEP_INDEX = 0;
     public static final int ACTIVE_MIN_INDEX = 1;
@@ -179,7 +181,7 @@ public class MonthlyStatsAdapter implements FitnessService {
                                         } else {
                                             Map<String, Object> map = task.getResult().getData();
                                             Log.e(TAG, map.toString());
-                                            activity.getMonthlyTotalSteps()[finalI] = (int) map.get("totalStep");
+                                            activity.getMonthlyTotalSteps()[finalI] = (int) (long) map.get("totalStep");
                                         }
                                         activity.setInActiveStepRead(true);
                                     }
@@ -194,9 +196,9 @@ public class MonthlyStatsAdapter implements FitnessService {
                                         } else {
                                             Map<String, Object> map = task.getResult().getData();
                                             Log.e(TAG, map.toString());
-                                            activity.getMonthlyActiveSteps()[finalI] = (int) map.get("activeStep");
-                                            activity.getMonthlyActiveDistance()[finalI] = (float) map.get("distance");
-                                            activity.getMonthlyActiveSpeed()[finalI] = (float) map.get("speed");
+                                            activity.getMonthlyActiveSteps()[finalI] = (int) (long) map.get("activeStep");
+                                            activity.getMonthlyActiveDistance()[finalI] = (float) (double) map.get("distance");
+                                            activity.getMonthlyActiveSpeed()[finalI] = (float) (double) map.get("speed");
                                         }
                                         activity.setActiveStepRead(true);
                                     }

@@ -206,7 +206,7 @@ public class PlannedWalkAdapter implements FitnessService {
         long endTime1 = cal.getTimeInMillis();
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.HOUR_OF_DAY, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
         long startTime = cal.getTimeInMillis();
 
         DataSource dataSource =
@@ -288,7 +288,7 @@ public class PlannedWalkAdapter implements FitnessService {
             Calendar tempCal = StepCalendar.getInstance();
             tempCal.set(Calendar.SECOND, 0);
             tempCal.set(Calendar.MINUTE, 0);
-            tempCal.set(Calendar.HOUR_OF_DAY, 1);
+            tempCal.set(Calendar.HOUR_OF_DAY, 0);
             startTime = tempCal.getTimeInMillis();
             tempCal.set(Calendar.SECOND, 59);
             tempCal.set(Calendar.MINUTE, 59);
