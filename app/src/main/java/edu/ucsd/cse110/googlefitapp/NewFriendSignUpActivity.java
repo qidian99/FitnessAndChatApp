@@ -65,7 +65,7 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
     }
 
     public void addFriend(View view){
-        String friendEmail = friendEmailTxt.getText().toString();
+        String friendEmail = friendEmailTxt.getText().toString().toLowerCase();
 
         // Check of valid email
         if(!isValidEmail(friendEmail)){
