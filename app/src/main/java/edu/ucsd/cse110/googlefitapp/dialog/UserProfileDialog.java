@@ -16,14 +16,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.Activity;
+import edu.ucsd.cse110.googlefitapp.MainActivity;
+import edu.ucsd.cse110.googlefitapp.MonthlyStatsActivity;
+import edu.ucsd.cse110.googlefitapp.NewFriendSignUpActivity;
 import edu.ucsd.cse110.googlefitapp.R;
+import edu.ucsd.cse110.googlefitapp.WeeklyStatsActivity;
 import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
 import edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity;
 
@@ -98,6 +110,8 @@ public class UserProfileDialog extends DialogFragment {
             });
 
             statsBtn.setOnClickListener(v -> {
+                dismiss();
+                launchMonthlyStats();
                 Log.d(TAG, "onViewCreated click stats");
             });
 
@@ -107,6 +121,7 @@ public class UserProfileDialog extends DialogFragment {
             });
 
             deleteYesBtn.setOnClickListener(v -> {
+                dismiss();
                 deleteFriend();
                 Log.d(TAG, "onViewCreated confirm delete friend");
             });
@@ -122,7 +137,70 @@ public class UserProfileDialog extends DialogFragment {
     }
 
     private void deleteFriend() {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("users")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            String tempUserId = null;
+                            String tempFriendId = null;
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                Log.d(TAG, " => ");
+                                Log.d(TAG, "Requested friend's email => " + friendEmail);
 
+                                if(Objects.requireNonNull(document.getData().get("email")).equals(userEmail) ){
+                                    Log.d(TAG, "Delete friend - user email found");
+                                    tempUserId = (String) document.getData().get("id");
+                                }
+
+                                if(Objects.requireNonNull(document.getData().get("email")).equals(friendEmail) ){
+                                    Log.d(TAG, "Delete friend - user email found");
+                                    tempFriendId = (String) document.getData().get("id");
+                                }
+                            }
+
+                            final String userId = tempUserId;
+                            final String friendId = tempFriendId;
+
+                            // Remove friend from user
+                            FirebaseFirestore.getInstance().collection("friendship")
+                                    .document(Objects.requireNonNull(userId)).update(Objects.requireNonNull(friendId), false)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Log.d(TAG, "Remove friend from user success");
+                                            // Remove user from friend
+                                            FirebaseFirestore.getInstance().collection("friendship")
+                                                    .document(Objects.requireNonNull(friendId)).update(Objects.requireNonNull(userId), false)
+                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void aVoid) {
+                                                            showToast("Remove friend success");
+                                                            Log.d(TAG, "Remove user from friend success");
+                                                        }
+                                                    })
+                                                    .addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Log.e(TAG, e.getLocalizedMessage());
+                                                        }
+                                                    });
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.e(TAG, e.getLocalizedMessage());
+                                        }
+                                    });
+                        } else {
+                            Log.e(TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
     }
 
     private void openChat() {
@@ -145,6 +223,10 @@ public class UserProfileDialog extends DialogFragment {
                 });
     }
 
+    private void showToast(String msg) {
+        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();
+    }
+
     private void toggleDeleteFriendDialog() {
         if(emailText.getVisibility() == View.VISIBLE) {
             emailText.setVisibility(View.GONE);
@@ -162,6 +244,18 @@ public class UserProfileDialog extends DialogFragment {
             deleteYesBtn.setVisibility(View.GONE);
             deleteNoBtn.setVisibility(View.GONE);
             deleteText.setVisibility(View.GONE);
+        }
+    }
+
+    private void launchMonthlyStats() {
+        try {
+            Intent intent = new Intent(activity, MonthlyStatsActivity.class);
+            startActivity(intent);
+            Log.d(TAG, getString(R.string.launchMonthlyStatsSuccess));
+
+        } catch (Exception e) {
+            Log.d(TAG, getString(R.string.launchMonthlyStatsFailure) + e.toString());
+            e.printStackTrace();
         }
     }
 }
