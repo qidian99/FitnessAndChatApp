@@ -31,6 +31,9 @@
     <string name="customed">Customed:</string>
     <string name="progressLeft">Steps Left</string>
     <string name="prevSession">Active Data</string>
+    <string name="user_profile">User Profile</string>
+    <string name="chat">Chat</string>
+    <string name="stats">Stats</string>
     <string name="OK">OK</string>
     <string name="time_elapsed">time elapsed</string>
     <string name="speed">speed</string>
@@ -53,4 +56,7 @@
     <string name="text_waiting_for_auth">Authenticating, this may take 1 minute</string>
     <string name="email_invalid">Email is invalid</string>
     <string name="dismiss">Dismiss</string>
+    <string name="user_prefix">Name</string>
+    <string name="delete_friend">Delete Friend</string>
+    <string name="delete_friend_prompt">Are you sure to delete your friend</string>
 </resources>

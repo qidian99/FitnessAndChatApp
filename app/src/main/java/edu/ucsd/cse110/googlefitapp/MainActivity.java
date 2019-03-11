@@ -105,7 +105,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     private int today;
     private boolean notCleared;
     private DrawerLayout drawerLayout;
-    public static final String DOCUMENT_KEY = "chat1";
+    public static final String DOCUMENT_KEY = "public_ntfcn";
     private ChatMessaging chatMessaging;
 
 
