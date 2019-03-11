@@ -3,15 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="192dp"
     android:background="@color/colorPrimary"
-    android:padding="25dp"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark"
+    android:gravity="bottom"
     android:orientation="vertical"
-    android:gravity="bottom">
+    android:padding="25dp"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView
         android:id="@+id/yourImage"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
+        android:adjustViewBounds="true"
         android:paddingTop="5dp"
         android:src="@android:drawable/sym_def_app_icon" />
 
