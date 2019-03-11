@@ -190,7 +190,7 @@ public class MonthlyStatsAdapter implements FitnessService {
         tempCal.set(Calendar.MINUTE, 0);
         tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
-        tempCal.add(Calendar.DATE, -6);
+        tempCal.add(Calendar.DATE, -27);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.add(Calendar.DATE, 28);
@@ -267,8 +267,7 @@ public class MonthlyStatsAdapter implements FitnessService {
                             }
                         })
                 .addOnFailureListener(
-                        e -> {Log.e(TAG, "Fail to get the last 28 day active steps");
-                        });
+                        e -> Log.e(TAG, "Fail to get the last 28 day active steps"));
         return null;
     }
 
