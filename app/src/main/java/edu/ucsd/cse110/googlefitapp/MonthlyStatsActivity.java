@@ -52,8 +52,12 @@ public class MonthlyStatsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_monthly_stats);
 
-        fitnessService = new MonthlyStatsAdapter(this);
-        fitnessService.setup();
+        boolean test = getIntent().getBooleanExtra("testkey", false);
+
+        if(!test) {
+            fitnessService = new MonthlyStatsAdapter(this);
+            fitnessService.setup();
+        }
 
         SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
 
@@ -144,7 +148,9 @@ public class MonthlyStatsActivity extends Activity {
         });
 
 //        setGraph();
-        new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
+        if(!test) {
+            new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
+        }
 
 
         Button button = findViewById(R.id.backToHome);
