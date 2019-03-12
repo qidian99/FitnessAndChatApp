@@ -41,29 +41,25 @@ public class ManuallyEnterStepDialogUnitTest {
 
     @Before
     public void setUp() throws Exception {
-        manuallyEnterStepDialog = ManuallyEnterStepDialog.newInstance("manually enter step dialog");
-//        stepText = manuallyEnterStepDialog.getView().findViewById(R.id.num_steps);
-//       stepMain = manuallyEnterStepDialog.getView().findViewById(R.id.textStepsMain);
+        FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
 
-//        FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
-//
-//        googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
-//            @Override
-//            public FitnessService create(Activity mainActivity) {
-//                return new TestFitnessService(mainActivity);
-//            }
-//        });
-//
-//        setStepBtn = activity.findViewById(R.id.btnSetStep);
-//        setStepBtn.performClick();
-//        dialogFragment = (DialogFragment) activity.getSupportFragmentManager()
-//                .findFragmentByTag("fragment_set_step");
-//
-//        Intent intent = new Intent(RuntimeEnvironment.application, MainActivity.class);
-//        intent.putExtra("TEST", true);
-//        intent.putExtra("TEST_SERVICE_MAIN", TEST_SERVICE);
-//        intent.putExtra("TEST_SERVICE_STEP_COUNT", TEST_SERVICE);
-//        activity = Robolectric.buildActivity(MainActivity.class, intent).create().get();
+        googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
+            @Override
+            public FitnessService create(Activity mainActivity) {
+                return new TestFitnessService(mainActivity);
+            }
+        });
+
+        Intent intent = new Intent(RuntimeEnvironment.application, MainActivity.class);
+        intent.putExtra("TEST", true);
+        intent.putExtra("TEST_SERVICE_MAIN", TEST_SERVICE);
+        intent.putExtra("TEST_SERVICE_STEP_COUNT", TEST_SERVICE);
+        activity = Robolectric.buildActivity(MainActivity.class, intent).create().get();
+
+        setStepBtn = activity.findViewById(R.id.btnSetStep);
+        setStepBtn.performClick();
+        dialogFragment = (DialogFragment) activity.getSupportFragmentManager()
+                .findFragmentByTag("fragment_set_step");
     }
 
     @Test
@@ -74,6 +70,7 @@ public class ManuallyEnterStepDialogUnitTest {
 
     @Test
     public void testTitle() {
+        manuallyEnterStepDialog = ManuallyEnterStepDialog.newInstance("manually enter step dialog");
         Bundle bundle = manuallyEnterStepDialog.getArguments();
         assertNotNull(bundle);
         String title = bundle.getString("title");
@@ -83,41 +80,27 @@ public class ManuallyEnterStepDialogUnitTest {
 
     @Test
     public void testSetStepDialogIsShown() {
+        manuallyEnterStepDialog = ManuallyEnterStepDialog.newInstance("manually enter step dialog");
         assertNotNull(manuallyEnterStepDialog);
         assertTrue(manuallyEnterStepDialog.getShowsDialog());
     }
 
     @Test
     public void testSetStepDialogCancelable() {
+        manuallyEnterStepDialog = ManuallyEnterStepDialog.newInstance("manually enter step dialog");
         assertTrue(manuallyEnterStepDialog.isCancelable());
     }
 
+    @Test
+    public void testSetStepDialogBindToMain() {
+        assertNotNull(dialogFragment.getActivity());
+        assertEquals(activity, dialogFragment.getContext());
+    }
 
-//    @Test
-//    public void testButton() {
-//        manuallyEnterStepDialog.getButton().performClick();
-//        assertTrue(manuallyEnterStepDialog.finishEnterStep());
-//    }
-
-//    @Test
-//    public void testSetStep() {
-//        assertNotNull(        manuallyEnterStepDialog.getThisView());
-//        stepText.setText(1000);
-//        posBtn.performClick();
-//        String steps = stepMain.getText().toString();
-//        assertEquals(1000, steps);
-//    }
-
-//    @Test
-//    public void testSetStepDialogBindToMain() {
-//        assertNotNull(manuallyEnterStepDialog.getActivity());
-//        assertEquals(activity, manuallyEnterStepDialog.getContext());
-//    }
-//
-//    @Test
-//    public void testSetStepDialogTag() {
-//        assertEquals("fragment_set_step", manuallyEnterStepDialog.getTag());
-//    }
+    @Test
+    public void testSetStepDialogTag() {
+        assertEquals("fragment_set_step", dialogFragment.getTag());
+    }
 
     private class TestFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountActFitnessService]: ";

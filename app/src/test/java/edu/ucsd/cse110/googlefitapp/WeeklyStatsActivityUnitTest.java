@@ -134,26 +134,6 @@ public class WeeklyStatsActivityUnitTest {
         assertEquals(300, barEntries.get(2).getVals()[0], 1e-5);
         assertEquals(400, barEntries.get(3).getVals()[0], 1e-5);
 
-//        for(int i = 0; i < 3; i++) {
-//            long downTime = SystemClock.uptimeMillis();
-//            long eventTime = SystemClock.uptimeMillis();
-//            float x = 8f - (float)(i * 4);
-//            float y = -15f;
-//            int metaState = 0;
-//            MotionEvent motionEvent = MotionEvent.obtain(
-//                    downTime,
-//                    eventTime,
-//                    MotionEvent.ACTION_DOWN,
-//                    x,
-//                    y,
-//                    metaState
-//            );
-//            // barChart.setOnChartGestureListener(new OnChartGestureListener()
-//            barChart = weeklyStatsActivity.findViewById(R.id.barGraph);
-//            barChart.getOnChartGestureListener().onChartSingleTapped(motionEvent);
-//            assertEquals(String.format(toast, (float)(i+1), (float)(10*(i+1))), ShadowToast.getTextOfLatestToast());
-//        }
-
         // check the first bar
         MotionEvent motionEvent = MotionEvent.obtain(
                 SystemClock.uptimeMillis(),

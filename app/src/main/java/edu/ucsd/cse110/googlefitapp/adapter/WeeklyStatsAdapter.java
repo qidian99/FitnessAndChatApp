@@ -20,7 +20,6 @@ import com.google.android.gms.tasks.Task;
 
 import java.util.Calendar;
 import java.util.Objects;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.MainActivity;
@@ -29,12 +28,6 @@ import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
 public class WeeklyStatsAdapter implements FitnessService {
-    /*           .addField("ActiveSteps", Field.FORMAT_INT32)
-                .addField("ActiveMin", Field.FORMAT_INT32)
-                .addField("ActiveSec", Field.FORMAT_INT32)
-                .addField("ActiveDistance", Field.FORMAT_FLOAT)
-                .addField("ActiveSpeed", Field.FORMAT_FLOAT)
-                */
     public static final int ACTIVE_STEP_INDEX = 0;
     public static final int ACTIVE_MIN_INDEX = 1;
     public static final int ACTIVE_SEC_INDEX = 2;

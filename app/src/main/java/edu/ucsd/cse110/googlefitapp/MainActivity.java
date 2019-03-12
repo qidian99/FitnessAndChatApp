@@ -129,6 +129,10 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         this.goal = goal;
     }
 
+    public int getGoal(){
+        return this.goal;
+    }
+
     public boolean getGoalChangeable() {
         return this.goalChangeable;
     }

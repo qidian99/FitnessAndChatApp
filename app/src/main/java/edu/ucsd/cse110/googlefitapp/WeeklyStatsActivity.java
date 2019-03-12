@@ -270,6 +270,16 @@ public class WeeklyStatsActivity extends Activity {
     }
 
     @Override
+    public int getGoal() {
+        return 0;
+    }
+
+    @Override
+    public float getStrideLength() {
+        return 0;
+    }
+
+    @Override
     public void registerObserver(Observer o) {
 
     }

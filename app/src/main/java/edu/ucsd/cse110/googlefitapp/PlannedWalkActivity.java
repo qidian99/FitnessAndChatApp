@@ -198,6 +198,16 @@ public class PlannedWalkActivity extends Activity {
         this.steps = currentStep;
     }
 
+    @Override
+    public int getGoal() {
+        return 0;
+    }
+
+    @Override
+    public float getStrideLength() {
+        return 0;
+    }
+
     public void setStrideLen(float strideLen) {
         this.strideLen = strideLen;
     }

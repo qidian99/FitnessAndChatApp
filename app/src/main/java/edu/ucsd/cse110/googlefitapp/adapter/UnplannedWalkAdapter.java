@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,7 +57,6 @@ import com.google.firebase.iid.InstanceIdResult;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,22 +64,13 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.Activity;
-import edu.ucsd.cse110.googlefitapp.FriendChatActivity;
 import edu.ucsd.cse110.googlefitapp.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.MyFirebaseMessagingService;
-import edu.ucsd.cse110.googlefitapp.NewFriendSignUpActivity;
 import edu.ucsd.cse110.googlefitapp.R;
-import edu.ucsd.cse110.googlefitapp.chatroom.models.ChatPojo;
-import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
-import edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity;
-import edu.ucsd.cse110.googlefitapp.dialog.ManuallyEnterStepDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.UserProfileDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
-
-import static android.media.CamcorderProfile.get;
-import static android.view.View.INVISIBLE;
 
 public class UnplannedWalkAdapter implements FitnessService {
     public static final int ACTIVE_STEP_INDEX = 0;
@@ -285,10 +274,10 @@ public class UnplannedWalkAdapter implements FitnessService {
             currentClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
         }
 
-        if(Calendar.getInstance().get(Calendar.MINUTE) % 30 == 0 && !backedUp && activeDataType != null) {
+        if(Calendar.getInstance().get(Calendar.MINUTE) % 2 == 0 && !backedUp && activeDataType != null) {
             store28DaysSteps(tempCal);
             backedUp = true;
-        } else if(Calendar.getInstance().get(Calendar.MINUTE) % 30 != 0 ) {
+        } else if(Calendar.getInstance().get(Calendar.MINUTE) % 2 != 0 ) {
             backedUp = false;
         }
 
@@ -659,8 +648,22 @@ public class UnplannedWalkAdapter implements FitnessService {
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
         DataReadRequest dataReadRequest = build28daysTotalStepRequest(cal);
         DataReadRequest dataReadRequest2 = build28daysActiveStepRequest(cal);
+        storeStepAndGoal();
         storeTotalSteps(cal, gsa, dataReadRequest);
         storeActiveSteps(cal, gsa, dataReadRequest2);
+    }
+
+    private void storeStepAndGoal() {
+        CollectionReference userInfoDB = stepStorage.document(getUID()).collection("userInfo");
+        Map<String, Object> goalMap = new HashMap<>();
+        goalMap.put("goal", activity.getGoal());
+        userInfoDB.document("goal").set(goalMap);
+
+        Map<String, Object> strideLengthMap = new HashMap<>();
+        strideLengthMap.put("strideLength", activity.getStrideLength());
+        userInfoDB.document("strideLength").set(strideLengthMap);
+
+        Log.d(TAG, "Successfully store goal and stride length");
     }
 
     private void storeActiveSteps(Calendar cal, GoogleSignInAccount gsa, DataReadRequest dataReadRequest2) {
@@ -796,8 +799,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                             }
                         })
                 .addOnFailureListener(
-                        e -> {Log.e(TAG, "Fail to get the last 7 day total steps");
-                        });
+                        e -> Log.e(TAG, "Fail to get the last 7 day total steps"));
 
 
         Task<DataReadResponse> dataReadResponseTask2 = Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
@@ -814,8 +816,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                             }
                         })
                 .addOnFailureListener(
-                        e -> {Log.e(TAG, "Fail to get the last 7 day active steps");
-                        });
+                        e -> Log.e(TAG, "Fail to get the last 7 day active steps"));
         return null;
     }
 

@@ -34,17 +34,18 @@ import static edu.ucsd.cse110.googlefitapp.MainActivity.SHARED_PREFERENCE_NAME;
 public class MonthlyStatsActivity extends Activity {
 
     public static final String TAG = "MONTHLY_STATS";
-    private int goal;
     private ArrayList<BarEntry> barEntries;
     private LimitLine goalLine;
     private BarData barData;
     private FitnessService fitnessService;
     private int[] monthlyTotalSteps = new int[28];
+    private int friendsGoal = 5000;
+    private float friendStrideLength;
     private int[] monthlyActiveSteps = new int[28];
     private float[] monthlyActiveSpeed = new float[28];
     private float[] monthlyActiveDistance = new float[28];
-    private boolean inactiveStepRead = false;
-    private boolean activeStepRead = false;
+    private boolean[] inactiveStepRead = new boolean[30];
+    private boolean[] activeStepRead = new boolean[30];
     private Calendar tempCal;
 
     @Override
@@ -59,10 +60,6 @@ public class MonthlyStatsActivity extends Activity {
             fitnessService = new MonthlyStatsAdapter(this, friendEmail);
             fitnessService.setup();
         }
-
-        SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
-
-        goal = sharedPref.getInt("goal", MainActivity.DEFAULT_GOAL);
 
         final BarChart barChart;
 
@@ -111,7 +108,8 @@ public class MonthlyStatsActivity extends Activity {
 
                 float speed = monthlyActiveSpeed[index];
                 float activeDist = monthlyActiveDistance[index];
-                float totalDist = stepToDistance(monthlyTotalSteps[index]);
+                int totalStep = monthlyTotalSteps[index];
+                float totalDist =  totalStep * friendStrideLength / 63360.0f;
                 float inciDist = totalDist - activeDist;
 
                 if(inciDist < 0) {
@@ -129,12 +127,6 @@ public class MonthlyStatsActivity extends Activity {
                 }
             }
 
-            private float stepToDistance(int steps) {
-                SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
-                float strideLength = sharedPref.getFloat(KEY_STRIDE, 0);
-                return steps * strideLength / 63360.0f;
-            }
-
             @Override
             public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
             }
@@ -148,7 +140,6 @@ public class MonthlyStatsActivity extends Activity {
             }
         });
 
-//        setGraph();
         if(!test) {
             new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
         }
@@ -190,9 +181,9 @@ public class MonthlyStatsActivity extends Activity {
             barEntries.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i));
         }
 
-        if (max < goal) {
-            barChart.getAxisLeft().setAxisMaxValue(goal + 300);
-            barChart.getAxisRight().setAxisMaxValue(goal + 300);
+        if (max < friendsGoal) {
+            barChart.getAxisLeft().setAxisMaxValue(friendsGoal + 300);
+            barChart.getAxisRight().setAxisMaxValue(friendsGoal + 300);
         } else {
             barChart.getAxisLeft().setAxisMaxValue(max + 300);
             barChart.getAxisRight().setAxisMaxValue(max + 300);
@@ -220,9 +211,9 @@ public class MonthlyStatsActivity extends Activity {
 
         barChart.animateY(2000);
 
-        goalLine = new LimitLine(goal);
+        goalLine = new LimitLine(friendsGoal);
         barChart.getAxisLeft().addLimitLine(goalLine);
-        Log.d(TAG, String.format("goal line set success: %d", goal));
+        Log.d(TAG, String.format("goal line set success: %d", friendsGoal));
     }
 
     public ArrayList<BarEntry> getBarEntries() {
@@ -252,6 +243,16 @@ public class MonthlyStatsActivity extends Activity {
     }
 
     @Override
+    public int getGoal() {
+        return 0;
+    }
+
+    @Override
+    public float getStrideLength() {
+        return 0;
+    }
+
+    @Override
     public void registerObserver(Observer o) {
 
     }
@@ -270,6 +271,14 @@ public class MonthlyStatsActivity extends Activity {
         return monthlyTotalSteps;
     }
 
+    public void setFriendGoal(int goal) {
+        this.friendsGoal = goal;
+    }
+
+    public void setFriendStrideLength(float length) {
+        this.friendStrideLength = length;
+    }
+
     public int[] getMonthlyActiveSteps() {
         return monthlyActiveSteps;
     }
@@ -282,21 +291,16 @@ public class MonthlyStatsActivity extends Activity {
         return monthlyActiveDistance;
     }
 
-    public void setInActiveStepRead(boolean b) {
-        this.inactiveStepRead = b;
+    public void setInActiveStepRead(int index, boolean b) {
+        this.inactiveStepRead[index] = b;
     }
 
-    public void setActiveStepRead(boolean b) {
-        this.activeStepRead = b;
+    public void setActiveStepRead(int index, boolean b) {
+        this.activeStepRead[index] = b;
     }
 
     public void setTempCal(Calendar cal) {
         tempCal = cal;
-    }
-
-    public void updateGoal() {
-        SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
-        goal = sharedPref.getInt("goal", MainActivity.DEFAULT_GOAL);
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -328,7 +332,20 @@ public class MonthlyStatsActivity extends Activity {
 
         @Override
         protected void onProgressUpdate(String... text) {
-            if (MonthlyStatsActivity.this.activeStepRead && MonthlyStatsActivity.this.inactiveStepRead) {
+            boolean activeSetUp = true;
+            boolean inactiveSetUp = true;
+            for(int i = 0; i < 28; i ++) {
+                if(!MonthlyStatsActivity.this.activeStepRead[i]) {
+                    activeSetUp = false;
+                    break;
+                }
+                if(!MonthlyStatsActivity.this.inactiveStepRead[i]) {
+                    inactiveSetUp = false;
+                    break;
+                }
+
+            }
+            if (activeSetUp && inactiveSetUp) {
                 Log.d(MonthlyStatsActivity.TAG, "Sucessfully populate monthly stats arrays.");
                 findViewById(R.id.barGraph).setVisibility(View.VISIBLE);
                 findViewById(R.id.loadingPanel).setVisibility(View.GONE);
