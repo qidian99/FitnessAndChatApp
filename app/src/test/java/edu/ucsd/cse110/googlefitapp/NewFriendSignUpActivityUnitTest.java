@@ -32,8 +32,6 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 public class NewFriendSignUpActivityUnitTest {
-    private static final String TEST_SERVICE = "TEST_SERVICE_STEP_COUNT_ACT";
-    Button btnUpdateSteps;
     NewFriendSignUpActivity activity;
     private Button button;
     private EditText text;

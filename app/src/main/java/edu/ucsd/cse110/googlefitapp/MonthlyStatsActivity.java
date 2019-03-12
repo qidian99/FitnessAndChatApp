@@ -39,7 +39,7 @@ public class MonthlyStatsActivity extends Activity {
     private BarData barData;
     private FitnessService fitnessService;
     private int[] monthlyTotalSteps = new int[28];
-    private int friendsGoal;
+    private int friendsGoal = 5000;
     private float friendStrideLength;
     private int[] monthlyActiveSteps = new int[28];
     private float[] monthlyActiveSpeed = new float[28];

@@ -112,11 +112,12 @@ public class MonthlyStatsActivityUnitTest {
     public void testBothToasts() {
         String activeToast = "Active walk distance: %.1f miles\nAverage speed: %.1f MPH";
         String inciToast = "Incidental walk distance: %.1f miles \nfor a total of %.1f miles";
+        float strideLength = 30f;
 
         // set distance
-        monthlyStatsActivity.getMonthlyActiveDistance()[1] = 2f;
-        monthlyStatsActivity.getMonthlyActiveDistance()[2] = 4f;
-        monthlyStatsActivity.getMonthlyActiveDistance()[3] = 5f;
+        monthlyStatsActivity.getMonthlyActiveDistance()[1] = stepToDist(1000, strideLength);
+        monthlyStatsActivity.getMonthlyActiveDistance()[2] = stepToDist(300, strideLength);
+        monthlyStatsActivity.getMonthlyActiveDistance()[3] = stepToDist(400, strideLength);
         // set speed
         monthlyStatsActivity.getMonthlyActiveSpeed()[1] = 11.5f;
         monthlyStatsActivity.getMonthlyActiveSpeed()[2] = 12.3f;
@@ -144,7 +145,7 @@ public class MonthlyStatsActivityUnitTest {
                 0
         );
         barChart.getOnChartGestureListener().onChartSingleTapped(motionEvent);
-        assertEquals(String.format(activeToast, 2f, 11.5f), ShadowToast.getTextOfLatestToast());
+        assertEquals(String.format(activeToast, stepToDist(1000, strideLength), 11.5f), ShadowToast.getTextOfLatestToast());
 
         // check the second bar
         motionEvent = MotionEvent.obtain(
@@ -156,7 +157,7 @@ public class MonthlyStatsActivityUnitTest {
                 0
         );
         barChart.getOnChartGestureListener().onChartSingleTapped(motionEvent);
-        assertEquals(String.format(activeToast, 4f, 12.3f), ShadowToast.getTextOfLatestToast());
+        assertEquals(String.format(activeToast, stepToDist(300, strideLength), 12.3f), ShadowToast.getTextOfLatestToast());
 
         // check the third bar
         motionEvent = MotionEvent.obtain(
@@ -168,7 +169,7 @@ public class MonthlyStatsActivityUnitTest {
                 0
         );
         barChart.getOnChartGestureListener().onChartSingleTapped(motionEvent);
-        assertEquals(String.format(activeToast, 5f, 20.7f), ShadowToast.getTextOfLatestToast());
+        assertEquals(String.format(activeToast, stepToDist(400, strideLength), 20.7f), ShadowToast.getTextOfLatestToast());
 
         // if tap is not on a bar, then toast should be the same
         motionEvent = MotionEvent.obtain(
@@ -181,6 +182,8 @@ public class MonthlyStatsActivityUnitTest {
         );
         barChart.getOnChartGestureListener().onChartSingleTapped(motionEvent);
         assertEquals(String.format(activeToast, 0f, 0.0f), ShadowToast.getTextOfLatestToast());
+
+        monthlyStatsActivity.setFriendStrideLength(strideLength);
 
         // add some incidental steps
         monthlyStatsActivity.getMonthlyTotalSteps()[1] = 2000;
@@ -206,8 +209,10 @@ public class MonthlyStatsActivityUnitTest {
         );
         barChart.getOnChartGestureListener().onChartSingleTapped(motionEvent);
 
-        float dist = stepToDist(1000);
-        assertEquals(String.format(inciToast, dist, dist), ShadowToast.getTextOfLatestToast());
+        float dist = stepToDist(1000, strideLength);
+        float totalDist = stepToDist(2000, strideLength);
+
+        assertEquals(String.format(inciToast, dist, totalDist), ShadowToast.getTextOfLatestToast());
 
         motionEvent = MotionEvent.obtain(
                 SystemClock.uptimeMillis(),
@@ -218,9 +223,11 @@ public class MonthlyStatsActivityUnitTest {
                 0
         );
 
-        dist = stepToDist(200);
+        dist = stepToDist(200, strideLength);
+        totalDist = stepToDist(500, strideLength);
+
         barChart.getOnChartGestureListener().onChartSingleTapped(motionEvent);
-        assertEquals(String.format(inciToast, dist, dist), ShadowToast.getTextOfLatestToast());
+        assertEquals(String.format(inciToast, dist, totalDist), ShadowToast.getTextOfLatestToast());
 
         motionEvent = MotionEvent.obtain(
                 SystemClock.uptimeMillis(),
@@ -231,17 +238,17 @@ public class MonthlyStatsActivityUnitTest {
                 0
         );
 
-        dist = stepToDist(300);
+        dist = stepToDist(300, strideLength);
+        totalDist = stepToDist(700, strideLength);
+
         barChart.getOnChartGestureListener().onChartSingleTapped(motionEvent);
-        assertEquals(String.format(inciToast, dist, dist), ShadowToast.getTextOfLatestToast());
+        assertEquals(String.format(inciToast, dist, totalDist), ShadowToast.getTextOfLatestToast());
     }
 
     @Test
     public void testIncidentalToastOnly() {
-        SharedPreferences sharedPref = monthlyStatsActivity.getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putFloat(KEY_STRIDE, 24f);
-        editor.apply();
+        float strideLength = 30f;
+        monthlyStatsActivity.setFriendStrideLength(strideLength);
 
         String toast = "Incidental walk distance: %.1f miles \nfor a total of %.1f miles";
         // set steps
@@ -259,7 +266,7 @@ public class MonthlyStatsActivityUnitTest {
         );
         barChart.getOnChartGestureListener().onChartSingleTapped(motionEvent);
 
-        float dist = stepToDist(2000);
+        float dist = stepToDist(2000, strideLength);
         assertEquals(String.format(toast, dist, dist), ShadowToast.getTextOfLatestToast());
 
         motionEvent = MotionEvent.obtain(
@@ -271,38 +278,31 @@ public class MonthlyStatsActivityUnitTest {
                 0
         );
 
-        dist = stepToDist(300);
+        dist = stepToDist(300, strideLength);
         barChart.getOnChartGestureListener().onChartSingleTapped(motionEvent);
         assertEquals(String.format(toast, dist, dist), ShadowToast.getTextOfLatestToast());
     }
 
-    private float stepToDist(int steps) {
-        SharedPreferences sharedPref = monthlyStatsActivity.getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
-        float strideLength = sharedPref.getFloat(KEY_STRIDE, 0);
-        return steps * strideLength / 63360.0f;
+    private float stepToDist(int step, float strideLength) {
+        return step * strideLength / 63360.0f;
     }
 
     @Test
     public void testGoalLine() {
         // test default goal
         monthlyStatsActivity.setGraph();
+
         LimitLine goalLine = monthlyStatsActivity.getGoalLine();
         assertEquals(5000f, goalLine.getLimit(), 1e-5);
 
         // test update goal
-        SharedPreferences sharedPref = monthlyStatsActivity.getSharedPreferences("user_data", monthlyStatsActivity.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt("goal", 5550);
-        editor.apply();
-        monthlyStatsActivity.updateGoal();
+        monthlyStatsActivity.setFriendGoal(5550);
         monthlyStatsActivity.setGraph();
 
         goalLine = monthlyStatsActivity.getGoalLine();
         assertEquals(5550f, goalLine.getLimit(), 1e-5);
 
-        editor.putInt("goal", 5555);
-        editor.apply();
-        monthlyStatsActivity.updateGoal();
+        monthlyStatsActivity.setFriendGoal(5555);
         monthlyStatsActivity.setGraph();
 
         goalLine = monthlyStatsActivity.getGoalLine();
