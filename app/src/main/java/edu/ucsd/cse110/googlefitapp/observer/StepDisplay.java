@@ -26,7 +26,7 @@ public class StepDisplay implements Observer {
         editor.putInt("goal", goal);
         editor.apply();
         Log.d(TAG, "Current goal: " + goal);
-        Log.d(TAG, "Total steps up to now: " + currentStep);
+            Log.d(TAG, "Total steps up to now: " + currentStep);
 
         // store total dist
         SharedPreferences statsPref = activity.getStatsPref();

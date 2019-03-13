@@ -12,6 +12,7 @@ import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.request.DataDeleteRequest;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.DataUpdateRequest;
 
@@ -173,6 +174,33 @@ public class PlannedWalkAdapter implements FitnessService {
         Log.d(TAG, "Total steps in mockDataPoint: " + dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
 
         // Create a data source
+//        DataSource dataSource =
+//                new DataSource.Builder()
+//                        .setAppPackageName(APP_PACKAGE_NAME)
+//                        .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+//                        .setStreamName(TAG + " - step count")
+//                        .setType(DataSource.TYPE_RAW)
+//                        .build();
+//        DataSet dataSet2 = DataSet.create(dataSource);
+//        DataPoint dataPoint =
+//                dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0)
+//                        .getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0)
+//                        .getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+//        dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
+//        dataSet2.add(dataPoint);
+//        Log.d(TAG, "mockDataPoint - Newly created dataSet: " + dataSet2);
+
+        Calendar cal = StepCalendar.getInstance();
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        long endTime = cal.getTimeInMillis();
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        long startTime2 = cal.getTimeInMillis();
+        cal.set(Calendar.HOUR_OF_DAY, 1);
+        long startTime = cal.getTimeInMillis();
         DataSource dataSource =
                 new DataSource.Builder()
                         .setAppPackageName(APP_PACKAGE_NAME)
@@ -182,21 +210,31 @@ public class PlannedWalkAdapter implements FitnessService {
                         .build();
         DataSet dataSet2 = DataSet.create(dataSource);
         DataPoint dataPoint =
-                dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0)
-                        .getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0)
+                dataSet2.createDataPoint().setTimeInterval(startTime, dataSet.getDataPoints().get(0)
                         .getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
         dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
         dataSet2.add(dataPoint);
         Log.d(TAG, "mockDataPoint - Newly created dataSet: " + dataSet2);
 
-        DataUpdateRequest request = new DataUpdateRequest.Builder()
-                .setDataSet(dataSet2)
-                .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS),
-                        dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
-                .build();
+        DataDeleteRequest dataDeleteRequest =
+                new DataDeleteRequest.Builder()
+                        .setTimeInterval(startTime2, endTime, TimeUnit.MILLISECONDS)
+                        .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                        .build();
 
+        Fitness.getHistoryClient(plannedWalkActivity, Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(plannedWalkActivity))).deleteData(dataDeleteRequest);
+
+//        DataUpdateRequest request = new DataUpdateRequest.Builder()
+//                .setDataSet(dataSet2)
+////                .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS),
+//                .setTimeInterval(startTime,
+//                        dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
+//                .build();
+
+//        Fitness.getHistoryClient(plannedWalkActivity, Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(plannedWalkActivity))).
+//                updateData(request);
         Fitness.getHistoryClient(plannedWalkActivity, Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(plannedWalkActivity))).
-                updateData(request);
+                insertData(dataSet2);
     }
 
     private void mockEmptyDataSet(GoogleSignInAccount gsa) {
@@ -205,7 +243,7 @@ public class PlannedWalkAdapter implements FitnessService {
         long endTime1 = cal.getTimeInMillis();
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.HOUR_OF_DAY, 1);
         long startTime = cal.getTimeInMillis();
 
         DataSource dataSource =
@@ -285,7 +323,7 @@ public class PlannedWalkAdapter implements FitnessService {
 
         GetDayRange invoke() {
             Calendar tempCal = StepCalendar.getInstance();
-            tempCal.set(Calendar.SECOND, 0);
+            tempCal.set(Calendar.SECOND, 1);
             tempCal.set(Calendar.MINUTE, 0);
             tempCal.set(Calendar.HOUR_OF_DAY, 0);
             startTime = tempCal.getTimeInMillis();

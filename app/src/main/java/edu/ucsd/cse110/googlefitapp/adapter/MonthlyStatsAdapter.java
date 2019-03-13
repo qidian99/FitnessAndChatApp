@@ -154,7 +154,7 @@ public class MonthlyStatsAdapter implements FitnessService {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                                     if(task.getResult() == null || task.getResult().getData() == null) {
-                                        activity.setFriendGoal(0);
+                                        activity.setFriendGoal(5000);
                                     } else {
                                         Map<String, Object> map = task.getResult().getData();
                                         Log.e(TAG, map.toString());
@@ -168,7 +168,7 @@ public class MonthlyStatsAdapter implements FitnessService {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                                     if(task.getResult() == null || task.getResult().getData() == null) {
-                                        activity.setFriendGoal(0);
+                                        activity.setFriendStrideLength(0);
                                     } else {
                                         Map<String, Object> map = task.getResult().getData();
                                         Log.e(TAG, map.toString());
