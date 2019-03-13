@@ -59,6 +59,7 @@ import edu.ucsd.cse110.googlefitapp.chatroom.views.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.observer.StepDisplay;
 
 import static edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter.RC_SIGN_IN;
+import static edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils.EXTRA_ROOM_NAME;
 
 public class MainActivity extends Activity implements HeightDialog.HeightPrompterListener,
         CustomGoalDialog.GoalPrompterListener, ManuallyEnterStepDialog.ManualStepSetterListener,
@@ -127,6 +128,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
     public void setGoal(int goal){
         this.goal = goal;
+        getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putInt("goal", goal).apply();
     }
 
     public int getGoal(){
@@ -138,6 +140,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     }
 
     public void setGoalChangeable(boolean goalChangeable) {
+        getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putBoolean("goalChangeable", goalChangeable).apply();
         this.goalChangeable = goalChangeable;
     }
 
@@ -249,7 +252,12 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             }
         });
 //        addFriend.startAnimation(AnimationUtils.loadAnimation(this, R.anim.anim_item));
-        addFriend.setOnClickListener(v -> launchFriendSignUpActivity());
+        addFriend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchFriendSignUpActivity();
+            }
+        });
 
         Button chatBtn = findViewById(R.id.chatroom);
         chatBtn.setOnClickListener(new View.OnClickListener() {
@@ -383,6 +391,21 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         new StepDisplay(this);
         new EncouragementDisplay(this);
         new GraphDisplay(this);
+
+        Intent intent = new Intent(MainActivity.this, GoalService.class);
+        startService(intent);
+
+        if(getIntent().getBooleanExtra("goalReached", false)){
+            showNewGoalPrompt();
+            setGoalChangeable(false);
+        }
+        checkIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        checkIntent(intent);
     }
 
 
@@ -400,10 +423,12 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         int day = sharedPref.getInt("day", -1);
 
         if (day != today) {
-            goalChangeable = true;
+            setGoalChangeable(true);
             canShowHalfEncouragement = true;
             canShowOverPrevEncouragement = true;
             sharedPref.edit().putInt("day", today).apply();
+            Intent intent = new Intent(MainActivity.this, GoalService.class);
+            startService(intent);
         }
     }
 
@@ -425,6 +450,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     @Override
     public void setStep(int currentStep) {
         this.currentStep = currentStep;
+        getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putInt("step", currentStep).apply();
     }
 
     public void launchStepCountActivity() {
@@ -521,7 +547,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
         currentStep += activeSteps;
         if (currentStep >= this.goal && goalChangeable) { // this.goal is steps remaining
-            goalChangeable = false; // Goal is only allowed to be set once in a week
+            setGoalChangeable(false); // Goal is only allowed to be set once in a week
             showNewGoalPrompt();
         }
 
@@ -645,6 +671,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
         ((TextView) findViewById(R.id.textCal)).setText(dateFormat.format(calendar.getTime()));
         fitnessService.updateStepCount();
+        checkForDayChange();
     }
 
     @Override
@@ -690,5 +717,15 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(intent);
         overridePendingTransition(R.anim.slide_r_to_l_enter, R.anim.slide_r_to_l_exit);
+    }
+
+    public void checkIntent(Intent intent) {
+        if (intent.hasExtra("click_action")) {
+            Log.e("ClickActionHelper", "from: " + intent.getStringExtra("from"));
+            Log.e("ClickActionHelper", "to: " + intent.getStringExtra("to"));
+            Log.e("ClickActionHelper", "friend: " + intent.getStringExtra("friend"));
+            Log.e("ClickActionHelper", "roomName: " + intent.getStringExtra(EXTRA_ROOM_NAME));
+            ClickActionHelper.startActivity(intent.getStringExtra("click_action"), intent.getExtras(), this);
+        }
     }
 }

@@ -201,6 +201,9 @@ public class PlannedWalkAdapter implements FitnessService {
         long startTime2 = cal.getTimeInMillis();
         cal.set(Calendar.HOUR_OF_DAY, 1);
         long startTime = cal.getTimeInMillis();
+        if(startTime > endTime){
+            endTime = startTime + 300000;
+        }
         DataSource dataSource =
                 new DataSource.Builder()
                         .setAppPackageName(APP_PACKAGE_NAME)
@@ -209,9 +212,11 @@ public class PlannedWalkAdapter implements FitnessService {
                         .setType(DataSource.TYPE_RAW)
                         .build();
         DataSet dataSet2 = DataSet.create(dataSource);
+//        DataPoint dataPoint =
+//                dataSet2.createDataPoint().setTimeInterval(startTime, dataSet.getDataPoints().get(0)
+//                        .getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
         DataPoint dataPoint =
-                dataSet2.createDataPoint().setTimeInterval(startTime, dataSet.getDataPoints().get(0)
-                        .getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+                dataSet2.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
         dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
         dataSet2.add(dataPoint);
         Log.d(TAG, "mockDataPoint - Newly created dataSet: " + dataSet2);
@@ -245,7 +250,9 @@ public class PlannedWalkAdapter implements FitnessService {
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.HOUR_OF_DAY, 1);
         long startTime = cal.getTimeInMillis();
-
+        if(startTime > endTime1){
+            endTime1 = startTime + 300000;
+        }
         DataSource dataSource =
                 new DataSource.Builder()
                         .setAppPackageName(APP_PACKAGE_NAME)

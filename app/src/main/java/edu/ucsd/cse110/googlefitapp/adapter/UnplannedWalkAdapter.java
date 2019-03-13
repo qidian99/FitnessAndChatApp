@@ -55,8 +55,11 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +105,7 @@ public class UnplannedWalkAdapter implements FitnessService {
     private HistoryClient historyClient;
     private ConfigClient configClient;
     private boolean backedUp = false;
+    private DateFormat simple = new SimpleDateFormat("dd MMM yyyy HH:mm:ss:SSS Z");
 
     public UnplannedWalkAdapter(Activity activity) {
         this.activity = activity;
@@ -190,8 +194,8 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                 Log.d(TAG, "Found data type: " + dataType);
                                                 activeDataType = dataType;
                                                 checkForBackup();
-                                                // Test use only
-                                                loadBackupData(StepCalendar.getInstance());
+//                                                // Test use only
+//                                                loadBackupData(StepCalendar.getInstance());
                                             })
                                             .addOnFailureListener(e -> {
                                                 Log.d(TAG, "Datatype not found.");
@@ -433,7 +437,9 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 cal.set(Calendar.MINUTE, 0);
                                 cal.set(Calendar.HOUR_OF_DAY, 1);
                                 long startTime1 = cal.getTimeInMillis();
-
+                                if(startTime1 > endTime1){
+                                    endTime1 = startTime1 + 300000;
+                                }
                                 DataSource dataSource =
                                         new DataSource.Builder()
                                                 .setAppPackageName(APP_PACKAGE_NAME)
@@ -461,11 +467,17 @@ public class UnplannedWalkAdapter implements FitnessService {
 
                                 int step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + extraStep;
                                 Calendar cal = StepCalendar.getInstance();
+                                cal.set(Calendar.SECOND, 59);
+                                cal.set(Calendar.MINUTE, 59);
+                                cal.set(Calendar.HOUR_OF_DAY, 22);
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
                                 cal.set(Calendar.HOUR_OF_DAY, 1);
                                 long startTime1 = cal.getTimeInMillis();
+                                if(startTime1 > endTime1){
+                                    endTime1 = startTime1 + 300000;
+                                }
 
                                 DataSource dataSource =
                                         new DataSource.Builder()
@@ -654,13 +666,12 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 Calendar cal = StepCalendar.getInstance();
                                 cal.set(Calendar.SECOND, 59);
                                 cal.set(Calendar.MINUTE, 59);
-                                cal.set(Calendar.HOUR_OF_DAY, 23);
+                                cal.set(Calendar.HOUR_OF_DAY, 22);
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
                                 cal.set(Calendar.HOUR_OF_DAY, 1);
                                 long startTime1 = cal.getTimeInMillis();
-
 //                                long startTime1 = cal.getTimeInMillis();
 
                                 DataSource dataSource =
@@ -711,9 +722,9 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 historyClient.deleteData(dataDeleteRequest);
 
                                 Calendar cal = StepCalendar.getInstance();
-//                                cal.set(Calendar.SECOND, 59);
-//                                cal.set(Calendar.MINUTE, 59);
-//                                cal.set(Calendar.HOUR_OF_DAY, 23);
+                                cal.set(Calendar.SECOND, 59);
+                                cal.set(Calendar.MINUTE, 59);
+                                cal.set(Calendar.HOUR_OF_DAY, 22);
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
@@ -869,6 +880,8 @@ public class UnplannedWalkAdapter implements FitnessService {
     }
 
     public void store28DaysSteps(Calendar cal) {
+        // Test use only
+//        if(true) return;
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
         DataReadRequest dataReadRequest = build28daysTotalStepRequest(cal);
         DataReadRequest dataReadRequest2 = build28daysActiveStepRequest(cal);
@@ -1410,6 +1423,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 int day = tempCal.get(Calendar.DAY_OF_MONTH);
                                 String dateKey = year + "." + month + "." + day;
                                 final int finalI = i;
+                                Calendar queryCal = (Calendar) tempCal.clone();
                                 totalStepDB.document(dateKey).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                     @Override
                                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -1420,7 +1434,6 @@ public class UnplannedWalkAdapter implements FitnessService {
                                             Log.e(TAG, map.toString());
                                             monthlyTotalSteps[finalI] = (int) (long) map.get("totalStep");
                                         }
-                                        Calendar queryCal = (Calendar) tempCal.clone();
                                         queryCal.set(Calendar.SECOND, 0);
                                         queryCal.set(Calendar.MINUTE, 0);
                                         queryCal.set(Calendar.HOUR_OF_DAY, 1);
@@ -1449,7 +1462,6 @@ public class UnplannedWalkAdapter implements FitnessService {
                                             monthlyActiveDistance[finalI] = (float) (double) map.get("distance");
                                             monthlyActiveSpeed[finalI] = (float) (double) map.get("speed");
                                         }
-                                        Calendar queryCal = (Calendar) tempCal.clone();
                                         queryCal.set(Calendar.SECOND, 0);
                                         queryCal.set(Calendar.MINUTE, 0);
                                         queryCal.set(Calendar.HOUR_OF_DAY, 1);
@@ -1492,6 +1504,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         dataPoint.getValue(Field.FIELD_STEPS).setInt(totalStep);
         dataSet.add(dataPoint);
 
+        Log.e(TAG, String.format("Reloading total steps from %s to %s", simple.format(new Date(startTime)), simple.format(new Date(endTime))));
         Log.e(TAG, String.format("Reloading total steps from %d to %d", startTime, endTime));
         Log.e(TAG, "Reloading total dataSet: " + dataSet);
 
@@ -1522,7 +1535,9 @@ public class UnplannedWalkAdapter implements FitnessService {
         dataPoint.getValue(activeDataType.getFields().get(ACTIVE_DIST_INDEX)).setFloat(distance);
         dataSet.add(dataPoint);
 
-        Log.e(TAG, String.format("Reloading up active steps from %d to %d", startTime, endTime));
+        DateFormat simple = new SimpleDateFormat("dd MMM yyyy HH:mm:ss:SSS Z");
+
+        Log.e(TAG, String.format("Reloading active steps from %s to %s", simple.format(new Date(startTime)), simple.format(new Date(endTime))));
 
         DataUpdateRequest request = new DataUpdateRequest.Builder()
                 .setDataSet(dataSet)
