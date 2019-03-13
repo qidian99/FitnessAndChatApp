@@ -39,6 +39,7 @@ import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.adapter.PlannedWalkAdapter;
 import edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter;
+import edu.ucsd.cse110.googlefitapp.dialog.ChooseStatsDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.CustomGoalDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.ManuallyEnterStepDialog;
@@ -383,7 +384,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         // Go to the bar chart activity.
         Button btnGoToWeekly = findViewById(R.id.weeklyButton);
 
-        btnGoToWeekly.setOnClickListener(v -> launchWeeklyStats());
+        btnGoToWeekly.setOnClickListener(v -> showChooseStatsPrompt());
 
         checkForDayChange();
 
@@ -429,18 +430,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             sharedPref.edit().putInt("day", today).apply();
             Intent intent = new Intent(MainActivity.this, GoalService.class);
             startService(intent);
-        }
-    }
-
-    public void launchWeeklyStats() {
-        try {
-            Intent intent = new Intent(MainActivity.this, WeeklyStatsActivity.class);
-            startActivity(intent);
-            Log.d(TAG, getString(R.string.launchWeeklyStatsSuccess));
-
-        } catch (Exception e) {
-            Log.d(TAG, getString(R.string.launchWeeklyStatsFailure) + e.toString());
-            e.printStackTrace();
         }
     }
 
@@ -593,6 +582,12 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         setCanShowOverPrevEncouragement(false);
         Toast.makeText(this, "Congratulation! You have 1000 steps more than yesterday!",
                 Toast.LENGTH_LONG).show();
+    }
+
+    public void showChooseStatsPrompt() {
+        FragmentManager fm = getSupportFragmentManager();
+        ChooseStatsDialog setGoalDialogFragment = ChooseStatsDialog.newInstance(getString(R.string.choose_stats), this);
+        setGoalDialogFragment.show(fm, "fragment_choose_stats");
     }
 
     private void displayActiveData() {

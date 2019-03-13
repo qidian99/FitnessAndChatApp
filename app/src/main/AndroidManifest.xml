@@ -18,6 +18,7 @@
         </activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.WeeklyStatsActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.MonthlyStatsActivity"></activity>
+        <activity android:name="edu.ucsd.cse110.googlefitapp.FriendStatsActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.PlannedWalkActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.NewFriendSignUpActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.FriendChatActivity">
