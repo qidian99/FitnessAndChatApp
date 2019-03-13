@@ -37,11 +37,15 @@
             }
         }
         dexOptions{
-            javaMaxHeapSize "512m"
+            javaMaxHeapSize "1024m"
         }
         testOptions {
             unitTests {
                 includeAndroidResources = true
+
+                all {
+                    maxHeapSize = "1024m"
+                }
             }
             animationsDisabled = true
         }
