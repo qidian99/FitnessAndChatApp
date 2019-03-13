@@ -1,5 +1,4 @@
     apply plugin: 'com.android.application'
-
     android {
         signingConfigs {
         }
@@ -36,6 +35,9 @@
             lintOptions {
                 abortOnError false
             }
+        }
+        dexOptions{
+            javaMaxHeapSize "512m"
         }
         testOptions {
             unitTests {
