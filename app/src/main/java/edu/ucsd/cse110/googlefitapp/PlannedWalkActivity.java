@@ -55,31 +55,36 @@ public class PlannedWalkActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_step_count);
 
+        boolean test = getIntent().getBooleanExtra("test", false);
+
         SharedPreferences sharedPref = getSharedPreferences("stepCountData", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean("recordInitialStep", true);
         editor.apply();
 
-        Timer t = new Timer();
+        tv = findViewById(R.id.timer_text);
 
-        t.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(() -> {
-                    if (!isTimePrinted) {
-                        Log.d(TAG, "timer started");
-                        isTimePrinted = true;
-                    }
+        if (!test) {
+            Timer t = new Timer();
+            t.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(() -> {
+                        if (!isTimePrinted) {
+                            Log.d(TAG, "timer started");
+                            isTimePrinted = true;
+                        }
 
-                    tv = (TextView) findViewById(R.id.timer_text);
+                        tv = findViewById(R.id.timer_text);
 
-                    setTime();
-                    setDistance();
-                    setSpeed();
-                    time += 1;
-                });
-            }
-        }, 0, 1000);
+                        setTime();
+                        setDistance();
+                        setSpeed();
+                        time += 1;
+                    });
+                }
+            }, 0, 1000);
+        }
 
         textSteps = findViewById(R.id.textSteps);
         textDist = findViewById(R.id.textDistance);

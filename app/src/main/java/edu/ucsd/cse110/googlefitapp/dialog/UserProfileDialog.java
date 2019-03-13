@@ -252,4 +252,12 @@ public class UserProfileDialog extends DialogFragment {
             e.printStackTrace();
         }
     }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public String getFriendEmail() {
+        return friendEmail;
+    }
 }

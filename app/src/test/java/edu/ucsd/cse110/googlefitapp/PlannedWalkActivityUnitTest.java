@@ -47,8 +47,9 @@ public class PlannedWalkActivityUnitTest {
             }
         });
 
-        Intent intent = new Intent(RuntimeEnvironment.application, PlannedWalkActivity.class);
+        Intent intent = new Intent(RuntimeEnvironment.application, MainActivity.class);
         intent.putExtra(PlannedWalkActivity.FITNESS_SERVICE_KEY, TEST_SERVICE);
+        intent.putExtra("test", true);
         activity = Robolectric.buildActivity(PlannedWalkActivity.class, intent).create().get();
 
         textSteps = activity.findViewById(R.id.textSteps);
@@ -95,7 +96,7 @@ public class PlannedWalkActivityUnitTest {
 
     @Test
     public void testTimeUpdate() {
-        assertEquals("0:00", textTime.getText().toString());
+        assertEquals("time elapsed", textTime.getText().toString());
         activity.setTime(1000);
         activity.setTime();
         assertEquals("16:40", textTime.getText().toString());
@@ -103,7 +104,7 @@ public class PlannedWalkActivityUnitTest {
 
     @Test
     public void testWholeMin() {
-        assertEquals("0:00", textTime.getText().toString());
+        assertEquals("time elapsed", textTime.getText().toString());
         activity.setTime(3600);
         activity.setTime();
         assertEquals("60:00", textTime.getText().toString());
