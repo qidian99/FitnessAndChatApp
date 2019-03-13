@@ -1,6 +1,7 @@
 package edu.ucsd.cse110.googlefitapp.mock;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 public class StepCalendar {
     public static int appYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -10,6 +11,7 @@ public class StepCalendar {
     public static Calendar getInstance() {
         Calendar tempCal = Calendar.getInstance();
         tempCal.set(appYear, appMonth, appDate);
+        tempCal.setTimeZone(TimeZone.getTimeZone("America/Los_Angeles"));
         return tempCal;
     }
 

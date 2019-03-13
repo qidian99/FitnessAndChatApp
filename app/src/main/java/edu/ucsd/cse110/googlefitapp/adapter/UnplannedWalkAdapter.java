@@ -55,8 +55,11 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +74,12 @@ import edu.ucsd.cse110.googlefitapp.R;
 import edu.ucsd.cse110.googlefitapp.dialog.UserProfileDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
+
+import static android.content.Context.MODE_PRIVATE;
+import static edu.ucsd.cse110.googlefitapp.MainActivity.KEY_GOAL;
+import static edu.ucsd.cse110.googlefitapp.MainActivity.KEY_STRIDE;
+import static edu.ucsd.cse110.googlefitapp.MainActivity.SHARED_PREFERENCE_NAME;
+import static edu.ucsd.cse110.googlefitapp.MainActivity.SHOW_GOAL;
 
 public class UnplannedWalkAdapter implements FitnessService {
     public static final int ACTIVE_STEP_INDEX = 0;
@@ -93,9 +102,10 @@ public class UnplannedWalkAdapter implements FitnessService {
     public static final int RC_SIGN_IN = 9001;
     private CollectionReference friendship;
     private CollectionReference stepStorage;
-    private HistoryClient currentClient;
+    private HistoryClient historyClient;
     private ConfigClient configClient;
     private boolean backedUp = false;
+    private DateFormat simple = new SimpleDateFormat("dd MMM yyyy HH:mm:ss:SSS Z");
 
     public UnplannedWalkAdapter(Activity activity) {
         this.activity = activity;
@@ -103,8 +113,9 @@ public class UnplannedWalkAdapter implements FitnessService {
         if (lastSignedInAccount == null) {
             return;
         }
-        currentClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
-    }
+        historyClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
+        activity.findViewById(R.id.backupBtn).setOnClickListener(v -> this.store28DaysSteps(StepCalendar.getInstance()));
+}
 
     public void setup() {
         fitnessOptions = FitnessOptions.builder()
@@ -117,7 +128,7 @@ public class UnplannedWalkAdapter implements FitnessService {
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
             Intent intent = new Intent(activity, LoginActivity.class);
             Log.d(TAG, "start login activity");
-            activity.startActivity(intent);
+            activity.startActivityForResult(intent, 1438);
         } else if(GoogleSignIn.getLastSignedInAccount(activity).getEmail() == null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestEmail()
@@ -173,36 +184,37 @@ public class UnplannedWalkAdapter implements FitnessService {
                                     setUpFriendlist();
                                 }
                                 setupStepStorage();
+
+                                try {
+                                    Log.i(TAG, "Last Signed Account is: " + gsa);
+                                    Log.i(TAG, "Last Signed email is: " + gsa.getEmail());
+                                    Log.i(TAG, "Last Signed id is: " + gsa.getId());
+                                    configClient.readDataType(ACTIVE_DT_NAME).
+                                            addOnSuccessListener(dataType -> {
+                                                Log.d(TAG, "Found data type: " + dataType);
+                                                activeDataType = dataType;
+                                                checkForBackup();
+//                                                // Test use only
+//                                                loadBackupData(StepCalendar.getInstance());
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.d(TAG, "Datatype not found.");
+                                                createCustomDataType(gsa);
+                                            });
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
                         });
                     }
                 }
             });
 
-            try {
-                Log.i(TAG, "Last Signed Account is: " + gsa);
-                Log.i(TAG, "Last Signed email is: " + gsa.getEmail());
-                Log.i(TAG, "Last Signed id is: " + gsa.getId());
-                configClient.readDataType(ACTIVE_DT_NAME).
-                        addOnSuccessListener(dataType -> {
-                            Log.d(TAG, "Found data type: " + dataType);
-                            activeDataType = dataType;
-                        })
-                        .addOnFailureListener(e -> {
-                            Log.d(TAG, "Datatype not found.");
-
-                            CreateCustomDataType(gsa);
-                        });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             updateStepCount();
-            startRecording();
-            startAsync();
         }
     }
 
-    private void CreateCustomDataType(GoogleSignInAccount gsa) {
+    private void createCustomDataType(GoogleSignInAccount gsa) {
         DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
                 .setName(ACTIVE_DT_NAME)
                 .addField("ActiveSteps", Field.FORMAT_INT32)
@@ -234,8 +246,21 @@ public class UnplannedWalkAdapter implements FitnessService {
                                         GoogleSignIn.getLastSignedInAccount(activity),
                                         fitnessOptions);
                             }
+
+                            checkForBackup();
                         })
                         .addOnFailureListener(err -> Log.e(TAG, "There was a problem creating new datatype: " + err));
+    }
+
+    private void checkForBackup() {
+        boolean backup = activity.getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).getBoolean("backup", false);
+        if(backup) {
+            updateStepCount();
+            startRecording();
+            startAsync();
+        } else {
+            loadBackupData(StepCalendar.getInstance());
+        }
     }
 
     private void startRecording() {
@@ -266,27 +291,20 @@ public class UnplannedWalkAdapter implements FitnessService {
         long endTime = tempCal.getTimeInMillis();
 
         // Re-check if current client is null or noth
-        if(currentClient == null) {
+        if(historyClient == null) {
             GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
             if (lastSignedInAccount == null) {
                 return;
             }
-            currentClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
+            historyClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
         }
 
-        if(Calendar.getInstance().get(Calendar.MINUTE) % 2 == 0 && !backedUp && activeDataType != null) {
-            store28DaysSteps(tempCal);
-            backedUp = true;
-        } else if(Calendar.getInstance().get(Calendar.MINUTE) % 2 != 0 ) {
-            backedUp = false;
-        }
-
-        currentClient.readData(new DataReadRequest.Builder()
-                        .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
-                                DataType.AGGREGATE_STEP_COUNT_DELTA)
-                        .bucketByTime(1, TimeUnit.DAYS)
-                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                        .build())
+        historyClient.readData(new DataReadRequest.Builder()
+                .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
+                        DataType.AGGREGATE_STEP_COUNT_DELTA)
+                .bucketByTime(1, TimeUnit.DAYS)
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build())
                 .addOnSuccessListener(
                         dataReadResponse -> {
                             DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
@@ -306,10 +324,61 @@ public class UnplannedWalkAdapter implements FitnessService {
                             activity.findViewById(R.id.textStepsMain).setVisibility(View.VISIBLE);
 
                             Log.d(TAG, "Total steps in updateStepCount: " + total);
+
                         })
                 .addOnFailureListener(
                         e -> Log.d(TAG, "There was a problem getting the currentStep count.", e));
     }
+//    public void updateStepCount() {
+//        Calendar tempCal = StepCalendar.getInstance();
+//        tempCal.set(Calendar.SECOND, 0);
+//        tempCal.set(Calendar.MINUTE, 0);
+//        tempCal.set(Calendar.HOUR_OF_DAY, 0);
+//        long startTime = tempCal.getTimeInMillis();
+//        // Get next Saturday
+//        tempCal.set(Calendar.SECOND, 59);
+//        tempCal.set(Calendar.MINUTE, 59);
+//        tempCal.set(Calendar.HOUR_OF_DAY, 23);
+//        long endTime = tempCal.getTimeInMillis();
+//
+//        // Re-check if current client is null or noth
+//        if(historyClient == null) {
+//            GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+//            if (lastSignedInAccount == null) {
+//                return;
+//            }
+//            historyClient = Fitness.getHistoryClient(activity, lastSignedInAccount);
+//        }
+//
+//        historyClient.readData(new DataReadRequest.Builder()
+//                        .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
+//                                DataType.AGGREGATE_STEP_COUNT_DELTA)
+//                        .bucketByTime(1, TimeUnit.DAYS)
+//                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+//                        .build())
+//                .addOnSuccessListener(
+//                        dataReadResponse -> {
+//                            DataSet dataSet = dataReadResponse.getBuckets().get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
+//                            Log.d(TAG, Objects.requireNonNull(dataSet).toString());
+//                            int total =
+//                                    dataSet.isEmpty()
+//                                            ? 0
+//                                            : dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
+//
+//                            currentStep = total;
+//                            activity.setStep(currentStep);
+//                            activity.updateAll(total);
+//                            activity.notifyObservers();
+//                            activity.findViewById(R.id.spin_kit_steps_left).setVisibility(View.GONE);
+//                            activity.findViewById(R.id.spin_kit_steps_taken).setVisibility(View.GONE);
+//                            activity.findViewById(R.id.stepsLeft).setVisibility(View.VISIBLE);
+//                            activity.findViewById(R.id.textStepsMain).setVisibility(View.VISIBLE);
+//
+//                            Log.d(TAG, "Total steps in updateStepCount: " + total);
+//                        })
+//                .addOnFailureListener(
+//                        e -> Log.d(TAG, "There was a problem getting the currentStep count.", e));
+//    }
 
     @Override
     public void stopAsync() {
@@ -338,6 +407,9 @@ public class UnplannedWalkAdapter implements FitnessService {
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
         tempCal.set(Calendar.HOUR_OF_DAY, 0);
+        long startTime2 = tempCal.getTimeInMillis();
+
+        tempCal.set(Calendar.HOUR_OF_DAY, 1);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
         tempCal.set(Calendar.SECOND, 59);
@@ -350,7 +422,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 DataType.AGGREGATE_STEP_COUNT_DELTA)
                         .bucketByTime(1, TimeUnit.DAYS)
 //                        .read(DataType.TYPE_STEP_COUNT_DELTA)
-                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                        .setTimeRange(startTime2, endTime, TimeUnit.MILLISECONDS)
                         .build())
                 .addOnSuccessListener(
                         dataReadResponse -> {
@@ -363,9 +435,11 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR_OF_DAY, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 1);
                                 long startTime1 = cal.getTimeInMillis();
-
+                                if(startTime1 > endTime1){
+                                    endTime1 = startTime1 + 300000;
+                                }
                                 DataSource dataSource =
                                         new DataSource.Builder()
                                                 .setAppPackageName(APP_PACKAGE_NAME)
@@ -381,8 +455,7 @@ public class UnplannedWalkAdapter implements FitnessService {
 
                                 Log.d(TAG, "addInactiveSteps added: " + dataSet2.toString());
 
-                                Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
-                                Log.d(TAG, "response.isSuccessful() = " + response.isSuccessful());
+                                historyClient.insertData(dataSet2).addOnCompleteListener(v-> updateStepCount());
                             } else {
                                 DataDeleteRequest request =
                                         new DataDeleteRequest.Builder()
@@ -390,16 +463,21 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
                                                 .build();
 
-                                Fitness.getHistoryClient(activity, Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(activity)))
-                                        .deleteData(request);
+                                historyClient.deleteData(request);
 
                                 int step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + extraStep;
                                 Calendar cal = StepCalendar.getInstance();
+                                cal.set(Calendar.SECOND, 59);
+                                cal.set(Calendar.MINUTE, 59);
+                                cal.set(Calendar.HOUR_OF_DAY, 22);
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR_OF_DAY, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 1);
                                 long startTime1 = cal.getTimeInMillis();
+                                if(startTime1 > endTime1){
+                                    endTime1 = startTime1 + 300000;
+                                }
 
                                 DataSource dataSource =
                                         new DataSource.Builder()
@@ -416,21 +494,155 @@ public class UnplannedWalkAdapter implements FitnessService {
 
                                 Log.d(TAG, "addInactiveSteps added: " + dataSet2.toString());
 
-                                Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
-                                Log.d(TAG, "response.isSuccessful() = " + response.isSuccessful());
+                                historyClient.insertData(dataSet2).addOnCompleteListener(v-> updateStepCount());
                             }
-                            updateStepCount();
                         })
                 .addOnFailureListener(
                         e -> {
                         });
     }
+//
+//    @Override
+//    public void addInactiveSteps(int extraStep) {
+//        final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
+//        Calendar tempCal = StepCalendar.getInstance();
+//        tempCal.set(Calendar.SECOND, 0);
+//        tempCal.set(Calendar.MINUTE, 0);
+//        tempCal.set(Calendar.HOUR_OF_DAY, 1);
+//        long startTime = tempCal.getTimeInMillis();
+//        // Get next Saturday
+//        tempCal.set(Calendar.SECOND, 59);
+//        tempCal.set(Calendar.MINUTE, 59);
+//        tempCal.set(Calendar.HOUR_OF_DAY, 23);
+//        long endTime = tempCal.getTimeInMillis();
+//        Log.e(TAG, "start: " + startTime + ". end: " + endTime);
+//        historyClient.readData(new DataReadRequest.Builder()
+//                        .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
+//                                DataType.AGGREGATE_STEP_COUNT_DELTA)
+//                        .bucketByTime(1, TimeUnit.DAYS)
+////                        .read(DataType.TYPE_STEP_COUNT_DELTA)
+//                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+//                        .build())
+//                .addOnSuccessListener(
+//                        dataReadResponse -> {
+//                            Log.d(TAG, "Begin addInactiveSteps");
+//                            List<Bucket> buckets = dataReadResponse.getBuckets();
+//                            DataSet dataSet = buckets.get(0).getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
+//                            Log.d(TAG, Objects.requireNonNull(dataSet).toString());
+//                            if (dataSet.isEmpty()) {
+//                                Calendar cal = StepCalendar.getInstance();
+//                                cal.set(Calendar.SECOND, 59);
+//                                cal.set(Calendar.MINUTE, 59);
+//                                cal.set(Calendar.HOUR_OF_DAY, 23);
+//                                long endTime1 = cal.getTimeInMillis();
+//                                cal.set(Calendar.SECOND, 0);
+//                                cal.set(Calendar.MINUTE, 0);
+//                                cal.set(Calendar.HOUR_OF_DAY, 1);
+//                                long startTime1 = cal.getTimeInMillis();
+//
+//                                DataSource dataSource =
+//                                        new DataSource.Builder()
+//                                                .setAppPackageName(APP_PACKAGE_NAME)
+//                                                .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+//                                                .setStreamName(TAG + " - currentStep count")
+//                                                .setType(DataSource.TYPE_RAW)
+//                                                .build();
+//                                DataSet dataSet2 = DataSet.create(dataSource);
+//                                DataPoint dataPoint =
+//                                        dataSet2.createDataPoint().setTimeInterval(startTime1, endTime1, TimeUnit.MILLISECONDS);
+//                                dataPoint.getValue(Field.FIELD_STEPS).setInt(extraStep);
+//                                dataSet2.add(dataPoint);
+//
+//                                Log.d(TAG, "addInactiveSteps added: " + dataSet2.toString());
+//
+//                                Fitness.getHistoryClient(activity, gsa).insertData(dataSet2).addOnCompleteListener(v-> updateStepCount());
+//                            } else {
+//                                DataDeleteRequest request =
+//                                        new DataDeleteRequest.Builder()
+//                                                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+//                                                .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
+//                                                .build();
+//
+//                                historyClient.deleteData(request);
+////
+////                                int step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + extraStep;
+////                                Calendar cal = StepCalendar.getInstance();
+////                                cal.set(Calendar.SECOND, 59);
+////                                cal.set(Calendar.MINUTE, 59);
+////                                cal.set(Calendar.HOUR_OF_DAY, 23);
+////                                long endTime1 = cal.getTimeInMillis();
+////                                cal.set(Calendar.SECOND, 0);
+////                                cal.set(Calendar.MINUTE, 0);
+////                                cal.set(Calendar.HOUR_OF_DAY, 1);
+////                                long startTime1 = cal.getTimeInMillis();
+////
+////                                DataSource dataSource =
+////                                        new DataSource.Builder()
+////                                                .setAppPackageName(APP_PACKAGE_NAME)
+////                                                .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+////                                                .setStreamName(TAG + " - currentStep count")
+////                                                .setType(DataSource.TYPE_RAW)
+////                                                .build();
+////                                DataSet dataSet2 = DataSet.create(dataSource);
+////                                DataPoint dataPoint =
+////                                        dataSet2.createDataPoint().setTimeInterval(startTime1, endTime1, TimeUnit.MILLISECONDS);
+////                                dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
+////                                dataSet2.add(dataPoint);
+////
+////                                Log.d(TAG, "addInactiveSteps added: " + dataSet2.toString());
+////
+////                                Task<Void> response = Fitness.getHistoryClient(activity, gsa).insertData(dataSet2);
+////                                Log.d(TAG, "response.isSuccessful() = " + response.isSuccessful());
+//
+//
+//                                // ----
+////                                int step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + extraStep;
+////                                Log.i(TAG, "New steps in total: " + step);
+////                                Calendar cal = StepCalendar.getInstance();
+////                                cal.set(Calendar.SECOND, 59);
+////                                cal.set(Calendar.MINUTE, 59);
+////                                cal.set(Calendar.HOUR_OF_DAY, 23);
+////                                long endTime1 = cal.getTimeInMillis();
+////                                cal.set(Calendar.SECOND, 0);
+////                                cal.set(Calendar.MINUTE, 0);
+////                                cal.set(Calendar.HOUR_OF_DAY, 1);
+////                                long startTime1 = cal.getTimeInMillis();
+////
+////                                DataSource dataSource =
+////                                        new DataSource.Builder()
+////                                                .setAppPackageName(APP_PACKAGE_NAME)
+////                                                .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+////                                                .setStreamName(TAG + " - currentStep count")
+////                                                .setType(DataSource.TYPE_RAW)
+////                                                .build();
+////                                DataSet dataSet2 = DataSet.create(dataSource);
+////                                DataPoint dataPoint =
+////                                        dataSet2.createDataPoint().setTimeInterval(startTime1, endTime1, TimeUnit.MILLISECONDS);
+////                                dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
+////                                dataSet2.add(dataPoint);
+////
+////                                Log.d(TAG, "addInactiveSteps added: " + dataSet2.toString());
+////
+////                                DataUpdateRequest request = new DataUpdateRequest.Builder()
+////                                        .setDataSet(dataSet2)
+////                                        .setTimeInterval(startTime1, endTime1, TimeUnit.MILLISECONDS)
+////                                        .build();
+////                                historyClient.updateData(request).addOnCompleteListener(v-> updateStepCount());
+//
+//                            }
+//                        })
+//                .addOnFailureListener(
+//                        e -> {
+//                        });
+//    }
 
     @Override
     public void addActiveSteps(final int step, final int min, final int sec, final float stride) {
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
+        long startTime2 = tempCal.getTimeInMillis();
         tempCal.set(Calendar.HOUR_OF_DAY, 0);
         long startTime = tempCal.getTimeInMillis();
         // Get next Saturday
@@ -443,7 +655,7 @@ public class UnplannedWalkAdapter implements FitnessService {
 
         Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
                 .readData(new DataReadRequest.Builder()
-                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                        .setTimeRange(startTime2, endTime, TimeUnit.MILLISECONDS)
                         .read(activeDataType)
                         .build())
                 .addOnSuccessListener(
@@ -452,11 +664,15 @@ public class UnplannedWalkAdapter implements FitnessService {
                             Log.d(TAG, "Fetched active data from google cloud. dataSet.isEmpty() = " + dataSet.isEmpty());
                             if (dataSet.isEmpty()) {
                                 Calendar cal = StepCalendar.getInstance();
+                                cal.set(Calendar.SECOND, 59);
+                                cal.set(Calendar.MINUTE, 59);
+                                cal.set(Calendar.HOUR_OF_DAY, 22);
                                 long endTime1 = cal.getTimeInMillis();
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR_OF_DAY, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 1);
                                 long startTime1 = cal.getTimeInMillis();
+//                                long startTime1 = cal.getTimeInMillis();
 
                                 DataSource dataSource =
                                         new DataSource.Builder()
@@ -497,6 +713,23 @@ public class UnplannedWalkAdapter implements FitnessService {
                                         statsEditor.putFloat(String.valueOf(day), (currActiveSpeed + activeSpeed) / 2.0f);
                                         Log.d(TAG, "Today's average active speed: " + (currActiveSpeed + activeSpeed) / 2.0f);
                                  */
+                                DataDeleteRequest dataDeleteRequest =
+                                        new DataDeleteRequest.Builder()
+                                                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                                                .addDataType(activeDataType)
+                                                .build();
+
+                                historyClient.deleteData(dataDeleteRequest);
+
+                                Calendar cal = StepCalendar.getInstance();
+                                cal.set(Calendar.SECOND, 59);
+                                cal.set(Calendar.MINUTE, 59);
+                                cal.set(Calendar.HOUR_OF_DAY, 22);
+                                long endTime1 = cal.getTimeInMillis();
+                                cal.set(Calendar.SECOND, 0);
+                                cal.set(Calendar.MINUTE, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 1);
+                                long startTime1 = cal.getTimeInMillis();
                                 DataPoint dtPoint = dataSet.getDataPoints().get(0);
                                 int newActiveStep = dtPoint.getValue(activeDataType.getFields().get(ACTIVE_STEP_INDEX)).asInt() + step;
                                 int newActiveMin = dtPoint.getValue(activeDataType.getFields().get(ACTIVE_MIN_INDEX)).asInt() + min;
@@ -517,7 +750,8 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                 .build();
                                 DataSet dataSet2 = DataSet.create(dataSource);
                                 DataPoint dataPoint =
-                                        dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+//                                        dataSet2.createDataPoint().setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+                                        dataSet2.createDataPoint().setTimeInterval(startTime1, endTime1, TimeUnit.MILLISECONDS);
                                 dataPoint.getValue(activeDataType.getFields().get(ACTIVE_STEP_INDEX)).setInt(newActiveStep);
                                 dataPoint.getValue(activeDataType.getFields().get(ACTIVE_MIN_INDEX)).setInt(newActiveMin);
                                 dataPoint.getValue(activeDataType.getFields().get(ACTIVE_SEC_INDEX)).setInt(newActiveSec);
@@ -528,10 +762,11 @@ public class UnplannedWalkAdapter implements FitnessService {
 
                                 DataUpdateRequest request = new DataUpdateRequest.Builder()
                                         .setDataSet(dataSet2)
-                                        .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
+//                                        .setTimeInterval(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
+                                        .setTimeInterval(startTime1, endTime1, TimeUnit.MILLISECONDS)
                                         .build();
 
-                                Task<Void> response = Fitness.getHistoryClient(activity, Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(activity))).updateData(request);
+                                Task<Void> response = historyClient.updateData(request);
                             }
                         })
                 .addOnFailureListener(
@@ -645,6 +880,8 @@ public class UnplannedWalkAdapter implements FitnessService {
     }
 
     public void store28DaysSteps(Calendar cal) {
+        // Test use only
+//        if(true) return;
         final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
         DataReadRequest dataReadRequest = build28daysTotalStepRequest(cal);
         DataReadRequest dataReadRequest2 = build28daysActiveStepRequest(cal);
@@ -684,12 +921,12 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 Log.d(TAG, "" + (activeStepDataSet != null));
                                 Log.d(TAG, activeStepDataSet.toString());
 
-                                Log.d(TAG, String.format("getLast28DaysSteps - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
+                                Log.d(TAG, String.format("loadBackupData - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
                                 int activeStep;
                                 float distance;
                                 float speed;
                                 if (activeStepDataSet != null && !activeStepDataSet.isEmpty()) {
-                                    Log.d(TAG, "getLast28DaysSteps - dtSet2 steps = " + activeStepDataSet);
+                                    Log.d(TAG, "loadBackupData - dtSet2 steps = " + activeStepDataSet);
                                     activeStep = activeStepDataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(ACTIVE_STEP_INDEX)).asInt();
                                     distance = activeStepDataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(ACTIVE_DIST_INDEX)).asFloat();
                                     speed = activeStepDataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(ACTIVE_SPEED_INDEX)).asFloat();
@@ -744,7 +981,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 int totalStep;
                                 if (dtSet != null && !dtSet.isEmpty()) {
                                     totalStep = dtSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
-                                    Log.d(TAG, "getLast28DaysSteps - dtSet steps = " + totalStep);
+                                    Log.d(TAG, "loadBackupData - dtSet steps = " + totalStep);
                                 } else {
                                     totalStep = 0;
                                 }
@@ -862,7 +1099,12 @@ public class UnplannedWalkAdapter implements FitnessService {
                 cancel(true);
             } else {
                 updateStepCount();
-//                setUpFriendlist();
+                if(Calendar.getInstance().get(Calendar.MINUTE) % 30 == 0 && !backedUp && activeDataType != null) {
+                    store28DaysSteps(StepCalendar.getInstance());
+                    backedUp = true;
+                } else if(Calendar.getInstance().get(Calendar.MINUTE) % 30 != 0 ) {
+                    backedUp = false;
+                }
             }
         }
     }
@@ -1114,6 +1356,211 @@ public class UnplannedWalkAdapter implements FitnessService {
                 UserProfileDialog.newInstance(activity.getString(R.string.user_profile), userEmail, friendEmail, activity);
         setStepDialogFragment.show(fm, "fragment_user_profile");
     }
+
+    public void loadBackupData(Calendar cal) {
+        Calendar tempCal = (Calendar) cal.clone();
+        tempCal.add(Calendar.DATE, -27);
+        // Get Id from user list first
+        FirebaseFirestore.getInstance()
+                .collection("users").get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        String myEmail = getEmail();
+                        String myId = null;
+
+                        int[] monthlyActiveSteps = new int[28];
+                        int[] monthlyTotalSteps = new int[28];
+                        float[] monthlyActiveSpeed = new float[28];
+                        float[] monthlyActiveDistance = new float[28];
+                        int[] goal = new int[1];
+                        float[] strideLength = new float[1];
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String email = (String) document.getData().get("email");
+                            if(email != null && email.equals(myEmail)) {
+                                myId = (String) document.getData().get("id");
+                            }
+                        }
+
+                        // Retrieve data from steps db
+                        if(myId != null) { // If friend is in user db
+                            Log.e(TAG, "Backup data exists");
+                            CollectionReference activeStepDB = stepStorage.document(myId).collection("activeStep");
+                            CollectionReference totalStepDB = stepStorage.document(myId).collection("totalStep");
+                            CollectionReference userInfoDB = stepStorage.document(myId).collection("userInfo");
+
+                            userInfoDB.document("goal").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.getResult() == null || task.getResult().getData() == null) {
+                                        goal[0] = 5000;
+                                    } else {
+                                        Map<String, Object> map = task.getResult().getData();
+                                        Log.e(TAG, map.toString());
+                                        goal[0] = ((int) (long) map.get("goal"));
+                                    }
+                                    reloadGoal(goal[0]);
+                                }
+                            });
+
+                            userInfoDB.document("strideLength").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.getResult() == null || task.getResult().getData() == null) {
+                                        strideLength[0] = 0;
+                                    } else {
+                                        Map<String, Object> map = task.getResult().getData();
+                                        Log.e(TAG, map.toString());
+                                        strideLength[0] = ((float) (double) map.get("strideLength"));
+                                    }
+                                    reloadStrideLength(strideLength[0]);
+                                }
+                            });
+
+                            for (int i = 0; i < 28; i++) {
+                                int year = tempCal.get(Calendar.YEAR);
+                                int month = tempCal.get(Calendar.MONTH) + 1;
+                                int day = tempCal.get(Calendar.DAY_OF_MONTH);
+                                String dateKey = year + "." + month + "." + day;
+                                final int finalI = i;
+                                Calendar queryCal = (Calendar) tempCal.clone();
+                                totalStepDB.document(dateKey).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                        if(task.getResult() == null || task.getResult().getData() == null) {
+                                            monthlyTotalSteps[finalI] = 0;
+                                        } else {
+                                            Map<String, Object> map = task.getResult().getData();
+                                            Log.e(TAG, map.toString());
+                                            monthlyTotalSteps[finalI] = (int) (long) map.get("totalStep");
+                                        }
+                                        queryCal.set(Calendar.SECOND, 0);
+                                        queryCal.set(Calendar.MINUTE, 0);
+                                        queryCal.set(Calendar.HOUR_OF_DAY, 1);
+                                        // Get last Sunday
+                                        long startTime = queryCal.getTimeInMillis();
+                                        // Get next Saturday
+                                        queryCal.set(Calendar.SECOND, 59);
+                                        queryCal.set(Calendar.MINUTE, 59);
+                                        queryCal.set(Calendar.HOUR_OF_DAY, 23);
+                                        long endTime = queryCal.getTimeInMillis();
+                                        int totalStep = monthlyTotalSteps[finalI];
+                                        reloadTotalSteps(startTime, endTime, totalStep);
+                                    }
+                                });
+                                activeStepDB.document(dateKey).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                        if(task.getResult() == null || task.getResult().getData() == null) {
+                                            monthlyActiveSteps[finalI] = 0;
+                                            monthlyActiveDistance[finalI] = 0.0f;
+                                            monthlyActiveSpeed[finalI] = 0.0f;
+                                        } else {
+                                            Map<String, Object> map = task.getResult().getData();
+                                            Log.e(TAG, map.toString());
+                                            monthlyActiveSteps[finalI] = (int) (long) map.get("activeStep");
+                                            monthlyActiveDistance[finalI] = (float) (double) map.get("distance");
+                                            monthlyActiveSpeed[finalI] = (float) (double) map.get("speed");
+                                        }
+                                        queryCal.set(Calendar.SECOND, 0);
+                                        queryCal.set(Calendar.MINUTE, 0);
+                                        queryCal.set(Calendar.HOUR_OF_DAY, 1);
+                                        // Get last Sunday
+                                        long startTime = queryCal.getTimeInMillis();
+                                        // Get next Saturday
+                                        queryCal.set(Calendar.SECOND, 59);
+                                        queryCal.set(Calendar.MINUTE, 59);
+                                        queryCal.set(Calendar.HOUR_OF_DAY, 23);
+                                        long endTime = queryCal.getTimeInMillis();
+                                        int activeStep = monthlyActiveSteps[finalI];
+                                        float distance = monthlyActiveDistance[finalI];
+                                        float speed = monthlyActiveSpeed[finalI];
+                                        float duration = distance / speed;
+                                        reloadActiveSteps(startTime, endTime, activeStep, distance, speed, duration);
+                                    }
+                                });
+                                tempCal.add(Calendar.DATE, 1);
+                            }
+                        }
+                    }
+                });
+        activity.getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putBoolean("backup", true);
+        updateStepCount();
+        startRecording();
+        startAsync();
+    }
+
+    private void reloadTotalSteps(long startTime, long endTime, int totalStep) {
+        DataSource dataSource =
+                new DataSource.Builder()
+                        .setAppPackageName(APP_PACKAGE_NAME)
+                        .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                        .setStreamName(TAG + " - currentStep count")
+                        .setType(DataSource.TYPE_RAW)
+                        .build();
+        DataSet dataSet = DataSet.create(dataSource);
+        DataPoint dataPoint =
+                dataSet.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
+        dataPoint.getValue(Field.FIELD_STEPS).setInt(totalStep);
+        dataSet.add(dataPoint);
+
+        Log.e(TAG, String.format("Reloading total steps from %s to %s", simple.format(new Date(startTime)), simple.format(new Date(endTime))));
+        Log.e(TAG, String.format("Reloading total steps from %d to %d", startTime, endTime));
+        Log.e(TAG, "Reloading total dataSet: " + dataSet);
+
+        DataUpdateRequest request = new DataUpdateRequest.Builder()
+                .setDataSet(dataSet)
+                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
+
+//        historyClient.updateData(request);
+        historyClient.insertData(dataSet);
+    }
+
+    private void reloadActiveSteps(long startTime, long endTime, int activeStep, float distance, float speed, float duration) {
+        DataSource dataSource =
+                new DataSource.Builder()
+                        .setAppPackageName(APP_PACKAGE_NAME)
+                        .setDataType(activeDataType)
+                        .setStreamName(TAG + " - active currentStep")
+                        .setType(DataSource.TYPE_RAW)
+                        .build();
+        DataSet dataSet = DataSet.create(dataSource);
+        DataPoint dataPoint =
+                dataSet.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
+        dataPoint.getValue(activeDataType.getFields().get(ACTIVE_STEP_INDEX)).setInt(activeStep);
+        dataPoint.getValue(activeDataType.getFields().get(ACTIVE_MIN_INDEX)).setInt(((int)duration / 60));
+        dataPoint.getValue(activeDataType.getFields().get(ACTIVE_SEC_INDEX)).setInt(((int)duration) % 60);
+        dataPoint.getValue(activeDataType.getFields().get(ACTIVE_SPEED_INDEX)).setFloat(speed);
+        dataPoint.getValue(activeDataType.getFields().get(ACTIVE_DIST_INDEX)).setFloat(distance);
+        dataSet.add(dataPoint);
+
+        DateFormat simple = new SimpleDateFormat("dd MMM yyyy HH:mm:ss:SSS Z");
+
+        Log.e(TAG, String.format("Reloading active steps from %s to %s", simple.format(new Date(startTime)), simple.format(new Date(endTime))));
+
+        DataUpdateRequest request = new DataUpdateRequest.Builder()
+                .setDataSet(dataSet)
+                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
+
+//        historyClient.updateData(request);
+        historyClient.insertData(dataSet);
+    }
+
+    private void reloadStrideLength(float sl) {
+        activity.getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putFloat(KEY_STRIDE, sl).apply();
+    }
+
+    private void reloadGoal(int goal) {
+        activity.getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putInt(KEY_GOAL, goal).apply();
+        TextView goalText = activity.findViewById(R.id.textGoal);
+        goalText.setText(String.format(SHOW_GOAL, goal));
+
+        // Save new goal
+        ((MainActivity) activity).setGoal(goal);
+    }
+
 
     /**
      * Credit given to https://stackoverflow.com/questions/2471935/how-to-load-an-imageview-by-url-in-android

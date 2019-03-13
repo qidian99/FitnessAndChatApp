@@ -89,6 +89,14 @@ exports.sendPrivateNotification = functions.firestore
         notification: {
           title: document.from + ' sent you a private message',
           body: document.text
+//          click_action: "chatroom"
+
+        },
+        data:{
+            click_action: "chatroom",
+//            from: document.from,
+            to: document.to,
+            roomName: context.params.roomName
         }
     };
 

@@ -20,7 +20,14 @@
         <activity android:name="edu.ucsd.cse110.googlefitapp.MonthlyStatsActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.PlannedWalkActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.NewFriendSignUpActivity"></activity>
-        <activity android:name="edu.ucsd.cse110.googlefitapp.FriendChatActivity"></activity>
+        <activity android:name="edu.ucsd.cse110.googlefitapp.FriendChatActivity">
+            <intent-filter>
+                <action android:name="chatroom" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.LoginActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.chatroom.views.LoginActivity"></activity>
         <activity android:name="edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity"></activity>
@@ -30,6 +37,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        <service android:name=".GoalService" />
 
         <meta-data
             android:name="preloaded_fonts"
