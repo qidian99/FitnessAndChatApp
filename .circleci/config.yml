@@ -43,8 +43,8 @@ jobs:
       - run:
           name: Build debug APK and release APK
           command: |
-            ./gradlew :app:assembleDebug
-            ./gradlew :app:assembleDebugAndroidTest
+            ./gradlew :app:assembleDebug --no-daemon -Pkotlin.incremental=false --max-workers=2
+            ./gradlew :app:assembleDebugAndroidTest --no-daemon -Pkotlin.incremental=false --max-workers=2
       - run:
           name: Store Google Service Account
           command: echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
