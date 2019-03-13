@@ -124,10 +124,10 @@ public class MonthlyStatsActivity extends Activity {
                 Log.d(TAG, String.format(STATS_FMT, speed , totalDist, activeDist, inciDist));
 
                 if (yInd == 1) {
-                    Toast.makeText(MonthlyStatsActivity.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, totalDist), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MonthlyStatsActivity.this, String.format(INCIDENTAL_WALK_FMT, inciDist, totalDist), Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(MonthlyStatsActivity.this,
-                            String.format("Active walk distance: %.1f miles\nAverage speed: %.1f MPH", activeDist, speed),
+                            String.format(ACTIVE_WALK_FMT, activeDist, speed),
                             Toast.LENGTH_SHORT).show();
                 }
             }
@@ -254,7 +254,7 @@ public class MonthlyStatsActivity extends Activity {
 
     @Override
     public int getGoal() {
-        return 0;
+        return goal;
     }
 
     @Override
