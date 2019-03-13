@@ -172,7 +172,7 @@
                         android:minHeight="40dip"
                         android:paddingTop="2dp"
                         android:paddingBottom="2dp"
-                        android:text="Show Weekly"
+                        android:text="@string/show_stats"
                         android:textColor="@android:color/holo_blue_bright"
                         android:textStyle="bold" />
                 </TableRow>

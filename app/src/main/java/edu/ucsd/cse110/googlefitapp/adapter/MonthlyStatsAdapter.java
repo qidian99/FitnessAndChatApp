@@ -2,27 +2,25 @@ package edu.ucsd.cse110.googlefitapp.adapter;
 
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.data.Bucket;
+import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 
 import java.util.Calendar;
-import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.MonthlyStatsActivity;
@@ -45,32 +43,87 @@ public class MonthlyStatsAdapter implements FitnessService {
     private FitnessOptions fitnessOptions;
     private MonthlyStatsActivity activity;
     private DataType activeDataType;
-    private String friendEmail;
-    private CollectionReference stepStorage;
+    private int currentStep;
 
-    public MonthlyStatsAdapter(MonthlyStatsActivity activity, String friendEmail) {
+    public MonthlyStatsAdapter(MonthlyStatsActivity activity) {
         this.activity = activity;
-        this.friendEmail = friendEmail;
     }
 
     public void setup() {
-        FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete( Task<AuthResult> task) {
-                if (!task.isSuccessful()) {
-                    Log.e(TAG, "Firebase authentication failed, please check your internet connection");
-                } else {
-                    Log.e(TAG, "Authentication succeeded");
-                    FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( activity,  new OnSuccessListener<InstanceIdResult>() {
-                        @Override
-                        public void onSuccess(InstanceIdResult instanceIdResult) {
-                            setupStepStorage();
-                            getLast28DaysSteps();
-                        }
-                    });
-                }
+        fitnessOptions = FitnessOptions.builder()
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+                .build();
+
+        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
+            Toast.makeText(activity, "Authorization is needed to use this app", Toast.LENGTH_SHORT).show();
+            GoogleSignIn.requestPermissions(
+                    activity, // your activity
+                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                    GoogleSignIn.getLastSignedInAccount(activity),
+                    fitnessOptions);
+        } else {
+
+            try {
+                GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
+
+                Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).readDataType(ACTIVE_DT_NAME).
+                        addOnSuccessListener(dataType -> {
+                            Log.d(TAG, "Found data type: " + dataType);
+                            activeDataType = dataType;
+                            getLast28DaysSteps(activity.getMonthlyTotalSteps(), activity.getMonthlyActiveSteps());
+
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.d(TAG, "Datatype not found.");
+                            CreateCustomDataType(gsa);
+                        });
+//            Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).readDataType(this, "com.app.custom_data_type");
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
+        }
+    }
+
+    private void CreateCustomDataType(GoogleSignInAccount gsa) {
+        DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
+                .setName(ACTIVE_DT_NAME)
+                .addField("ActiveSteps", Field.FORMAT_INT32)
+                .addField("ActiveMin", Field.FORMAT_INT32)
+                .addField("ActiveSec", Field.FORMAT_INT32)
+                .addField("ActiveDistance", Field.FORMAT_FLOAT)
+                .addField("ActiveSpeed", Field.FORMAT_FLOAT)
+                .addField(Field.FIELD_ACTIVITY)
+                .build();
+
+        Task<DataType> response =
+                Fitness.getConfigClient(activity, Objects.requireNonNull(gsa)).createCustomDataType(request)
+                        .addOnSuccessListener((DataType dataType) -> {
+                            Log.d(TAG, "Sucessfully created new datatype: " + dataType.toString());
+                            activeDataType = dataType;
+                            fitnessOptions = FitnessOptions.builder()
+                                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+                                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+                                    .addDataType(activeDataType, FitnessOptions.ACCESS_READ)
+                                    .addDataType(activeDataType, FitnessOptions.ACCESS_WRITE)
+                                    .build();
+                            if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), fitnessOptions)) {
+                                Toast.makeText(activity, "Authorization is needed to use this app", Toast.LENGTH_SHORT).show();
+                                GoogleSignIn.requestPermissions(
+                                        activity, // your activity
+                                        GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                                        GoogleSignIn.getLastSignedInAccount(activity),
+                                        fitnessOptions);
+                            }
+                            getLast28DaysSteps(activity.getMonthlyTotalSteps(), activity.getMonthlyActiveSteps());
+                        })
+                        .addOnFailureListener(err -> Log.e(TAG, "There was a problem creating new datatype: " + err));
     }
 
     @Override
@@ -114,127 +167,128 @@ public class MonthlyStatsAdapter implements FitnessService {
         return null;
     }
 
-    public void getLast28DaysSteps(Calendar cal) {
+    public DataReadRequest buildTotalStepRequest(Calendar cal) {
         Calendar tempCal = (Calendar) cal.clone();
+        tempCal.set(Calendar.SECOND, 0);
+        tempCal.set(Calendar.MINUTE, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
+        // Get last Sunday
         tempCal.add(Calendar.DATE, -27);
-
-        // Get Id from user list first
-        FirebaseFirestore.getInstance()
-                .collection("users").get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        String friendId = null;
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            String email = (String) document.getData().get("email");
-                            if(email != null && email.equals(friendEmail)) {
-                                friendId = (String) document.getData().get("id");
-                            }
-                        }
-
-                        // Retrieve data from steps db
-                        if(friendId == null) { // If friend is not in user db
-                            Log.d(TAG, "friend does not exist");
-                            for (int i = 0; i < 28; i++) {
-                                activity.getMonthlyTotalSteps()[i] = 0;
-                                activity.getMonthlyActiveSteps()[i] = 0;
-                                activity.getMonthlyActiveDistance()[i] = 0;
-                                activity.getMonthlyActiveSpeed()[i] = 0;
-                                activity.setInActiveStepRead(i, true);
-                                activity.setActiveStepRead(i, true);
-                            }
-                        }
-                        else { // If friend is in user db
-                            Log.d(TAG, "friend exists");
-                            CollectionReference activeStepDB = stepStorage.document(friendId).collection("activeStep");
-                            CollectionReference totalStepDB = stepStorage.document(friendId).collection("totalStep");
-                            CollectionReference userInfoDB = stepStorage.document(friendId).collection("userInfo");
-
-                            userInfoDB.document("goal").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if(task.getResult() == null || task.getResult().getData() == null) {
-                                        activity.setFriendGoal(5000);
-                                    } else {
-                                        Map<String, Object> map = task.getResult().getData();
-                                        Log.e(TAG, map.toString());
-                                        activity.setFriendGoal((int) (long) map.get("goal"));
-                                    }
-                                    activity.setInActiveStepRead(28, true);
-                                }
-                            });
-
-                            userInfoDB.document("strideLength").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if(task.getResult() == null || task.getResult().getData() == null) {
-                                        activity.setFriendStrideLength(0);
-                                    } else {
-                                        Map<String, Object> map = task.getResult().getData();
-                                        Log.e(TAG, map.toString());
-                                        activity.setFriendStrideLength((float) (double) map.get("strideLength"));
-                                    }
-                                    activity.setInActiveStepRead(29, true);
-                                }
-                            });
-
-                            for (int i = 0; i < 28; i++) {
-                                int year = tempCal.get(Calendar.YEAR);
-                                int month = tempCal.get(Calendar.MONTH) + 1;
-                                int day = tempCal.get(Calendar.DAY_OF_MONTH);
-                                String dateKey = year + "." + month + "." + day;
-                                final int finalI = i;
-                                totalStepDB.document(dateKey).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                        if(task.getResult() == null || task.getResult().getData() == null) {
-                                            activity.getMonthlyTotalSteps()[finalI] = 0;
-                                        } else {
-                                            Map<String, Object> map = task.getResult().getData();
-                                            Log.e(TAG, map.toString());
-                                            activity.getMonthlyTotalSteps()[finalI] = (int) (long) map.get("totalStep");
-                                        }
-                                        activity.setInActiveStepRead(finalI, true);
-                                    }
-                                });
-                                activeStepDB.document(dateKey).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                        if(task.getResult() == null || task.getResult().getData() == null) {
-                                            activity.getMonthlyActiveSteps()[finalI] = 0;
-                                            activity.getMonthlyActiveDistance()[finalI] = 0.0f;
-                                            activity.getMonthlyActiveSpeed()[finalI] = 0.0f;
-                                        } else {
-                                            Map<String, Object> map = task.getResult().getData();
-                                            Log.e(TAG, map.toString());
-                                            activity.getMonthlyActiveSteps()[finalI] = (int) (long) map.get("activeStep");
-                                            activity.getMonthlyActiveDistance()[finalI] = (float) (double) map.get("distance");
-                                            activity.getMonthlyActiveSpeed()[finalI] = (float) (double) map.get("speed");
-                                        }
-                                        activity.setActiveStepRead(finalI, true);
-                                    }
-                                });
-                                tempCal.add(Calendar.DATE, 1);
-                            }
-                        }
-                    }
-                });
+        long startTime = tempCal.getTimeInMillis();
+        Log.e(TAG, "START TIMEEEEEEEEEEE total " + startTime);
+        // Get next Saturday
+        tempCal.add(Calendar.DATE, 28);
+        tempCal.add(Calendar.SECOND, -1);
+        long endTime = tempCal.getTimeInMillis();
+        Log.d(TAG, "TotalStepRequest Initialize Success");
+        return new DataReadRequest.Builder()
+                .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
+                        DataType.AGGREGATE_STEP_COUNT_DELTA)
+                .bucketByTime(1, TimeUnit.DAYS)
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
     }
 
-    public void getLast28DaysSteps() {
-        getLast28DaysSteps(StepCalendar.getInstance());
+    public DataReadRequest buildActiveStepRequest(Calendar cal) {
+        Calendar tempCal = (Calendar) cal.clone();
+        tempCal.set(Calendar.SECOND, 0);
+        tempCal.set(Calendar.MINUTE, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
+        // Get last Sunday
+        tempCal.add(Calendar.DATE, -27);
+        long startTime = tempCal.getTimeInMillis();
+        Log.e(TAG, "START TIMEEEEEEEEEEE active " + startTime);
+
+        // Get next Saturday
+        tempCal.add(Calendar.DATE, 28);
+        tempCal.add(Calendar.SECOND, -1);
+        long endTime = tempCal.getTimeInMillis();
+        DataSource activeDataSource = new DataSource.Builder()
+                .setAppPackageName(APP_PACKAGE_NAME)
+                .setDataType(activeDataType)
+                .setName(ACTIVE_DT_NAME)
+                .setType(DataSource.TYPE_RAW)
+                .build();
+        Log.d(TAG, "ActiveStepRequest Initialize Success");
+        return new DataReadRequest.Builder()
+//                .aggregate(DataType.TYPE_STEP_COUNT_DELTA,
+//                        DataType.AGGREGATE_STEP_COUNT_DELTA)
+                .read(activeDataType)
+                .read(activeDataSource)
+                .bucketByTime(1, TimeUnit.DAYS)
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
+    }
+
+    public DataReadRequest getLast28DaysSteps(Calendar cal) {
+        final GoogleSignInAccount gsa = GoogleSignIn.getLastSignedInAccount(activity);
+        DataReadRequest dataReadRequest = buildTotalStepRequest(cal);
+        DataReadRequest dataReadRequest2 = buildActiveStepRequest(cal);
+
+        // Total step data read response
+        Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
+                .readData(dataReadRequest)
+                .addOnSuccessListener(
+                        dataReadResponse -> {
+                            Log.d(TAG, "" + dataReadResponse.getBuckets().size());
+                            for (int i = 0; i < 28; i++) {
+                                Log.d(TAG, String.format("Total Step - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
+                                Bucket bucket = dataReadResponse.getBuckets().get(i);
+                                DataSet dtSet = bucket.getDataSet(DataType.AGGREGATE_STEP_COUNT_DELTA);
+                                if (dtSet != null && !dtSet.isEmpty()) {
+                                    int totalStep = dtSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
+                                    Log.d(TAG, "getLast28DaysSteps - dtSet steps = " + totalStep);
+                                    activity.getMonthlyTotalSteps()[i] = totalStep;
+                                } else {
+                                    activity.getMonthlyTotalSteps()[i] = 0;
+                                }
+                            }
+                            activity.setInActiveStepRead(true);
+                        })
+                .addOnFailureListener(
+                        e -> {Log.e(TAG, "Fail to get the last 28 day total steps");
+                        });
+
+        // Active steps data read response
+        Fitness.getHistoryClient(activity, Objects.requireNonNull(gsa))
+                .readData(dataReadRequest2)
+                .addOnSuccessListener(
+                        dataReadResponse -> {
+                            for (int i = 0; i < 28; i++) {
+                                Log.d(TAG, String.format("Active Step - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
+                                Bucket bucket = dataReadResponse.getBuckets().get(i);
+                                DataSet activeStepDataSet = bucket.getDataSets().get(1);
+                                Log.d(TAG, "" + (activeStepDataSet != null));
+                                Log.d(TAG, activeStepDataSet.toString());
+
+                                Log.d(TAG, String.format("getLast28DaysSteps - dataReadResponse value at %d = " + dataReadResponse.getBuckets().get(i), i));
+
+                                if (activeStepDataSet != null && !activeStepDataSet.isEmpty()) {
+                                    Log.d(TAG, "getLast28DaysSteps - dtSet2 steps = " + activeStepDataSet);
+                                    activity.getMonthlyActiveSteps()[i] = activeStepDataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(ACTIVE_STEP_INDEX)).asInt();
+                                    activity.getMonthlyActiveDistance()[i] = activeStepDataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(ACTIVE_DIST_INDEX)).asFloat();
+                                    activity.getMonthlyActiveSpeed()[i] = activeStepDataSet.getDataPoints().get(0).getValue(activeDataType.getFields().get(ACTIVE_SPEED_INDEX)).asFloat();
+                                } else {
+                                    activity.getMonthlyActiveSteps()[i] = 0;
+                                    activity.getMonthlyActiveDistance()[i] = 0;
+                                    activity.getMonthlyActiveSpeed()[i] = 0;
+                                }
+                            }
+                            activity.setActiveStepRead(true);
+                        })
+                .addOnFailureListener(
+                        e -> {Log.e(TAG, "Fail to get the last 28 day active steps");
+                        });
+        return null;
+    }
+
+    public DataReadRequest getLast28DaysSteps(int[] MonthlyInactiveSteps, int[] MonthlyActiveSteps) {
+        return getLast28DaysSteps(StepCalendar.getInstance());
     }
 
     @Override
     public int getRequestCode() {
         return GOOGLE_FIT_PERMISSIONS_REQUEST_CODE;
-    }
-
-    private void setupStepStorage() {
-        if(stepStorage == null) {
-            stepStorage = FirebaseFirestore.getInstance()
-                    .collection("steps");
-        }
     }
 
     @SuppressLint("StaticFieldLeak")

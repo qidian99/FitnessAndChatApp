@@ -54,7 +54,7 @@ public class WeeklyStatsActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_weekly_stats);
+        setContentView(R.layout.activity_user_stats);
 
         boolean test = getIntent().getBooleanExtra("testkey", false);
 

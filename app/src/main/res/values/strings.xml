@@ -32,6 +32,7 @@
     <string name="progressLeft">Steps Left</string>
     <string name="prevSession">Active Data</string>
     <string name="user_profile">User Profile</string>
+    <string name="choose_stats">Choose Stats</string>
     <string name="chat">Chat</string>
     <string name="stats">Stats</string>
     <string name="OK">OK</string>
@@ -61,4 +62,8 @@
     <string name="user_prefix">Name:</string>
     <string name="delete_friend">Delete Friend</string>
     <string name="delete_friend_prompt">Are you sure to delete your friend</string>
+    <string name="show_weekly">Weekly</string>
+    <string name="show_monthly">Monthly</string>
+    <string name="choose_stats_msg">In which time span would you like to view your stats?</string>
+    <string name="show_stats">Show Stats</string>
 </resources>

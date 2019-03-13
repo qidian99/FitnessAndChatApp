@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,18 +23,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.SetOptions;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.Activity;
-import edu.ucsd.cse110.googlefitapp.MainActivity;
-import edu.ucsd.cse110.googlefitapp.MonthlyStatsActivity;
-import edu.ucsd.cse110.googlefitapp.NewFriendSignUpActivity;
+import edu.ucsd.cse110.googlefitapp.FriendStatsActivity;
 import edu.ucsd.cse110.googlefitapp.R;
-import edu.ucsd.cse110.googlefitapp.WeeklyStatsActivity;
 import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
 import edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity;
 
@@ -249,7 +242,7 @@ public class UserProfileDialog extends DialogFragment {
 
     private void launchMonthlyStats(String friendEmail) {
         try {
-            Intent intent = new Intent(activity, MonthlyStatsActivity.class);
+            Intent intent = new Intent(activity, FriendStatsActivity.class);
             intent.putExtra("friendEmail", friendEmail);
             startActivity(intent);
             Log.d(TAG, getString(R.string.launchMonthlyStatsSuccess));
