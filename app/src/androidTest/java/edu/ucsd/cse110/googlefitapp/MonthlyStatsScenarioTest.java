@@ -101,7 +101,7 @@ public class MonthlyStatsScenarioTest {
         And no bar goes over the red horizontal line at 500 steps
      */
     @Test
-    public void userSeeWeeklyStats() {
+    public void userSeeMonthlyStats() {
         onView(withId(R.id.weeklyButton)).check(matches(isDisplayed()));
         onView(withId(R.id.weeklyButton)).perform(click());
         onView(withText("MONTHLY"))

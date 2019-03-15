@@ -60,7 +60,7 @@ public class WeeklyStatsActivity extends Activity {
         boolean test = getIntent().getBooleanExtra("testkey", false);
         esTest = getIntent().getBooleanExtra("TEST", false);
 
-        if (!test) {
+        if (!test || !esTest) {
             fitnessService = new WeeklyStatsAdapter(this);
             fitnessService.setup();
         }
