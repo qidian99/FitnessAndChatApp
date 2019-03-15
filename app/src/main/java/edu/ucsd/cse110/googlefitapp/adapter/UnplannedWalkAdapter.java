@@ -468,10 +468,9 @@ public class UnplannedWalkAdapter implements FitnessService {
         Calendar tempCal = StepCalendar.getInstance();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR_OF_DAY, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 2);
         long startTime2 = tempCal.getTimeInMillis() / 1000 * 1000;
         tempCal.set(Calendar.HOUR_OF_DAY, 1);
-        long startTime = tempCal.getTimeInMillis() / 1000 * 1000;
         // Get next Saturday
         tempCal.set(Calendar.SECOND, 59);
         tempCal.set(Calendar.MINUTE, 59);
@@ -492,11 +491,11 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 Calendar cal = StepCalendar.getInstance();
                                 cal.set(Calendar.SECOND, 59);
                                 cal.set(Calendar.MINUTE, 59);
-                                cal.set(Calendar.HOUR_OF_DAY, 23);
+                                cal.set(Calendar.HOUR_OF_DAY, 22);
                                 long endTime1 = cal.getTimeInMillis() / 1000 * 1000;
                                 cal.set(Calendar.SECOND, 0);
                                 cal.set(Calendar.MINUTE, 0);
-                                cal.set(Calendar.HOUR_OF_DAY, 0);
+                                cal.set(Calendar.HOUR_OF_DAY, 1);
                                 long startTime1 = cal.getTimeInMillis() / 1000 * 1000;
 
                                 DataSource dataSource =

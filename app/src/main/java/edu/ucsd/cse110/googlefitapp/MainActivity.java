@@ -652,16 +652,11 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         goalText.setText(String.format(SHOW_GOAL, goal));
 
         // Save new goal
-        this.goal = goal;
-
+        setGoal(goal);
         fitnessService.updateStepCount();
 
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME,
-                MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(KEY_GOAL, goal);
-        editor.apply();
     }
+
 
     @Override
     public void onFinishEditDialog(int[] inputStep) {

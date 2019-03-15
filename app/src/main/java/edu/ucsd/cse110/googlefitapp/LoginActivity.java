@@ -130,9 +130,6 @@ public class LoginActivity extends AppCompatActivity {
             if (GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(LoginActivity.this), fitnessOptions)) {
                 isCancelled = true;
                 Log.d(TAG, "Login suceeds.");
-//                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-//                Log.d(TAG, "Async stopped");
-//                startActivity(intent);
                 LoginActivity.this.finish();
                 overridePendingTransition(R.anim.slide_r_to_l_enter, R.anim.slide_r_to_l_exit);
             }

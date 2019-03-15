@@ -80,6 +80,7 @@ public class CreateNewGoalScenarioTest {
         intent.putExtra("TEST_SERVICE_MAIN", TEST_SERVICE_MAIN_ACTIVITY);
         intent.putExtra("TEST_SERVICE_STEP_COUNT", TEST_SERVICE_STEP_ACTIVITY);
         mActivityTestRule.launchActivity(intent);
+        clearSharedPrefs(mActivityTestRule.getActivity());
         mActivityTestRule.getActivity().setFitnessServiceKey(TEST_SERVICE_STEP_ACTIVITY);
     }
 
@@ -105,7 +106,7 @@ public class CreateNewGoalScenarioTest {
                 .inRoot(isDialog())
                 .check(matches(isDisplayed()));
 
-        onView(withId(R.id.newGoal)).perform(typeText(String.valueOf(3000)));
+        onView(withId(R.id.newGoal)).perform(typeText(String.valueOf(6000)));
         onView(withId(R.id.doneBtn)).perform(click());
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
     }
@@ -277,6 +278,7 @@ public class CreateNewGoalScenarioTest {
 
         public TestMainFitnessService(Activity mainActivity) {
             this.mainActivity = mainActivity;
+            mainActivity.setStep(5000);
         }
 
         @Override
