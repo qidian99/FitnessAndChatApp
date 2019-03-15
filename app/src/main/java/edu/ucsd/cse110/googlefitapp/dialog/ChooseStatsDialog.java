@@ -40,6 +40,7 @@ public class ChooseStatsDialog extends DialogFragment {
     private Button showWeeklyBtn;
     private Button showMonthlyBtn;
     private Activity activity;
+    private static boolean test;
 
     public ChooseStatsDialog() {}
 
@@ -54,6 +55,7 @@ public class ChooseStatsDialog extends DialogFragment {
         args.putString("title", title);
         frag.setArguments(args);
         frag.setStyle(0, R.style.Dialog);
+        test = activity.getIntent().getBooleanExtra("TEST", false);
         return frag;
     }
 
@@ -99,6 +101,7 @@ public class ChooseStatsDialog extends DialogFragment {
     private void launchMonthlyStats() {
         try {
             Intent intent = new Intent(activity, MonthlyStatsActivity.class);
+            intent.putExtra("TEST", test);
             startActivity(intent);
             Log.d(TAG, getString(R.string.launchMonthlyStatsSuccess));
 
@@ -111,6 +114,7 @@ public class ChooseStatsDialog extends DialogFragment {
     private void launchWeeklyStats() {
         try {
             Intent intent = new Intent(activity, WeeklyStatsActivity.class);
+            intent.putExtra("TEST", test);
             startActivity(intent);
             Log.d(TAG, getString(R.string.launchWeeklyStatsSuccess));
 

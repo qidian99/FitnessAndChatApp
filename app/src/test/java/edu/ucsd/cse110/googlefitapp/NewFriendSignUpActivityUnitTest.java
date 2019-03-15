@@ -66,7 +66,7 @@ public class NewFriendSignUpActivityUnitTest {
     public void testAddSuccess() {
         text.setText("da@ucsd.edu");
         button.performClick();
-        assertEquals("User exists!", ShadowToast.getTextOfLatestToast());
+        assertEquals("Request Send!", ShadowToast.getTextOfLatestToast());
         String friend = activity.getFriend(0);
         assertEquals("da@ucsd.edu", friend);
     }
@@ -114,20 +114,20 @@ public class NewFriendSignUpActivityUnitTest {
         ArrayList<String> friends = activity.getFriendList();
         assertEquals(0, friends.size());
         button.performClick();
-        assertEquals("User exists!", ShadowToast.getTextOfLatestToast());
+        assertEquals("Request Send", ShadowToast.getTextOfLatestToast());
         assertEquals(1, friends.size());
         assertEquals("da@ucsd.edu", activity.getFriend(0));
 
         text.setText("110@ucsd.edu");
         button.performClick();
-        assertEquals("User exists!", ShadowToast.getTextOfLatestToast());
+        assertEquals("Request Send", ShadowToast.getTextOfLatestToast());
         assertEquals(2, friends.size());
         assertEquals("da@ucsd.edu", activity.getFriend(0));
         assertEquals("110@ucsd.edu", activity.getFriend(1));
 
         text.setText("enz@ucsd.edu");
         button.performClick();
-        assertEquals("User exists!", ShadowToast.getTextOfLatestToast());
+        assertEquals("Request Send", ShadowToast.getTextOfLatestToast());
         assertEquals(3, friends.size());
         assertEquals("da@ucsd.edu", activity.getFriend(0));
         assertEquals("110@ucsd.edu", activity.getFriend(1));

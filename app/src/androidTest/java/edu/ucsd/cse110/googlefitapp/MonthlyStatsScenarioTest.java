@@ -5,66 +5,58 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.IBinder;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Root;
+import android.support.test.espresso.UiController;
+import android.support.test.espresso.ViewAction;
+import android.support.test.espresso.action.MotionEvents;
 import android.support.test.espresso.intent.Intents;
-import android.support.test.espresso.matcher.RootMatchers;
-import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
-import android.widget.TextView;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowManager;
 
-import com.google.android.gms.fitness.request.DataReadRequest;
-
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.internal.matchers.TypeSafeMatcher;
 import org.junit.runner.RunWith;
-
-import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
-import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.intent.Intents.intended;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withSpinnerText;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.CoreMatchers.anything;
-import static org.hamcrest.CoreMatchers.containsString;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class LogActiveSessionScenarioTest {
-    /*
-        Note that since our users have to enter their heights to start an active session,
-        we will assume the user enter their heights as 160cm before they start the active
-        session.
-     */
+public class MonthlyStatsScenarioTest {
     private static final String TEST_SERVICE_MAIN_ACTIVITY = "TEST_SERVICE_MAIN_ACTIVITY";
     private static final String TEST_SERVICE_STEP_ACTIVITY = "TEST_SERVICE_STEP_ACTIVITY";
 
-    private ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<MainActivity>(MainActivity.class) {
+    private ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<MainActivity>(MainActivity
+            .class) {
         @Override
         protected void beforeActivityLaunched() {
             clearSharedPrefs(InstrumentationRegistry.getTargetContext());
             super.beforeActivityLaunched();
         }
     };
-
-    private ActivityTestRule<PlannedWalkActivity> mStepCountActivityTestRule = new ActivityTestRule<>(PlannedWalkActivity.class);
 
     public static void clearSharedPrefs(Context context) {
         SharedPreferences prefs =
@@ -77,18 +69,8 @@ public class LogActiveSessionScenarioTest {
     @Before
     public void setup() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
-        googleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(Activity activity) {
-                return new TestMainFitnessService(activity);
-            }
-        });
-        googleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(Activity activity) {
-                return new TestStepCountFitnessService(activity);
-            }
-        });
+        googleFitnessServiceFactory.put(TEST_SERVICE_MAIN_ACTIVITY, TestMainFitnessService::new);
+        googleFitnessServiceFactory.put(TEST_SERVICE_STEP_ACTIVITY, plannedWalkActivity -> new TestStepCountFitnessService());
 
         Intents.init();
         Intent intent = new Intent();
@@ -97,30 +79,6 @@ public class LogActiveSessionScenarioTest {
         intent.putExtra("TEST_SERVICE_STEP_COUNT", TEST_SERVICE_STEP_ACTIVITY);
         mActivityTestRule.launchActivity(intent);
         mActivityTestRule.getActivity().setFitnessServiceKey(TEST_SERVICE_STEP_ACTIVITY);
-
-        onView(withId(R.id.startBtn))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-        onView(withId(R.id.startBtn)).perform(click());
-        onView(withText(R.string.heightPrompt))
-                .inRoot(isDialog())
-                .check(matches(isDisplayed()));
-
-        onView(withId(R.id.metricSpinner)).perform(click());
-        onData(anything()).inRoot(RootMatchers.isPlatformPopup()).atPosition(0).perform(click());
-
-        onView(withId(R.id.metricSpinner)).check(matches(withSpinnerText(containsString("cm"))));
-        onView(withId(R.id.cent_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE))));
-        onView(withId(R.id.ft_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.GONE))));
-        onView(withId(R.id.inch_height))
-                .check(matches((withEffectiveVisibility(ViewMatchers.Visibility.GONE))));
-
-        onView(withId(R.id.cent_height)).perform(typeText(String.valueOf(160)));
-
-        onView(withId(R.id.posBtn)).perform(click());
-
-        intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
     }
 
     @After
@@ -130,50 +88,91 @@ public class LogActiveSessionScenarioTest {
     }
 
     /*
-      Feature: Way to Log intended active session (Start/End Button)
-      Scenario 1: User presses start button
-        Given that Sarah wants to start her workout
-        And she has the app started and running
-        When she presses the Start Walk/Run button
-        Then a new session will activate
-        And will record her steps starting at 0.
+        Scenario 1: User Opens Bar Chart At the End of a Week
+        Given that User has successfully logged in to Google account in Personal Best
+        And that from last Sunday to Saturday, User has taken 100, 100, 100, 200, 200, 300, 300 unintentional steps
+        And that from last Sunday to Saturday, User has walked 200 steps everyday the active session
+        And that the current step goal is 500
+        When User taps on the show bar chart button
+        Then the bar chart of User’s activity record for the past seven days shows up
+        And each bar has two colors with red indicating the unintentional steps and blue indicating the intentional steps
+        And the red section of each of the seven bars is labeled as 100, 100, 100, 200, 200, 300, 300 respectively
+        And the blue section of each bar is labeled as 200, 200, 200, 200, 200, 200, 200 respectively
+        And no bar goes over the red horizontal line at 500 steps
      */
     @Test
-    public void userPressesStartButton() {
-        mActivityTestRule.getActivity().launchStepCountActivity();
-        intended(hasComponent(new ComponentName(getTargetContext(), NewFriendSignUpActivity.class)));
-        onView(withId(R.id.textSteps)).check(matches(withText("0")));
-
+    public void userSeeWeeklyStats() {
+        onView(withId(R.id.weeklyButton)).check(matches(isDisplayed()));
+        onView(withId(R.id.weeklyButton)).perform(click());
+        onView(withText("MONTHLY"))
+                .inRoot(isDialog()).check(matches(isDisplayed()));
+        onView(withId(R.id.congrats)).check(matches(withText("In which time span would you like to view your stats?")));
+        onView(withText("MONTHLY"))
+                .inRoot(isDialog()).perform(click());
+        intended(hasComponent(new ComponentName(getTargetContext(), MonthlyStatsActivity.class)));
+        onView(withId(R.id.graphUsage)).check(matches(withText("Tap on blue bar: display stats for active" +
+                " sessions of the day.\n\n\t\tTap on red bar: " +
+                "display stats from the rest of the day.")));
+        onView(withId(R.id.backToHome)).check(matches(isDisplayed()));
+        onView(withId(R.id.backToHome)).perform(click());
+        intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
     }
 
-    /*
-      Scenario 2: User presses end button
-        Given that Sarah had started her workout
-        And had the app running with an active session
-        When she presses the End Walk/Run button
-        Then the current session will end and display her stats
-    */
-    @Test
-    public void userPressesEndButton() {
+    private static ViewAction touchDownAndUp(final float x, final float y) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isDisplayed();
+            }
 
-        mActivityTestRule.getActivity().launchStepCountActivity();
-        intended(hasComponent(new ComponentName(getTargetContext(), PlannedWalkActivity.class)));
-        onView(withId(R.id.btnEndRecord)).perform(click());
-//        onView(withText(R.string.invalidHeight))
-//                .inRoot(isDialog())
-//                .check(matches(isDisplayed()));
+            @Override
+            public String getDescription() {
+                return "Send touch events.";
+            }
 
-        // First, she should click the OK button to close active data display dialog
-        onView(withText("OK")).perform(click());
-        intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
+            @Override
+            public void perform(UiController uiController, final View view) {
+                // Get view absolute position
+                int[] location = new int[2];
+                view.getLocationOnScreen(location);
 
+                // Offset coordinates by view position
+                float[] coordinates = new float[] { x + location[0], y + location[1] };
+                float[] precision = new float[] { 1f, 1f };
+
+                // Send down event, pause, and send up
+                MotionEvent down = MotionEvents.sendDown(uiController, coordinates, precision).down;
+                uiController.loopMainThreadForAtLeast(200);
+                MotionEvents.sendUp(uiController, down, coordinates);
+            }
+        };
+    }
+
+    private class ToastMatcher extends TypeSafeMatcher<Root> {
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("is toast");
+        }
+
+        @Override
+        public boolean matchesSafely(Root root) {
+            int type = root.getWindowLayoutParams().get().type;
+            if ((type == WindowManager.LayoutParams.TYPE_TOAST)) {
+                IBinder windowToken = root.getDecorView().getWindowToken();
+                IBinder appToken = root.getDecorView().getApplicationWindowToken();
+                if (windowToken == appToken) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     private class TestMainFitnessService implements FitnessService {
         private static final String TAG = "[TestMainFitnessService]: ";
         private Activity mainActivity;
 
-        public TestMainFitnessService(Activity mainActivity) {
+        TestMainFitnessService(Activity mainActivity) {
             this.mainActivity = mainActivity;
         }
 
@@ -190,7 +189,8 @@ public class LogActiveSessionScenarioTest {
         @Override
         public void updateStepCount() {
             Log.d(TAG, "update all texts");
-            mainActivity.updateAll(1000);
+            mainActivity.setStep(3000);
+            mainActivity.notifyObservers();
         }
 
         @Override
@@ -198,10 +198,8 @@ public class LogActiveSessionScenarioTest {
 
         }
 
-
         @Override
         public void startAsync() {
-
         }
 
         @Override
@@ -211,12 +209,10 @@ public class LogActiveSessionScenarioTest {
 
         @Override
         public void addInactiveSteps(int extraStep) {
-
         }
 
         @Override
         public void addActiveSteps(int step, int min, int sec, float stride) {
-
         }
 
         @Override
@@ -232,10 +228,8 @@ public class LogActiveSessionScenarioTest {
 
     private class TestStepCountFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountFitnessService]: ";
-        private Activity plannedWalkActivity;
 
-        public TestStepCountFitnessService(Activity plannedWalkActivity) {
-            this.plannedWalkActivity = plannedWalkActivity;
+        TestStepCountFitnessService() {
         }
 
         @Override
@@ -250,7 +244,7 @@ public class LogActiveSessionScenarioTest {
 
         @Override
         public void updateStepCount() {
-            ((TextView) plannedWalkActivity.findViewById(R.id.textSteps)).setText("0");
+            Log.d(TAG, "updateStepCount");
         }
 
         @Override
@@ -288,4 +282,6 @@ public class LogActiveSessionScenarioTest {
             return null;
         }
     }
+
+
 }
