@@ -61,7 +61,7 @@ public class MonthlyStatsActivity extends Activity {
         esTest = getIntent().getBooleanExtra("TEST", false);
 
 
-        if (!test) {
+        if (!test || !esTest) {
             fitnessService = new MonthlyStatsAdapter(this);
             fitnessService.setup();
         }

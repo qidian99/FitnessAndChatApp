@@ -141,7 +141,7 @@ public class LogActiveSessionScenarioTest {
     @Test
     public void userPressesStartButton() {
         mActivityTestRule.getActivity().launchStepCountActivity();
-        intended(hasComponent(new ComponentName(getTargetContext(), NewFriendSignUpActivity.class)));
+        intended(hasComponent(new ComponentName(getTargetContext(), PlannedWalkActivity.class)));
         onView(withId(R.id.textSteps)).check(matches(withText("0")));
 
     }
