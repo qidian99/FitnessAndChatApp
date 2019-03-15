@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
@@ -15,8 +16,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
@@ -30,11 +33,17 @@ import com.github.ybq.android.spinkit.style.FadingCircle;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.adapter.PlannedWalkAdapter;
@@ -106,6 +115,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     private int day;
     private int today;
     private boolean notCleared;
+    private boolean isTest = false;
     private DrawerLayout drawerLayout;
     public static final String DOCUMENT_KEY = "public_ntfcn";
     private ChatMessaging chatMessaging;
@@ -183,13 +193,27 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        boolean test = getIntent().getBooleanExtra("FriendListTest", false);
+
         // For testing
-        if (getIntent().getBooleanExtra("TEST", false)) {
+        if (getIntent().getBooleanExtra("TEST", false) || test) {
+            if (getIntent().getBooleanExtra("TEST", false)) {
+                isTest = true;
+            }
             String mainServiceKey = getIntent().getStringExtra("TEST_SERVICE_MAIN");
             String stepCountServiceKey = getIntent().getStringExtra("TEST_SERVICE_STEP_COUNT");
             fitnessService = fitnessServiceFactory.create(mainServiceKey, this);
             setFitnessServiceKey(stepCountServiceKey);
             chatMessaging = new TestMessaging();
+            // Set up drawer item
+            NavigationView navView = findViewById(R.id.nav_view);
+            Menu m = navView.getMenu();
+            m.clear();
+
+            // Request friend view (User to Other)
+            SubMenu reqFriendMenu = m.addSubMenu("Friend List");
+            reqFriendMenu.add("daw096@ucsd.edu");
+
         } else { // Normal setup
             fitnessServiceFactory.put(MAIN_SERVICE, UnplannedWalkAdapter::new);
 
@@ -223,7 +247,11 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         mTitle.setText(getString(R.string.PersonalBest));
 
         ImageView friendHint = findViewById(R.id.hintFriend);
-        friendHint.setVisibility(View.INVISIBLE);
+        if(test) {
+            friendHint.setVisibility(View.VISIBLE);
+        } else {
+            friendHint.setVisibility(View.INVISIBLE);
+        }
 
         ImageView addFriend = findViewById(R.id.friend_18);
         addFriend.setOnTouchListener(new OnTouchListener() {
@@ -412,6 +440,9 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
     private void launchFriendSignUpActivity() {
         Intent intent = new Intent(MainActivity.this, NewFriendSignUpActivity.class);
+        if(isTest) {
+            intent.putExtra("testkey", true);
+        }
         intent.putExtra("uid", fitnessService.getUID());
         intent.putExtra("email", fitnessService.getEmail());
         Log.d(TAG, "Async stopped");

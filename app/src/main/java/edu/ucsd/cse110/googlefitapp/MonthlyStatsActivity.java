@@ -50,6 +50,7 @@ public class MonthlyStatsActivity extends Activity {
     private boolean inactiveStepRead = false;
     private boolean activeStepRead = false;
     private Calendar tempCal;
+    private boolean esTest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +58,8 @@ public class MonthlyStatsActivity extends Activity {
         setContentView(R.layout.activity_user_stats);
 
         boolean test = getIntent().getBooleanExtra("testkey", false);
+        esTest = getIntent().getBooleanExtra("TEST", false);
+
 
         if (!test) {
             fitnessService = new MonthlyStatsAdapter(this);
@@ -225,6 +228,81 @@ public class MonthlyStatsActivity extends Activity {
         Log.d(TAG, String.format("goal line set success: %d", goal));
     }
 
+    public void setTestGraph() {
+        BarChart barChart = findViewById(R.id.barGraph);
+        barEntries = new ArrayList<>();
+
+        int max = 0;
+
+        int goal = 5000;
+
+        int[] totalArr = new int[28];
+        totalArr[27] = 4000;
+        totalArr[26] = 5000;
+        totalArr[25] = 3000;
+        totalArr[24] = 6000;
+        totalArr[23] = 7000;
+
+        int[] activeArr = new int[28];
+        activeArr[27] = 1000;
+        activeArr[26] = 3000;
+        activeArr[25] = 2000;
+        activeArr[24] = 1000;
+        activeArr[23] = 5000;
+
+        for (int i = 0; i < 28; i++) {
+            int activeSteps = activeArr[i];
+
+            int inactiveSteps = totalArr[i] - activeSteps;
+
+            if(inactiveSteps < 0) {
+                inactiveSteps = 0;
+            }
+
+            if (inactiveSteps + activeSteps > max) {
+                max = inactiveSteps + activeSteps;
+            }
+            Log.d(TAG, String.format(DAILY_STATS_FMT, i, inactiveSteps, activeSteps));
+
+            barEntries.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i));
+        }
+
+        if (max < goal) {
+            barChart.getAxisLeft().setAxisMaxValue(goal + 300);
+            barChart.getAxisRight().setAxisMaxValue(goal + 300);
+        } else {
+            barChart.getAxisLeft().setAxisMaxValue(max + 300);
+            barChart.getAxisRight().setAxisMaxValue(max + 300);
+        }
+
+        Log.d(TAG, String.format("graph maximum set success: %.1f", barChart.getAxisLeft().getAxisMaximum()));
+
+        BarDataSet barDataSet = new BarDataSet(barEntries, "");
+        barDataSet.setStackLabels(new String[]{"Active steps", "Incidental steps"});
+        barDataSet.setColors(new int[]{Color.rgb(204, 229, 255), Color.rgb(255, 204, 204)});
+
+        ArrayList<String> days = new ArrayList<>();
+        if(tempCal == null) {
+            tempCal = StepCalendar.getInstance();
+        }
+
+        for( int i = 0; i < 28; i ++ ){
+            days.add(0, getDayOfMonthString(tempCal));
+            tempCal.add(Calendar.DATE, -1);
+        }
+
+        barData = new BarData(days, barDataSet);
+
+        barChart.setData(barData);
+
+        barChart.animateY(2000);
+
+        goalLine = new LimitLine(goal);
+
+        barChart.getAxisLeft().addLimitLine(goalLine);
+        Log.d(TAG, String.format("goal line set success: %d", goal));
+    }
+
     public ArrayList<BarEntry> getBarEntries() {
         return barEntries;
     }
@@ -343,7 +421,11 @@ public class MonthlyStatsActivity extends Activity {
                 Log.d(MonthlyStatsActivity.TAG, "Successfully populate monthly stats arrays.");
                 findViewById(R.id.barGraph).setVisibility(View.VISIBLE);
                 findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-                setGraph();
+                if (esTest) {
+                    setTestGraph();
+                } else {
+                    setGraph();
+                }
                 isCancelled = true;
                 cancel(true);
 

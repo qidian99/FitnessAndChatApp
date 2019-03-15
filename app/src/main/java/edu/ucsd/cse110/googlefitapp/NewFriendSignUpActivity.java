@@ -8,7 +8,9 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +26,7 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -43,9 +46,7 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_friend);
-
         test = getIntent().getBooleanExtra("testkey", false);
-
         friendEmailTxt = findViewById(R.id.enterFriendEmail);
         friendEmailTxt.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -57,6 +58,9 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
                 return false;
             }
         });
+        if(test) {
+            userList.add("daw096@ucsd.edu");
+        }
     }
 
     public void goBackToHomeScreen(View view) {
@@ -130,7 +134,8 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
                     });
         } else {
             if(userList.indexOf(friendEmail) != -1) {
-                showToast("User exists!");
+                friendEmailTxt.setText("");
+                showToast("Request Send");
                 myFriendList.add(friendEmail);
             } else {
                 showToast("User does not exist!");

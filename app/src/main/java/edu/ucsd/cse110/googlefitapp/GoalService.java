@@ -112,7 +112,8 @@ public class GoalService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
-        Toast.makeText(GoalService.this, "Service Started", Toast.LENGTH_SHORT).show();
+        Toast toast = Toast.makeText(GoalService.this, "Service Started", Toast.LENGTH_SHORT);
+        toast.show();
         Thread thread = new Thread(new MyThread(startId));
         thread.start();
         return super.onStartCommand(intent, flags, startId);
