@@ -414,8 +414,6 @@ public class UnplannedWalkAdapter implements FitnessService {
                                 historyClient.insertData(dataSet2).addOnCompleteListener(v -> updateStepCount());
                             } else {
                                 int step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + extraStep;
-                                long dtStartTime = dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS);
-                                long dtEndTime = dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS);
 
                                 Calendar cal = StepCalendar.getInstance();
                                 cal.set(Calendar.SECOND, 59);
@@ -439,7 +437,7 @@ public class UnplannedWalkAdapter implements FitnessService {
                                                 .build();
                                 DataSet dataSet2 = DataSet.create(dataSource);
                                 DataPoint dataPoint =
-                                        dataSet2.createDataPoint().setTimeInterval(dtStartTime, dtEndTime, TimeUnit.MILLISECONDS);
+                                        dataSet2.createDataPoint().setTimeInterval(startTime1, endTime1, TimeUnit.MILLISECONDS);
                                 dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
                                 dataSet2.add(dataPoint);
 

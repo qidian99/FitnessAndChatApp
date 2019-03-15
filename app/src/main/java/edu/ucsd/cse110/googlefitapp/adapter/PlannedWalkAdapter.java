@@ -155,8 +155,6 @@ public class PlannedWalkAdapter implements FitnessService {
 
     private void mockNonemptyDataSet(DataSet dataSet) {
         step = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt() + 500;
-        long dtStartTime = dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS);
-        long dtEndTime = dataSet.getDataPoints().get(0).getEndTime(TimeUnit.MILLISECONDS);
 
         dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).setInt(step);
         Log.d(TAG, "Total steps in mockDataPoint: " + dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
@@ -184,7 +182,7 @@ public class PlannedWalkAdapter implements FitnessService {
                         .build();
         DataSet dataSet2 = DataSet.create(dataSource);
         DataPoint dataPoint =
-                dataSet2.createDataPoint().setTimeInterval(dtStartTime, dtEndTime, TimeUnit.MILLISECONDS);
+                dataSet2.createDataPoint().setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
         dataPoint.getValue(Field.FIELD_STEPS).setInt(step);
         dataSet2.add(dataPoint);
         Log.d(TAG, "mockDataPoint - Newly created dataSet: " + dataSet2);
