@@ -66,7 +66,7 @@ public class NewFriendSignUpActivityUnitTest {
     public void testAddSuccess() {
         text.setText("da@ucsd.edu");
         button.performClick();
-        assertEquals("Request Send!", ShadowToast.getTextOfLatestToast());
+        assertEquals("Request Send", ShadowToast.getTextOfLatestToast());
         String friend = activity.getFriend(0);
         assertEquals("da@ucsd.edu", friend);
     }
