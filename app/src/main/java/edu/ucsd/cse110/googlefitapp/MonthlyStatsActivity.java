@@ -61,9 +61,12 @@ public class MonthlyStatsActivity extends Activity {
         esTest = getIntent().getBooleanExtra("TEST", false);
 
 
-        if (!test || !esTest) {
+        if (!test && !esTest) {
             fitnessService = new MonthlyStatsAdapter(this);
             fitnessService.setup();
+        } else {
+            inactiveStepRead = true;
+            activeStepRead = true;
         }
 
         SharedPreferences sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
@@ -155,7 +158,7 @@ public class MonthlyStatsActivity extends Activity {
         });
 
 //        setGraph();
-        if(!test) {
+        if(!test || !esTest) {
             new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
         }
 

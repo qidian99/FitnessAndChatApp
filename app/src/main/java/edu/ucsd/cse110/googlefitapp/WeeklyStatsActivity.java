@@ -60,9 +60,12 @@ public class WeeklyStatsActivity extends Activity {
         boolean test = getIntent().getBooleanExtra("testkey", false);
         esTest = getIntent().getBooleanExtra("TEST", false);
 
-        if (!test || !esTest) {
+        if (!test && !esTest) {
             fitnessService = new WeeklyStatsAdapter(this);
             fitnessService.setup();
+        } else {
+            inactiveStepRead = true;
+            activeStepRead = true;
         }
 
         SharedPreferences stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
@@ -155,7 +158,7 @@ public class WeeklyStatsActivity extends Activity {
         });
 
 //        setGraph();
-        if(!test) {
+        if(!test || !esTest) {
             new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
         }
 
