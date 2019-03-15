@@ -10,7 +10,7 @@ public class TestStore implements StoreUnit {
     TextView chatView;
     FriendChatActivity activity;
 
-    public TestStore(FriendChatActivity activity){
+    public TestStore(FriendChatActivity activity) {
         this.activity = activity;
         this.chatView = activity.findViewById(R.id.chat);
     }

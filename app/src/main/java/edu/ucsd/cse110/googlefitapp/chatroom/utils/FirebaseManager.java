@@ -25,25 +25,25 @@ import edu.ucsd.cse110.googlefitapp.chatroom.presenters.ChatPresenter;
  * Created by saksham on 26/6/17.
  */
 
-public class FirebaseManager implements ChildEventListener{
+public class FirebaseManager implements ChildEventListener {
     private volatile static FirebaseManager sFirebaseManager;
     private CollectionReference chat;
     private FirebaseCallBacks mCallbacks;
     private String token;
 
-    public static synchronized FirebaseManager getInstance(String roomName, FirebaseCallBacks callBacks) {
-        if(sFirebaseManager == null) {
-            synchronized (FirebaseManager.class) {
-                sFirebaseManager = new FirebaseManager(roomName,callBacks);
-            }
-        }
-        return sFirebaseManager;
-    }
-
-    private FirebaseManager(String roomName, FirebaseCallBacks callBacks){
+    private FirebaseManager(String roomName, FirebaseCallBacks callBacks) {
 //        chat = FirebaseDatabase.getInstance().getReference().child(roomName);
         chat = FirebaseFirestore.getInstance().collection("chatroom").document(roomName).collection("messages");
         this.mCallbacks = callBacks;
+    }
+
+    public static synchronized FirebaseManager getInstance(String roomName, FirebaseCallBacks callBacks) {
+        if (sFirebaseManager == null) {
+            synchronized (FirebaseManager.class) {
+                sFirebaseManager = new FirebaseManager(roomName, callBacks);
+            }
+        }
+        return sFirebaseManager;
     }
 
 //    public void addMessageListeners(){
@@ -80,9 +80,9 @@ public class FirebaseManager implements ChildEventListener{
     }
 
     public void sendMessageToFirebase(String message) {
-        Map<String,Object> map=new HashMap<>();
-        map.put("text",message);
-        map.put("time",System.currentTimeMillis());
+        Map<String, Object> map = new HashMap<>();
+        map.put("text", message);
+        map.put("time", System.currentTimeMillis());
         map.put("senderId", FirebaseAuth.getInstance().getCurrentUser().getUid());
 
 //        String keyToPush= chat.push().getKey();
@@ -122,7 +122,7 @@ public class FirebaseManager implements ChildEventListener{
     }
 
     public void destroy() {
-        sFirebaseManager=null;
-        mCallbacks =null;
+        sFirebaseManager = null;
+        mCallbacks = null;
     }
 }

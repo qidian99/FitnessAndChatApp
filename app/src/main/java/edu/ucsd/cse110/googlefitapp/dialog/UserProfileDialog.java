@@ -45,7 +45,8 @@ public class UserProfileDialog extends DialogFragment {
     private TextView emailText;
     private TextView deleteText;
 
-    public UserProfileDialog() {}
+    public UserProfileDialog() {
+    }
 
     @SuppressLint("ValidFragment")
     public UserProfileDialog(String userEmail, String friendEmail, Activity activity) {
@@ -144,12 +145,12 @@ public class UserProfileDialog extends DialogFragment {
                                 Log.d(TAG, " => ");
                                 Log.d(TAG, "Requested friend's email => " + friendEmail);
 
-                                if(Objects.requireNonNull(document.getData().get("email")).equals(userEmail) ){
+                                if (Objects.requireNonNull(document.getData().get("email")).equals(userEmail)) {
                                     Log.d(TAG, "Delete friend - user email found");
                                     tempUserId = (String) document.getData().get("id");
                                 }
 
-                                if(Objects.requireNonNull(document.getData().get("email")).equals(friendEmail) ){
+                                if (Objects.requireNonNull(document.getData().get("email")).equals(friendEmail)) {
                                     Log.d(TAG, "Delete friend - user email found");
                                     tempFriendId = (String) document.getData().get("id");
                                 }
@@ -200,18 +201,19 @@ public class UserProfileDialog extends DialogFragment {
         // open Chat
         String chatroomName = userEmail.compareTo(friendEmail) > 0 ? friendEmail + "TO" + userEmail : userEmail + "TO" + friendEmail;
         FirebaseAuth.getInstance().signInAnonymously()
-                .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
-                    public void onComplete( Task<AuthResult> task) {
+                    public void onComplete(Task<AuthResult> task) {
                         if (!task.isSuccessful()) {
                             Log.e(TAG, "Error connecting to chat room");
                         } else {
-                            Intent intent=new Intent(activity, ChatActivity.class);
+                            Intent intent = new Intent(activity, ChatActivity.class);
                             intent.putExtra(MyUtils.EXTRA_ROOM_NAME, chatroomName);
                             intent.putExtra("friend", friendEmail);
                             intent.putExtra("from", userEmail);
                             intent.putExtra("to", friendEmail);
-                            activity.startActivity(intent);                                                            }
+                            activity.startActivity(intent);
+                        }
                     }
                 });
     }
@@ -221,7 +223,7 @@ public class UserProfileDialog extends DialogFragment {
     }
 
     private void toggleDeleteFriendDialog() {
-        if(emailText.getVisibility() == View.VISIBLE) {
+        if (emailText.getVisibility() == View.VISIBLE) {
             emailText.setVisibility(View.GONE);
             chatBtn.setVisibility(View.GONE);
             statsBtn.setVisibility(View.GONE);

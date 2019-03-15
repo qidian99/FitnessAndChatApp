@@ -1,18 +1,11 @@
 package edu.ucsd.cse110.googlefitapp;
 
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
-import org.apache.tools.ant.Main;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,21 +13,15 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.shadows.ShadowDialog;
-import org.robolectric.shadows.ShadowToast;
 
 import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
-import edu.ucsd.cse110.googlefitapp.dialog.PlannedWalkEndingDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
 
-import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
@@ -45,7 +32,7 @@ public class HeightDialogUnitTest {
     private MainActivity activity;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
 
         googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
@@ -85,7 +72,7 @@ public class HeightDialogUnitTest {
 
     @Test
     public void testSetHeightDialogTag() {
-        assertEquals("fragment_prompt_height",dialogFragment.getTag());
+        assertEquals("fragment_prompt_height", dialogFragment.getTag());
     }
 
     @Test
@@ -122,7 +109,8 @@ public class HeightDialogUnitTest {
         }
 
         @Override
-        public void updateStepCount() {}
+        public void updateStepCount() {
+        }
 
         @Override
         public void stopAsync() {

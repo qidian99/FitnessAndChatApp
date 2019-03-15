@@ -10,7 +10,7 @@ import java.util.TimeZone;
  */
 
 public class MyUtils {
-    public static String EXTRA_ROOM_NAME="EXTRA_ROOM_NAME";
+    public static String EXTRA_ROOM_NAME = "EXTRA_ROOM_NAME";
 
     public static String convertTime(long timestamp) {
         Calendar c = Calendar.getInstance();

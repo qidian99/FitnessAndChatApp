@@ -1,26 +1,18 @@
 package edu.ucsd.cse110.googlefitapp.chatroom.presenters;
 
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
-import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import edu.ucsd.cse110.googlefitapp.R;
 import edu.ucsd.cse110.googlefitapp.chatroom.interfaces.FirebaseCallBacks;
 import edu.ucsd.cse110.googlefitapp.chatroom.interfaces.ModelCallBacks;
 import edu.ucsd.cse110.googlefitapp.chatroom.models.ChatPojo;
@@ -35,21 +27,22 @@ import edu.ucsd.cse110.googlefitapp.chatroom.views.IChatView;
 public class ChatPresenter implements FirebaseCallBacks, ModelCallBacks {
 
     private static final String TAG = "CHAT_PRESENTER";
+    public CollectionReference chat;
     private IChatView mIChatView;
     private MessageModel mModel;
-    public CollectionReference chat;
 
-    public ChatPresenter(IChatView iChatView){
-        this.mIChatView=iChatView;
-        this.mModel=new MessageModel();
+    public ChatPresenter(IChatView iChatView) {
+        this.mIChatView = iChatView;
+        this.mModel = new MessageModel();
 
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void setChat(CollectionReference chat){
+    public void setChat(CollectionReference chat) {
         this.chat = chat;
         initMessageUpdateListener();
     }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void initMessageUpdateListener() {
         chat.orderBy("time", Query.Direction.ASCENDING)
@@ -82,8 +75,8 @@ public class ChatPresenter implements FirebaseCallBacks, ModelCallBacks {
 //                    }
 
     public void sendMessageToFirebase(String roomName, String message, String from, String to) {
-        if (!message.trim().equals("")){
-            FirebaseManager.getInstance(roomName,this).sendMessageToFirebase(message, from, to, this);
+        if (!message.trim().equals("")) {
+            FirebaseManager.getInstance(roomName, this).sendMessageToFirebase(message, from, to, this);
         }
         mIChatView.clearEditText();
     }
@@ -94,13 +87,13 @@ public class ChatPresenter implements FirebaseCallBacks, ModelCallBacks {
 
     public void onDestory(String roomName) {
 //        FirebaseManager.getInstance(roomName,this).removeListeners();
-        FirebaseManager.getInstance(roomName,this).destroy();
-        mIChatView=null;
+        FirebaseManager.getInstance(roomName, this).destroy();
+        mIChatView = null;
     }
 
     @Override
     public void onNewMessage(DataSnapshot dataSnapshot) {
-        mModel.addMessages(dataSnapshot,this);
+        mModel.addMessages(dataSnapshot, this);
     }
 
     @Override

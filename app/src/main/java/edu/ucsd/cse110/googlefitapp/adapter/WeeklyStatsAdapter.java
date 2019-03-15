@@ -33,10 +33,9 @@ public class WeeklyStatsAdapter implements FitnessService {
     public static final int ACTIVE_SEC_INDEX = 2;
     public static final int ACTIVE_DIST_INDEX = 3;
     public static final int ACTIVE_SPEED_INDEX = 4;
-
+    public static Calendar calendar = MainActivity.calendar;
     private static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.active";
     private static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
-    public static Calendar calendar = MainActivity.calendar;
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "WeeklyStatsAdapter";
     private boolean isCancelled = false;
@@ -255,7 +254,8 @@ public class WeeklyStatsAdapter implements FitnessService {
                             activity.setInActiveStepRead(true);
                         })
                 .addOnFailureListener(
-                        e -> {Log.e(TAG, "Fail to get the last 7 day total steps");
+                        e -> {
+                            Log.e(TAG, "Fail to get the last 7 day total steps");
                         });
 
         // Active steps data read response
@@ -286,7 +286,8 @@ public class WeeklyStatsAdapter implements FitnessService {
                             activity.setActiveStepRead(true);
                         })
                 .addOnFailureListener(
-                        e -> {Log.e(TAG, "Fail to get the last 7 day active steps");
+                        e -> {
+                            Log.e(TAG, "Fail to get the last 7 day active steps");
                         });
         return null;
     }
@@ -337,7 +338,6 @@ public class WeeklyStatsAdapter implements FitnessService {
             }
         }
     }
-
 
 
 }

@@ -11,38 +11,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.Activity;
-import edu.ucsd.cse110.googlefitapp.FriendStatsActivity;
-import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.MonthlyStatsActivity;
 import edu.ucsd.cse110.googlefitapp.R;
 import edu.ucsd.cse110.googlefitapp.WeeklyStatsActivity;
-import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
-import edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity;
 
 public class ChooseStatsDialog extends DialogFragment {
     private static final String TAG = "ChooseStatsDialog";
+    private static boolean test;
     private Button showWeeklyBtn;
     private Button showMonthlyBtn;
     private Activity activity;
-    private static boolean test;
 
-    public ChooseStatsDialog() {}
+    public ChooseStatsDialog() {
+    }
 
     @SuppressLint("ValidFragment")
     public ChooseStatsDialog(Activity activity) {

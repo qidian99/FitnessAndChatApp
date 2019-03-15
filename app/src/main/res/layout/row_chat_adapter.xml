@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
     <LinearLayout
         android:id="@+id/layout_message_left"
         android:layout_width="match_parent"
@@ -19,36 +20,37 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/left_node_bg">
+            android:background="@drawable/left_node_bg"
+            android:orientation="vertical">
 
             <!--<TextView-->
-                <!--android:id="@+id/textview_name_messages_left"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginLeft="10dp"-->
-                <!--android:layout_marginRight="10dp"-->
-                <!--android:maxWidth="220dp"-->
-                <!--android:minWidth="70dp"-->
-                <!--android:text="Name"-->
-                <!--android:textSize="11sp"-->
-                <!--android:layout_marginTop="2dp"-->
-                <!--android:textColor="#0f9595"-->
-                <!--android:textStyle="bold" />-->
+            <!--android:id="@+id/textview_name_messages_left"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginLeft="10dp"-->
+            <!--android:layout_marginRight="10dp"-->
+            <!--android:maxWidth="220dp"-->
+            <!--android:minWidth="70dp"-->
+            <!--android:text="Name"-->
+            <!--android:textSize="11sp"-->
+            <!--android:layout_marginTop="2dp"-->
+            <!--android:textColor="#0f9595"-->
+            <!--android:textStyle="bold" />-->
 
             <TextView
                 android:id="@+id/text_message_left"
+                style="@style/textview_message_left"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/textview_message_left"/>
+                android:layout_height="wrap_content" />
         </LinearLayout>
+
         <TextView
             android:id="@+id/text_time_messages_left"
+            style="@style/info_textviews"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/margin_average"
-            android:layout_marginTop="@dimen/margin_average"
-            style="@style/info_textviews"/>
+            android:layout_marginTop="@dimen/margin_average" />
 
     </LinearLayout>
 
@@ -62,26 +64,25 @@
 
         <TextView
             android:id="@+id/text_time_message_right"
+            style="@style/info_textviews"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_large"
-            android:layout_marginRight="@dimen/margin_average"
-            style="@style/info_textviews"/>
+            android:layout_marginRight="@dimen/margin_average" />
 
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_average"
-            android:orientation="vertical"
             android:background="@drawable/right_node_bg"
-            >
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/text_message_right"
+                style="@style/textview_message_right"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/textview_message_right"/>
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
         <ImageView

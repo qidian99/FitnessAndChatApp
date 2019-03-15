@@ -52,6 +52,10 @@ public class MonthlyStatsActivity extends Activity {
     private Calendar tempCal;
     private boolean esTest;
 
+    public static String getDayOfMonthString(Calendar cal) {
+        return String.valueOf(cal.get(Calendar.DAY_OF_MONTH));
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,7 +116,7 @@ public class MonthlyStatsActivity extends Activity {
             @Override
             public void onChartSingleTapped(MotionEvent me) {
                 int index = barChart.getHighlightByTouchPoint(me.getX(), me.getY()).getXIndex();
-                if(index >= 28){
+                if (index >= 28) {
                     Log.d(TAG, "Invalid index touched.");
                     return;
                 }
@@ -123,11 +127,11 @@ public class MonthlyStatsActivity extends Activity {
                 float totalDist = stepToDistance(monthlyTotalSteps[index]);
                 float inciDist = totalDist - activeDist;
 
-                if(inciDist < 0) {
+                if (inciDist < 0) {
                     inciDist = 0;
                 }
 
-                Log.d(TAG, String.format(STATS_FMT, speed , totalDist, activeDist, inciDist));
+                Log.d(TAG, String.format(STATS_FMT, speed, totalDist, activeDist, inciDist));
 
                 if (yInd == 1) {
                     Toast.makeText(MonthlyStatsActivity.this, String.format(INCIDENTAL_WALK_FMT, inciDist, totalDist), Toast.LENGTH_SHORT).show();
@@ -158,7 +162,7 @@ public class MonthlyStatsActivity extends Activity {
         });
 
 //        setGraph();
-        if(!test || !esTest) {
+        if (!test && !esTest) {
             new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
         }
 
@@ -183,7 +187,7 @@ public class MonthlyStatsActivity extends Activity {
 
             int inactiveSteps = monthlyTotalSteps[i] - activeSteps;
 
-            if(inactiveSteps < 0) {
+            if (inactiveSteps < 0) {
                 inactiveSteps = 0;
             }
 
@@ -210,11 +214,11 @@ public class MonthlyStatsActivity extends Activity {
         barDataSet.setColors(new int[]{Color.rgb(204, 229, 255), Color.rgb(255, 204, 204)});
 
         ArrayList<String> days = new ArrayList<>();
-        if(tempCal == null) {
+        if (tempCal == null) {
             tempCal = StepCalendar.getInstance();
         }
 
-        for( int i = 0; i < 28; i ++ ){
+        for (int i = 0; i < 28; i++) {
             days.add(0, getDayOfMonthString(tempCal));
             tempCal.add(Calendar.DATE, -1);
         }
@@ -258,7 +262,7 @@ public class MonthlyStatsActivity extends Activity {
 
             int inactiveSteps = totalArr[i] - activeSteps;
 
-            if(inactiveSteps < 0) {
+            if (inactiveSteps < 0) {
                 inactiveSteps = 0;
             }
 
@@ -285,11 +289,11 @@ public class MonthlyStatsActivity extends Activity {
         barDataSet.setColors(new int[]{Color.rgb(204, 229, 255), Color.rgb(255, 204, 204)});
 
         ArrayList<String> days = new ArrayList<>();
-        if(tempCal == null) {
+        if (tempCal == null) {
             tempCal = StepCalendar.getInstance();
         }
 
-        for( int i = 0; i < 28; i ++ ){
+        for (int i = 0; i < 28; i++) {
             days.add(0, getDayOfMonthString(tempCal));
             tempCal.add(Calendar.DATE, -1);
         }
@@ -317,11 +321,6 @@ public class MonthlyStatsActivity extends Activity {
     public BarData getBarData() {
         return barData;
     }
-
-    public static String getDayOfMonthString(Calendar cal){
-        return String.valueOf(cal.get(Calendar.DAY_OF_MONTH));
-    }
-
 
     @Override
     public void updateAll(int num) {

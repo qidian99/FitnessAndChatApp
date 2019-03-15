@@ -11,13 +11,11 @@ import android.support.test.espresso.Root;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.action.MotionEvents;
-import android.support.test.espresso.contrib.DrawerActions;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -33,22 +31,16 @@ import org.junit.runner.RunWith;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
-import gherkin.cli.Main;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
 import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.clearText;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
-import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.contrib.DrawerMatchers.isClosed;
 import static android.support.test.espresso.intent.Intents.intended;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 @LargeTest
@@ -72,6 +64,36 @@ public class WeeklyStatsScenarioTest {
         SharedPreferences.Editor editor = prefs.edit();
         editor.clear();
         editor.commit();
+    }
+
+    private static ViewAction touchDownAndUp(final float x, final float y) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isDisplayed();
+            }
+
+            @Override
+            public String getDescription() {
+                return "Send touch events.";
+            }
+
+            @Override
+            public void perform(UiController uiController, final View view) {
+                // Get view absolute position
+                int[] location = new int[2];
+                view.getLocationOnScreen(location);
+
+                // Offset coordinates by view position
+                float[] coordinates = new float[]{x + location[0], y + location[1]};
+                float[] precision = new float[]{1f, 1f};
+
+                // Send down event, pause, and send up
+                MotionEvent down = MotionEvents.sendDown(uiController, coordinates, precision).down;
+                uiController.loopMainThreadForAtLeast(200);
+                MotionEvents.sendUp(uiController, down, coordinates);
+            }
+        };
     }
 
     @Before
@@ -126,36 +148,6 @@ public class WeeklyStatsScenarioTest {
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
     }
 
-    private static ViewAction touchDownAndUp(final float x, final float y) {
-        return new ViewAction() {
-            @Override
-            public Matcher<View> getConstraints() {
-                return isDisplayed();
-            }
-
-            @Override
-            public String getDescription() {
-                return "Send touch events.";
-            }
-
-            @Override
-            public void perform(UiController uiController, final View view) {
-                // Get view absolute position
-                int[] location = new int[2];
-                view.getLocationOnScreen(location);
-
-                // Offset coordinates by view position
-                float[] coordinates = new float[] { x + location[0], y + location[1] };
-                float[] precision = new float[] { 1f, 1f };
-
-                // Send down event, pause, and send up
-                MotionEvent down = MotionEvents.sendDown(uiController, coordinates, precision).down;
-                uiController.loopMainThreadForAtLeast(200);
-                MotionEvents.sendUp(uiController, down, coordinates);
-            }
-        };
-    }
-
     private class ToastMatcher extends TypeSafeMatcher<Root> {
         @Override
         public void describeTo(Description description) {
@@ -168,9 +160,7 @@ public class WeeklyStatsScenarioTest {
             if ((type == WindowManager.LayoutParams.TYPE_TOAST)) {
                 IBinder windowToken = root.getDecorView().getWindowToken();
                 IBinder appToken = root.getDecorView().getApplicationWindowToken();
-                if (windowToken == appToken) {
-                    return true;
-                }
+                return windowToken == appToken;
             }
             return false;
         }

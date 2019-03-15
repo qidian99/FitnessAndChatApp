@@ -39,7 +39,7 @@ public class PlannedWalkEndingDialogUnitTest {
     private int sec = 10;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
 
         googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {

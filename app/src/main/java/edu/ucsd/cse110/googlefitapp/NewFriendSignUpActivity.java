@@ -2,37 +2,27 @@ package edu.ucsd.cse110.googlefitapp;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
 
 public class NewFriendSignUpActivity extends AppCompatActivity {
     public static final String TAG = "NEW_FRIEND_ACTIVITY";
@@ -58,7 +48,7 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
                 return false;
             }
         });
-        if(test) {
+        if (test) {
             userList.add("daw096@ucsd.edu");
         }
     }
@@ -68,16 +58,16 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.slide_l_to_r_enter, R.anim.slide_l_to_r_exit);
     }
 
-    public void addFriend(View view){
+    public void addFriend(View view) {
         String friendEmail = friendEmailTxt.getText().toString().toLowerCase();
 
         // Check of valid email
-        if(!isValidEmail(friendEmail)){
+        if (!isValidEmail(friendEmail)) {
             showToast("Email is invalid");
             return;
         }
 
-        if(!test) {
+        if (!test) {
             // Get all users from Database and match each of them with the email
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             firestore.collection("users")
@@ -110,7 +100,7 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
                                 Map<String, Object> friend = new HashMap<>();
                                 friend.put(friendUid, true);
                                 friend.put("email", NewFriendSignUpActivity.this.getIntent().getStringExtra("email"));
-        //                            friend.put("email", friendEmail);
+                                //                            friend.put("email", friendEmail);
 
                                 FirebaseFirestore.getInstance().collection("friendship").document(uid).set(friend, SetOptions.merge())
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -133,7 +123,7 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
                         }
                     });
         } else {
-            if(userList.indexOf(friendEmail) != -1) {
+            if (userList.indexOf(friendEmail) != -1) {
                 friendEmailTxt.setText("");
                 showToast("Request Send");
                 myFriendList.add(friendEmail);
@@ -157,17 +147,9 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed(){
+    public void onBackPressed() {
         finish();
         overridePendingTransition(R.anim.slide_l_to_r_enter, R.anim.slide_l_to_r_exit);
-    }
-
-    public void setUserList(ArrayList<String> userList) {
-        this.userList = userList;
-    }
-
-    public void setFriendList(ArrayList<String> friendList) {
-        this.myFriendList = friendList;
     }
 
     public String getUser(int i) {
@@ -182,7 +164,15 @@ public class NewFriendSignUpActivity extends AppCompatActivity {
         return this.userList;
     }
 
+    public void setUserList(ArrayList<String> userList) {
+        this.userList = userList;
+    }
+
     public ArrayList<String> getFriendList() {
         return this.myFriendList;
+    }
+
+    public void setFriendList(ArrayList<String> friendList) {
+        this.myFriendList = friendList;
     }
 }

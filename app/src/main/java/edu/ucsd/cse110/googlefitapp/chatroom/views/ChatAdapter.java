@@ -27,8 +27,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.FollowerViewHo
     private Context context;
 
     ChatAdapter(Context context, ArrayList<ChatPojo> chatList) {
-        this.chatList =chatList;
-        this.context=context;
+        this.chatList = chatList;
+        this.context = context;
     }
 
     @Override
@@ -41,22 +41,22 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.FollowerViewHo
     @Override
     public void onBindViewHolder(final FollowerViewHolder holder, final int position) {
 
-            if (chatList.get(position).getSenderId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+        if (chatList.get(position).getSenderId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
 
-                holder.layoutLeftMessages.setVisibility(View.GONE);
-                holder.layoutRightMessages.setVisibility(View.VISIBLE);
+            holder.layoutLeftMessages.setVisibility(View.GONE);
+            holder.layoutRightMessages.setVisibility(View.VISIBLE);
 
-                holder.messagesTextRight.setText(chatList.get(position).getMessage());
-                holder.timeMessagesRight.setText(MyUtils.convertTime(chatList.get(position).getTimeStamp()));
+            holder.messagesTextRight.setText(chatList.get(position).getMessage());
+            holder.timeMessagesRight.setText(MyUtils.convertTime(chatList.get(position).getTimeStamp()));
 
-            } else {
+        } else {
 
-                holder.layoutLeftMessages.setVisibility(View.VISIBLE);
-                holder.layoutRightMessages.setVisibility(View.GONE);
+            holder.layoutLeftMessages.setVisibility(View.VISIBLE);
+            holder.layoutRightMessages.setVisibility(View.GONE);
 
-                holder.messagesTextLeft.setText(chatList.get(position).getMessage());
-                holder.timeMessagesLeft.setText(MyUtils.convertTime(chatList.get(position).getTimeStamp()));
-            }
+            holder.messagesTextLeft.setText(chatList.get(position).getMessage());
+            holder.timeMessagesLeft.setText(MyUtils.convertTime(chatList.get(position).getTimeStamp()));
+        }
     }
 
     @Override
@@ -67,19 +67,19 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.FollowerViewHo
 
     class FollowerViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView messagesTextLeft, timeMessagesLeft, messagesTextRight,timeMessagesRight;
+        private TextView messagesTextLeft, timeMessagesLeft, messagesTextRight, timeMessagesRight;
         private LinearLayout layoutLeftMessages, layoutRightMessages;
 
         FollowerViewHolder(View convertView) {
             super(convertView);
 
-            messagesTextLeft = (TextView) convertView.findViewById(R.id.text_message_left);
-            timeMessagesLeft =(TextView) convertView.findViewById(R.id.text_time_messages_left);
-            messagesTextRight =(TextView) convertView.findViewById(R.id.text_message_right);
-            timeMessagesRight=(TextView) convertView.findViewById(R.id.text_time_message_right);
+            messagesTextLeft = convertView.findViewById(R.id.text_message_left);
+            timeMessagesLeft = convertView.findViewById(R.id.text_time_messages_left);
+            messagesTextRight = convertView.findViewById(R.id.text_message_right);
+            timeMessagesRight = convertView.findViewById(R.id.text_time_message_right);
 
-            layoutLeftMessages =(LinearLayout) convertView.findViewById(R.id.layout_message_left);
-            layoutRightMessages =(LinearLayout) convertView.findViewById(R.id.layout_message_right);
+            layoutLeftMessages = convertView.findViewById(R.id.layout_message_left);
+            layoutRightMessages = convertView.findViewById(R.id.layout_message_right);
         }
     }
 }

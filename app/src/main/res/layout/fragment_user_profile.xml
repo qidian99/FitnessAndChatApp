@@ -11,12 +11,12 @@
         android:id="@+id/user_email"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="5dp"
         android:layout_marginLeft="5dp"
         android:layout_marginTop="15dp"
-        android:textSize="15sp"
-        android:textColor="@color/black"
+        android:layout_marginRight="5dp"
         android:text="@string/user_prefix"
+        android:textColor="@color/black"
+        android:textSize="15sp"
         android:visibility="visible" />
 
     <RelativeLayout
@@ -28,58 +28,58 @@
             android:id="@+id/goChat"
             android:layout_width="100dp"
             android:layout_height="40dp"
-            android:background="@drawable/start_btn_background"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="5dp"
             android:layout_marginRight="5dp"
+            android:background="@drawable/start_btn_background"
             android:gravity="center"
-            android:textSize="13sp"
-            android:textColor="#FFFFFF"
             android:text="@string/chat"
-            android:visibility="visible"/>
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:visibility="visible" />
 
         <Button
             android:id="@+id/goStats"
             android:layout_width="100dp"
             android:layout_height="40dp"
-            android:background="@drawable/start_btn_background"
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="5dp"
-            android:textSize="13sp"
-            android:textColor="#FFFFFF"
+            android:background="@drawable/start_btn_background"
             android:text="@string/stats"
-            android:visibility="visible"/>
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:visibility="visible" />
     </RelativeLayout>
 
     <Button
         android:id="@+id/deleteFriend"
-        android:background="@drawable/end_btn_background"
         android:layout_width="fill_parent"
         android:layout_height="40dp"
-        android:layout_marginTop="5dp"
-        android:textSize="13sp"
         android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
         android:layout_marginRight="5dp"
-        android:textColor="#FFFFFF"
+        android:background="@drawable/end_btn_background"
         android:text="@string/delete_friend"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
         android:visibility="visible" />
 
     <TextView
         android:id="@+id/deleteConfirmText"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="23dp"
-        android:textSize="15sp"
-        android:textColor="@color/black"
+        android:layout_marginRight="10dp"
         android:lines="2"
         android:text="@string/delete_friend_prompt"
+        android:textColor="@color/black"
+        android:textSize="15sp"
         android:visibility="gone" />
 
     <RelativeLayout
@@ -91,32 +91,32 @@
             android:id="@+id/deleteYes"
             android:layout_width="100dp"
             android:layout_height="40dp"
-            android:background="@drawable/start_btn_background"
-            android:textColor="#FFFFFF"
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:layout_marginTop="25dp"
             android:layout_marginEnd="5dp"
             android:layout_marginRight="5dp"
+            android:background="@drawable/start_btn_background"
             android:gravity="center"
-            android:textSize="13sp"
             android:text="@string/yes"
-            android:visibility="gone"/>
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/deleteNo"
             android:layout_width="100dp"
             android:layout_height="40dp"
-            android:background="@drawable/end_btn_background"
-            android:textColor="#FFFFFF"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="25dp"
-            android:textSize="13sp"
+            android:background="@drawable/end_btn_background"
             android:text="@string/no"
-            android:visibility="gone"/>
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:visibility="gone" />
     </RelativeLayout>
 
 </LinearLayout>

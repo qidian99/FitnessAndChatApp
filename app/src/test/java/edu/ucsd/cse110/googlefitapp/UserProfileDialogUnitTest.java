@@ -3,7 +3,6 @@ package edu.ucsd.cse110.googlefitapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.widget.Button;
 
@@ -15,7 +14,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
-import edu.ucsd.cse110.googlefitapp.dialog.NewGoalDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.UserProfileDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
@@ -33,7 +31,7 @@ public class UserProfileDialogUnitTest {
     private MainActivity activity;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
 
         googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
@@ -92,7 +90,7 @@ public class UserProfileDialogUnitTest {
         Bundle bundle = userProfileDialog.getArguments();
         Assert.assertNotNull(bundle);
         String title = bundle.getString("title");
-        assertNull( title);
+        assertNull(title);
     }
 
     @Test
@@ -124,7 +122,8 @@ public class UserProfileDialogUnitTest {
         }
 
         @Override
-        public void updateStepCount() {}
+        public void updateStepCount() {
+        }
 
         @Override
         public void stopAsync() {

@@ -1,12 +1,11 @@
 package edu.ucsd.cse110.googlefitapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
-
-import com.google.android.gms.fitness.request.DataReadRequest;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,8 +13,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-
-import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
@@ -37,7 +34,7 @@ public class PlannedWalkActivityUnitTest {
     private int nextStepCount;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
 
         googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
@@ -70,7 +67,7 @@ public class PlannedWalkActivityUnitTest {
 
     @Test
     public void testInitalStep() {
-        SharedPreferences sharedPref = activity.getSharedPreferences("stepCountData", activity.MODE_PRIVATE);
+        SharedPreferences sharedPref = activity.getSharedPreferences("stepCountData", Context.MODE_PRIVATE);
         assertTrue(sharedPref.getInt("initialSteps", -1) == 0);
         activity.setStepCount(nextStepCount);
         assertTrue(sharedPref.getInt("initialSteps", -1) == 0);

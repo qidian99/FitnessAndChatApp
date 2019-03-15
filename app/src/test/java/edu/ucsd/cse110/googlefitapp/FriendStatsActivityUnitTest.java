@@ -26,7 +26,6 @@ import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
@@ -37,7 +36,7 @@ public class FriendStatsActivityUnitTest {
     private Calendar myCalander;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         StepCalendar.set(2019, 2, 8);
         myCalander = StepCalendar.getInstance();
         Intent intent = new Intent(RuntimeEnvironment.application, WeeklyStatsActivity.class);

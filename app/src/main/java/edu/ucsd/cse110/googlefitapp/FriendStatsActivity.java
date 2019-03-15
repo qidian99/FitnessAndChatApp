@@ -44,6 +44,10 @@ public class FriendStatsActivity extends Activity {
     private boolean[] activeStepRead = new boolean[30];
     private Calendar tempCal;
 
+    public static String getDayOfMonthString(Calendar cal) {
+        return String.valueOf(cal.get(Calendar.DAY_OF_MONTH));
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +56,7 @@ public class FriendStatsActivity extends Activity {
         boolean test = getIntent().getBooleanExtra("testkey", false);
         String friendEmail = getIntent().getStringExtra("friendEmail");
 
-        if(!test) {
+        if (!test) {
             fitnessService = new FriendStatsAdapter(this, friendEmail);
             fitnessService.setup();
         }
@@ -96,7 +100,7 @@ public class FriendStatsActivity extends Activity {
             @Override
             public void onChartSingleTapped(MotionEvent me) {
                 int index = barChart.getHighlightByTouchPoint(me.getX(), me.getY()).getXIndex();
-                if(index >= 28){
+                if (index >= 28) {
                     Log.d(TAG, "Invalid index touched.");
                     return;
                 }
@@ -105,14 +109,14 @@ public class FriendStatsActivity extends Activity {
                 float speed = monthlyActiveSpeed[index];
                 float activeDist = monthlyActiveDistance[index];
                 int totalStep = monthlyTotalSteps[index];
-                float totalDist =  totalStep * friendStrideLength / 63360.0f;
+                float totalDist = totalStep * friendStrideLength / 63360.0f;
                 float inciDist = totalDist - activeDist;
 
-                if(inciDist < 0) {
+                if (inciDist < 0) {
                     inciDist = 0;
                 }
 
-                Log.d(TAG, String.format("speed: %.1f, distance: %.1f -> active: %.1f + incidental: %.1f", speed , totalDist, activeDist, inciDist));
+                Log.d(TAG, String.format("speed: %.1f, distance: %.1f -> active: %.1f + incidental: %.1f", speed, totalDist, activeDist, inciDist));
 
                 if (yInd == 1) {
                     Toast.makeText(FriendStatsActivity.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, totalDist), Toast.LENGTH_SHORT).show();
@@ -136,7 +140,7 @@ public class FriendStatsActivity extends Activity {
             }
         });
 
-        if(!test) {
+        if (!test) {
             new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
         }
 
@@ -162,7 +166,7 @@ public class FriendStatsActivity extends Activity {
             int activeSteps = monthlyActiveSteps[i];
             int inactiveSteps = monthlyTotalSteps[i] - activeSteps;
 
-            if(inactiveSteps < 0) {
+            if (inactiveSteps < 0) {
                 inactiveSteps = 0;
             }
 
@@ -171,7 +175,7 @@ public class FriendStatsActivity extends Activity {
             }
             Log.d(TAG, String.format("day: %d: incidental steps(%d), active steps(%d)", i, inactiveSteps, activeSteps));
 
-            if(i < 4) {
+            if (i < 4) {
                 tmp.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i));
             }
             barEntries.add(new BarEntry(new float[]{activeSteps, inactiveSteps}, i));
@@ -192,11 +196,11 @@ public class FriendStatsActivity extends Activity {
         barDataSet.setColors(new int[]{Color.rgb(204, 229, 255), Color.rgb(255, 204, 204)});
 
         ArrayList<String> days = new ArrayList<>();
-        if(tempCal == null) {
+        if (tempCal == null) {
             tempCal = StepCalendar.getInstance();
         }
 
-        for( int i = 0; i < 28; i ++ ){
+        for (int i = 0; i < 28; i++) {
             days.add(0, getDayOfMonthString(tempCal));
             tempCal.add(Calendar.DATE, -1);
         }
@@ -222,10 +226,6 @@ public class FriendStatsActivity extends Activity {
 
     public BarData getBarData() {
         return barData;
-    }
-
-    public static String getDayOfMonthString(Calendar cal){
-        return String.valueOf(cal.get(Calendar.DAY_OF_MONTH));
     }
 
     @Override
@@ -330,12 +330,12 @@ public class FriendStatsActivity extends Activity {
         protected void onProgressUpdate(String... text) {
             boolean activeSetUp = true;
             boolean inactiveSetUp = true;
-            for(int i = 0; i < 28; i ++) {
-                if(!FriendStatsActivity.this.activeStepRead[i]) {
+            for (int i = 0; i < 28; i++) {
+                if (!FriendStatsActivity.this.activeStepRead[i]) {
                     activeSetUp = false;
                     break;
                 }
-                if(!FriendStatsActivity.this.inactiveStepRead[i]) {
+                if (!FriendStatsActivity.this.inactiveStepRead[i]) {
                     inactiveSetUp = false;
                     break;
                 }

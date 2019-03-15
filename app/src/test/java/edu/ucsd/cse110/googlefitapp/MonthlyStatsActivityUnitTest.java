@@ -40,7 +40,7 @@ public class MonthlyStatsActivityUnitTest {
     private Calendar myCalander;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         StepCalendar.set(2019, 2, 8);
         myCalander = StepCalendar.getInstance();
         Intent intent = new Intent(RuntimeEnvironment.application, WeeklyStatsActivity.class);

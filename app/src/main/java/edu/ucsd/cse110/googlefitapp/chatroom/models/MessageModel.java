@@ -14,18 +14,18 @@ import edu.ucsd.cse110.googlefitapp.chatroom.interfaces.ModelCallBacks;
 public class MessageModel {
     private ArrayList<ChatPojo> mMessages;
 
-    public void addMessages(DataSnapshot dataSnapshot, ModelCallBacks callBacks){
-        if (mMessages==null){
-            mMessages= new ArrayList<>();
+    public void addMessages(DataSnapshot dataSnapshot, ModelCallBacks callBacks) {
+        if (mMessages == null) {
+            mMessages = new ArrayList<>();
         }
-        ChatPojo chatPojo=new ChatPojo(dataSnapshot);
+        ChatPojo chatPojo = new ChatPojo(dataSnapshot);
         mMessages.add(chatPojo);
         callBacks.onModelUpdated(mMessages);
     }
 
-    public void addMessages(ChatPojo pojo, ModelCallBacks callBacks){
-        if (mMessages==null){
-            mMessages= new ArrayList<>();
+    public void addMessages(ChatPojo pojo, ModelCallBacks callBacks) {
+        if (mMessages == null) {
+            mMessages = new ArrayList<>();
         }
         mMessages.add(pojo);
         callBacks.onModelUpdated(mMessages);

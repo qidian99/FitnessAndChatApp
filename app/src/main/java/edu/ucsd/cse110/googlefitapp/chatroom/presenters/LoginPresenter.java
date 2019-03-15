@@ -16,16 +16,16 @@ public class LoginPresenter {
 
     ILoginView mILoginView;
 
-    public LoginPresenter(ILoginView iLoginCallbacks){
-        this.mILoginView =iLoginCallbacks;
+    public LoginPresenter(ILoginView iLoginCallbacks) {
+        this.mILoginView = iLoginCallbacks;
     }
 
     public void firebaseAnonymousAuth() {
         mILoginView.changeButtonText();
         FirebaseAuth.getInstance().signInAnonymously()
-                .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
-                    public void onComplete( Task<AuthResult> task) {
+                    public void onComplete(Task<AuthResult> task) {
                         if (!task.isSuccessful()) {
                             mILoginView.showToast("Firebase authentication failed, please check your internet connection");
                         } else {
@@ -37,14 +37,14 @@ public class LoginPresenter {
 
     public void invalidateRoomName(String roomName) {
 
-        if (roomName.trim().isEmpty()){
+        if (roomName.trim().isEmpty()) {
             mILoginView.showToast("Enter a valid Name");
         } else {
             mILoginView.startChatActivity(roomName);
         }
     }
 
-    public void showRoomDialogInActivity(){
+    public void showRoomDialogInActivity() {
         mILoginView.showRoomDialog();
     }
 }

@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
@@ -33,21 +32,16 @@ import com.github.ybq.android.spinkit.style.FadingCircle;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.adapter.PlannedWalkAdapter;
 import edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter;
+import edu.ucsd.cse110.googlefitapp.chatroom.views.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.dialog.ChooseStatsDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.CustomGoalDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
@@ -65,7 +59,6 @@ import edu.ucsd.cse110.googlefitapp.observer.EncouragementDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.GoalDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.GraphDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.Observer;
-import edu.ucsd.cse110.googlefitapp.chatroom.views.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.observer.StepDisplay;
 
 import static edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter.RC_SIGN_IN;
@@ -86,6 +79,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     public static final String KEY_STRIDE = "stride";
     public static final int DEFAULT_GOAL = 5000;
     public static final String TAG = "MAIN";
+    public static final String DOCUMENT_KEY = "public_ntfcn";
     private static final int ACTIVE_SESSION_REQUEST_CODE = 1000;
     public static boolean firstTimeUser = true;
     public static FitnessServiceFactory fitnessServiceFactory = new GoogleFitnessServiceFactory();
@@ -117,7 +111,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     private boolean notCleared;
     private boolean isTest = false;
     private DrawerLayout drawerLayout;
-    public static final String DOCUMENT_KEY = "public_ntfcn";
     private ChatMessaging chatMessaging;
 
 
@@ -137,13 +130,13 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         return strideLength;
     }
 
-    public void setGoal(int goal){
-        this.goal = goal;
-        getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putInt("goal", goal).apply();
+    public int getGoal() {
+        return this.goal;
     }
 
-    public int getGoal(){
-        return this.goal;
+    public void setGoal(int goal) {
+        this.goal = goal;
+        getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putInt("goal", goal).apply();
     }
 
     public boolean getGoalChangeable() {
@@ -182,7 +175,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         // fitnessService.setup();
     }
@@ -225,13 +218,13 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             subscribeToNotificationsTopic(chatMessaging);
         }
 
-        ProgressBar progressBarLeft = (ProgressBar)findViewById(R.id.spin_kit_steps_left);
+        ProgressBar progressBarLeft = findViewById(R.id.spin_kit_steps_left);
         FadingCircle wave1 = new FadingCircle();
         wave1.setColor(Color.parseColor("#90000000"));
         progressBarLeft.setIndeterminateDrawable(wave1);
         findViewById(R.id.stepsLeft).setVisibility(View.INVISIBLE);
 
-        ProgressBar progressBarTotal = (ProgressBar)findViewById(R.id.spin_kit_steps_taken);
+        ProgressBar progressBarTotal = findViewById(R.id.spin_kit_steps_taken);
         FadingCircle wave2 = new FadingCircle();
         wave2.setColor(Color.parseColor("#ff00ddff"));
         progressBarTotal.setIndeterminateDrawable(wave2);
@@ -243,11 +236,11 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         setSupportActionBar(toolbar);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-        TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+        TextView mTitle = toolbar.findViewById(R.id.toolbar_title);
         mTitle.setText(getString(R.string.PersonalBest));
 
         ImageView friendHint = findViewById(R.id.hintFriend);
-        if(test) {
+        if (test) {
             friendHint.setVisibility(View.VISIBLE);
         } else {
             friendHint.setVisibility(View.INVISIBLE);
@@ -354,9 +347,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.friendlist);
-//        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
-
-//        setUpFriendlist();
 
         fitnessService.setup();
 
@@ -424,7 +414,9 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         Intent intent = new Intent(MainActivity.this, GoalService.class);
         startService(intent);
 
-        if(getIntent().getBooleanExtra("goalReached", false)){
+        // If the notification is clicked, we check that if an intent has been passed in to
+        // jump to the desired activity / dialog
+        if (getIntent().getBooleanExtra("goalReached", false)) {
             showNewGoalPrompt();
             setGoalChangeable(false);
         }
@@ -440,7 +432,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
     private void launchFriendSignUpActivity() {
         Intent intent = new Intent(MainActivity.this, NewFriendSignUpActivity.class);
-        if(isTest) {
+        if (isTest) {
             intent.putExtra("testkey", true);
         }
         intent.putExtra("uid", fitnessService.getUID());
@@ -455,12 +447,11 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         int day = sharedPref.getInt("day", -1);
 
         if (day != today) {
-            setGoalChangeable(true);
+            sharedPref.edit().putBoolean("changing day", true).putInt("day", today).apply();
             canShowHalfEncouragement = true;
             canShowOverPrevEncouragement = true;
-            sharedPref.edit().putInt("day", today).apply();
-            Intent intent = new Intent(MainActivity.this, GoalService.class);
-            startService(intent);
+            fitnessService.updateStepCount();
+
         }
     }
 
@@ -492,7 +483,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // User pressed the return button on their device -- no extras on intent
-        if(requestCode == 1438){
+        if (requestCode == 1438) {
             fitnessService.setup();
         } else {
             if (data == null)
@@ -653,7 +644,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
                 Toast.LENGTH_LONG).show();
     }
 
-    //when we are done with the new goal
+    // When we are done with the new goal
     @SuppressLint("DefaultLocale")
     @Override
     public void onFinishEditDialog(int goal) {
@@ -682,8 +673,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     }
 
     public void mockCalendar(View view) {
-//        System.out.println(fitnessService.getLast7DaysSteps(weeklyInactiveSteps, weeklyActiveSteps,
-//                Calendar.getInstance()));
     }
 
     @Override
@@ -696,7 +685,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
                 + ", New day of Week: " + calendar.get(Calendar.DAY_OF_WEEK));
 
         ((TextView) findViewById(R.id.textCal)).setText(dateFormat.format(calendar.getTime()));
-        fitnessService.updateStepCount();
         checkForDayChange();
     }
 
@@ -735,6 +723,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             observer.update(currentStep, lastStep, goal, day, yesterday, today, notCleared);
         }
     }
+
     private void subscribeToNotificationsTopic(ChatMessaging chatMessaging) {
         chatMessaging.subscribe(this);
     }

@@ -20,7 +20,7 @@ import edu.ucsd.cse110.googlefitapp.chatroom.models.ChatPojo;
 import edu.ucsd.cse110.googlefitapp.chatroom.presenters.ChatPresenter;
 import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
 
-public class ChatActivity extends AppCompatActivity implements View.OnClickListener,IChatView {
+public class ChatActivity extends AppCompatActivity implements View.OnClickListener, IChatView {
 
     private EditText mEdittextChat;
     private ChatPresenter mChatPresenter;
@@ -35,20 +35,20 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        mRoomName=getIntent().getStringExtra(MyUtils.EXTRA_ROOM_NAME);
-        from=getIntent().getStringExtra("from");
-        to=getIntent().getStringExtra("to");
+        mRoomName = getIntent().getStringExtra(MyUtils.EXTRA_ROOM_NAME);
+        from = getIntent().getStringExtra("from");
+        to = getIntent().getStringExtra("to");
         String friendEmail = getIntent().getStringExtra("friend");
-        ((TextView)findViewById(R.id.text_header)).setText(friendEmail);
-        mChatPresenter =new ChatPresenter(this);
+        ((TextView) findViewById(R.id.text_header)).setText(friendEmail);
+        mChatPresenter = new ChatPresenter(this);
 //        mChatPresenter.setListener(mRoomName);
         CollectionReference chat = FirebaseFirestore.getInstance()
                 .collection("chatroom")
                 .document(mRoomName)
                 .collection("messages");
         mChatPresenter.setChat(chat);
-        mEdittextChat=(EditText) findViewById(R.id.edittext_chat_message);
-        mRecyclerView=(RecyclerView) findViewById(R.id.recycler_view);
+        mEdittextChat = findViewById(R.id.edittext_chat_message);
+        mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
 
@@ -57,18 +57,18 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.button_send_message:
-                mChatPresenter.sendMessageToFirebase(mRoomName,mEdittextChat.getText().toString(), from, to);
+                mChatPresenter.sendMessageToFirebase(mRoomName, mEdittextChat.getText().toString(), from, to);
                 break;
         }
     }
 
     @Override
     public void updateList(ArrayList<ChatPojo> list) {
-        ChatAdapter chatAdapter=new ChatAdapter(this,list);
+        ChatAdapter chatAdapter = new ChatAdapter(this, list);
         mRecyclerView.setAdapter(chatAdapter);
-        mRecyclerView.scrollToPosition(list.size()-1);
+        mRecyclerView.scrollToPosition(list.size() - 1);
     }
 
     @Override

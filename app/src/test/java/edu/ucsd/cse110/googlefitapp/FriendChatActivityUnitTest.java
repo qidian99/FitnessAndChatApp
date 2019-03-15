@@ -26,7 +26,7 @@ public class FriendChatActivityUnitTest {
     private Intent intent;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         intent = new Intent(RuntimeEnvironment.application, WeeklyStatsActivity.class);
         intent.putExtra("testkey", true);
         activity = Robolectric.buildActivity(FriendChatActivity.class, intent).create().get();

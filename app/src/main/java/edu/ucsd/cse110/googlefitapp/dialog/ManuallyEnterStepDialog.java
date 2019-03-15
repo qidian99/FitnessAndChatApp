@@ -118,11 +118,11 @@ public class ManuallyEnterStepDialog extends DialogFragment {
 
     }
 
-    public interface ManualStepSetterListener {
-        void onFinishEditDialog(int[] inputStep);
-    }
-
     public View getButton() {
         return posBtn;
+    }
+
+    public interface ManualStepSetterListener {
+        void onFinishEditDialog(int[] inputStep);
     }
 }

@@ -10,5 +10,6 @@ import edu.ucsd.cse110.googlefitapp.chatroom.models.ChatPojo;
 
 public interface IChatView {
     void updateList(ArrayList<ChatPojo> list);
+
     void clearEditText();
 }

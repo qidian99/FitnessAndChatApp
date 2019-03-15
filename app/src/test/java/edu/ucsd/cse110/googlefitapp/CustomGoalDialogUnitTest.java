@@ -6,8 +6,6 @@ import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.widget.Button;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +15,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
 import edu.ucsd.cse110.googlefitapp.dialog.CustomGoalDialog;
-import edu.ucsd.cse110.googlefitapp.dialog.NewGoalDialog;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
 import edu.ucsd.cse110.googlefitapp.fitness.GoogleFitnessServiceFactory;
@@ -35,7 +32,7 @@ public class CustomGoalDialogUnitTest {
     private MainActivity activity;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
 
         googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
@@ -112,7 +109,8 @@ public class CustomGoalDialogUnitTest {
         }
 
         @Override
-        public void updateStepCount() {}
+        public void updateStepCount() {
+        }
 
         @Override
         public void stopAsync() {

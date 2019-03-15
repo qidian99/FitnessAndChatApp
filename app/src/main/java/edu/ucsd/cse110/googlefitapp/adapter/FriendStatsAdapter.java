@@ -24,8 +24,8 @@ import com.google.firebase.iid.InstanceIdResult;
 import java.util.Calendar;
 import java.util.Map;
 
-import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.FriendStatsActivity;
+import edu.ucsd.cse110.googlefitapp.MainActivity;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
@@ -35,10 +35,9 @@ public class FriendStatsAdapter implements FitnessService {
     public static final int ACTIVE_SEC_INDEX = 2;
     public static final int ACTIVE_DIST_INDEX = 3;
     public static final int ACTIVE_SPEED_INDEX = 4;
-
+    public static Calendar calendar = MainActivity.calendar;
     private static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.active";
     private static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
-    public static Calendar calendar = MainActivity.calendar;
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "FriendStatsAdapter";
     private boolean isCancelled = false;
@@ -56,12 +55,12 @@ public class FriendStatsAdapter implements FitnessService {
     public void setup() {
         FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
-            public void onComplete( Task<AuthResult> task) {
+            public void onComplete(Task<AuthResult> task) {
                 if (!task.isSuccessful()) {
                     Log.e(TAG, "Firebase authentication failed, please check your internet connection");
                 } else {
                     Log.e(TAG, "Authentication succeeded");
-                    FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( activity,  new OnSuccessListener<InstanceIdResult>() {
+                    FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(activity, new OnSuccessListener<InstanceIdResult>() {
                         @Override
                         public void onSuccess(InstanceIdResult instanceIdResult) {
                             setupStepStorage();
@@ -127,13 +126,13 @@ public class FriendStatsAdapter implements FitnessService {
                         String friendId = null;
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String email = (String) document.getData().get("email");
-                            if(email != null && email.equals(friendEmail)) {
+                            if (email != null && email.equals(friendEmail)) {
                                 friendId = (String) document.getData().get("id");
                             }
                         }
 
                         // Retrieve data from steps db
-                        if(friendId == null) { // If friend is not in user db
+                        if (friendId == null) { // If friend is not in user db
                             Log.d(TAG, "friend does not exist");
                             for (int i = 0; i < 28; i++) {
                                 activity.getMonthlyTotalSteps()[i] = 0;
@@ -143,8 +142,7 @@ public class FriendStatsAdapter implements FitnessService {
                                 activity.setInActiveStepRead(i, true);
                                 activity.setActiveStepRead(i, true);
                             }
-                        }
-                        else { // If friend is in user db
+                        } else { // If friend is in user db
                             Log.d(TAG, "friend exists");
                             CollectionReference activeStepDB = stepStorage.document(friendId).collection("activeStep");
                             CollectionReference totalStepDB = stepStorage.document(friendId).collection("totalStep");
@@ -153,7 +151,7 @@ public class FriendStatsAdapter implements FitnessService {
                             userInfoDB.document("goal").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if(task.getResult() == null || task.getResult().getData() == null) {
+                                    if (task.getResult() == null || task.getResult().getData() == null) {
                                         activity.setFriendGoal(5000);
                                     } else {
                                         Map<String, Object> map = task.getResult().getData();
@@ -167,7 +165,7 @@ public class FriendStatsAdapter implements FitnessService {
                             userInfoDB.document("strideLength").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if(task.getResult() == null || task.getResult().getData() == null) {
+                                    if (task.getResult() == null || task.getResult().getData() == null) {
                                         activity.setFriendStrideLength(0);
                                     } else {
                                         Map<String, Object> map = task.getResult().getData();
@@ -187,7 +185,7 @@ public class FriendStatsAdapter implements FitnessService {
                                 totalStepDB.document(dateKey).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                     @Override
                                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                        if(task.getResult() == null || task.getResult().getData() == null) {
+                                        if (task.getResult() == null || task.getResult().getData() == null) {
                                             activity.getMonthlyTotalSteps()[finalI] = 0;
                                         } else {
                                             Map<String, Object> map = task.getResult().getData();
@@ -200,7 +198,7 @@ public class FriendStatsAdapter implements FitnessService {
                                 activeStepDB.document(dateKey).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                     @Override
                                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                        if(task.getResult() == null || task.getResult().getData() == null) {
+                                        if (task.getResult() == null || task.getResult().getData() == null) {
                                             activity.getMonthlyActiveSteps()[finalI] = 0;
                                             activity.getMonthlyActiveDistance()[finalI] = 0.0f;
                                             activity.getMonthlyActiveSpeed()[finalI] = 0.0f;
@@ -231,7 +229,7 @@ public class FriendStatsAdapter implements FitnessService {
     }
 
     private void setupStepStorage() {
-        if(stepStorage == null) {
+        if (stepStorage == null) {
             stepStorage = FirebaseFirestore.getInstance()
                     .collection("steps");
         }
@@ -273,7 +271,6 @@ public class FriendStatsAdapter implements FitnessService {
             }
         }
     }
-
 
 
 }

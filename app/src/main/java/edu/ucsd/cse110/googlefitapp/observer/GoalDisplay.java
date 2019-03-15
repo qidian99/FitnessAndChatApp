@@ -26,7 +26,9 @@ public class GoalDisplay implements Observer {
         }
 
         if (currentStep >= goal && goalChangeable) {
+            Log.e("dddddd", "show new goal prompt");
             goalChangeable = false;
+            activity.setGoalChangeable(false);
             activity.showNewGoalPrompt();
         }
     }

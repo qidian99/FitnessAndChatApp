@@ -66,6 +66,36 @@ public class MonthlyStatsScenarioTest {
         editor.commit();
     }
 
+    private static ViewAction touchDownAndUp(final float x, final float y) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isDisplayed();
+            }
+
+            @Override
+            public String getDescription() {
+                return "Send touch events.";
+            }
+
+            @Override
+            public void perform(UiController uiController, final View view) {
+                // Get view absolute position
+                int[] location = new int[2];
+                view.getLocationOnScreen(location);
+
+                // Offset coordinates by view position
+                float[] coordinates = new float[]{x + location[0], y + location[1]};
+                float[] precision = new float[]{1f, 1f};
+
+                // Send down event, pause, and send up
+                MotionEvent down = MotionEvents.sendDown(uiController, coordinates, precision).down;
+                uiController.loopMainThreadForAtLeast(200);
+                MotionEvents.sendUp(uiController, down, coordinates);
+            }
+        };
+    }
+
     @Before
     public void setup() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
@@ -118,36 +148,6 @@ public class MonthlyStatsScenarioTest {
         intended(hasComponent(new ComponentName(getTargetContext(), MainActivity.class)));
     }
 
-    private static ViewAction touchDownAndUp(final float x, final float y) {
-        return new ViewAction() {
-            @Override
-            public Matcher<View> getConstraints() {
-                return isDisplayed();
-            }
-
-            @Override
-            public String getDescription() {
-                return "Send touch events.";
-            }
-
-            @Override
-            public void perform(UiController uiController, final View view) {
-                // Get view absolute position
-                int[] location = new int[2];
-                view.getLocationOnScreen(location);
-
-                // Offset coordinates by view position
-                float[] coordinates = new float[] { x + location[0], y + location[1] };
-                float[] precision = new float[] { 1f, 1f };
-
-                // Send down event, pause, and send up
-                MotionEvent down = MotionEvents.sendDown(uiController, coordinates, precision).down;
-                uiController.loopMainThreadForAtLeast(200);
-                MotionEvents.sendUp(uiController, down, coordinates);
-            }
-        };
-    }
-
     private class ToastMatcher extends TypeSafeMatcher<Root> {
         @Override
         public void describeTo(Description description) {
@@ -160,9 +160,7 @@ public class MonthlyStatsScenarioTest {
             if ((type == WindowManager.LayoutParams.TYPE_TOAST)) {
                 IBinder windowToken = root.getDecorView().getWindowToken();
                 IBinder appToken = root.getDecorView().getApplicationWindowToken();
-                if (windowToken == appToken) {
-                    return true;
-                }
+                return windowToken == appToken;
             }
             return false;
         }

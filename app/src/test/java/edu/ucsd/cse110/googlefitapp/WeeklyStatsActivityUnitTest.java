@@ -5,15 +5,12 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.SystemClock;
 import android.view.MotionEvent;
-import android.view.animation.ScaleAnimation;
 import android.widget.Button;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.listener.ChartTouchListener;
-import com.github.mikephil.charting.listener.OnChartGestureListener;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +30,6 @@ import static edu.ucsd.cse110.googlefitapp.MainActivity.KEY_STRIDE;
 import static edu.ucsd.cse110.googlefitapp.MainActivity.SHARED_PREFERENCE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
@@ -44,7 +40,7 @@ public class WeeklyStatsActivityUnitTest {
     private Calendar myCalander;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         StepCalendar.set(2019, 2, 8);
         myCalander = StepCalendar.getInstance();
         Intent intent = new Intent(RuntimeEnvironment.application, WeeklyStatsActivity.class);

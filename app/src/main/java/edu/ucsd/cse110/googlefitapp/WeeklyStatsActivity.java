@@ -52,6 +52,26 @@ public class WeeklyStatsActivity extends Activity {
     private Calendar tempCal;
     private boolean esTest;
 
+    public static String getDayOfWeekString(Calendar cal) {
+        switch (cal.get(Calendar.DAY_OF_WEEK)) {
+            case 1:
+                return "Sun";
+            case 2:
+                return "Mon";
+            case 3:
+                return "Tues";
+            case 4:
+                return "Wed";
+            case 5:
+                return "Thurs";
+            case 6:
+                return "Fri";
+            case 7:
+                return "Sat";
+        }
+        return null;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,7 +132,7 @@ public class WeeklyStatsActivity extends Activity {
             @Override
             public void onChartSingleTapped(MotionEvent me) {
                 int index = barChart.getHighlightByTouchPoint(me.getX(), me.getY()).getXIndex();
-                if(index >= 7){
+                if (index >= 7) {
                     Log.d(TAG, "Invalid index touched.");
                     return;
                 }
@@ -123,11 +143,11 @@ public class WeeklyStatsActivity extends Activity {
                 float totalDist = stepToDistance(weeklyTotalSteps[index]);
                 float inciDist = totalDist - activeDist;
 
-                if(inciDist < 0) {
+                if (inciDist < 0) {
                     inciDist = 0;
                 }
 
-                Log.d(TAG, String.format(STATS_FMT, speed , totalDist, activeDist, inciDist));
+                Log.d(TAG, String.format(STATS_FMT, speed, totalDist, activeDist, inciDist));
 
                 if (yInd == 1) {
                     Toast.makeText(WeeklyStatsActivity.this, String.format("Incidental walk distance: %.1f miles \nfor a total of %.1f miles", inciDist, totalDist), Toast.LENGTH_SHORT).show();
@@ -158,7 +178,7 @@ public class WeeklyStatsActivity extends Activity {
         });
 
 //        setGraph();
-        if(!test || !esTest) {
+        if (!test || !esTest) {
             new setGraphAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, String.valueOf(500));
         }
 
@@ -183,7 +203,7 @@ public class WeeklyStatsActivity extends Activity {
 
             int inactiveSteps = weeklyTotalSteps[i] - activeSteps;
 
-            if(inactiveSteps < 0) {
+            if (inactiveSteps < 0) {
                 inactiveSteps = 0;
             }
 
@@ -210,11 +230,11 @@ public class WeeklyStatsActivity extends Activity {
         barDataSet.setColors(new int[]{Color.rgb(204, 229, 255), Color.rgb(255, 204, 204)});
 
         ArrayList<String> days = new ArrayList<>();
-        if(tempCal == null) {
+        if (tempCal == null) {
             tempCal = StepCalendar.getInstance();
         }
 
-        for( int i = 0; i < 7; i ++ ){
+        for (int i = 0; i < 7; i++) {
             days.add(0, getDayOfWeekString(tempCal));
             tempCal.add(Calendar.DATE, -1);
         }
@@ -231,7 +251,6 @@ public class WeeklyStatsActivity extends Activity {
         Log.d(TAG, String.format("goal line set success: %d", goal));
     }
 
-
     public void setTestGraph() {
         int[] totalArr = {5000, 5100, 2300, 4400, 1800, 1000, 2000};
         int[] activeArr = {500, 100, 300, 400, 800, 700, 1000};
@@ -247,7 +266,7 @@ public class WeeklyStatsActivity extends Activity {
 
             int inactiveSteps = totalArr[i] - activeSteps;
 
-            if(inactiveSteps < 0) {
+            if (inactiveSteps < 0) {
                 inactiveSteps = 0;
             }
 
@@ -270,11 +289,11 @@ public class WeeklyStatsActivity extends Activity {
         barDataSet.setColors(new int[]{Color.rgb(204, 229, 255), Color.rgb(255, 204, 204)});
 
         ArrayList<String> days = new ArrayList<>();
-        if(tempCal == null) {
+        if (tempCal == null) {
             tempCal = StepCalendar.getInstance();
         }
 
-        for( int i = 0; i < 7; i ++ ){
+        for (int i = 0; i < 7; i++) {
             days.add(0, getDayOfWeekString(tempCal));
             tempCal.add(Calendar.DATE, -1);
         }
@@ -301,27 +320,6 @@ public class WeeklyStatsActivity extends Activity {
     public BarData getBarData() {
         return barData;
     }
-
-    public static String getDayOfWeekString(Calendar cal){
-        switch(cal.get(Calendar.DAY_OF_WEEK)){
-            case 1:
-                return "Sun";
-            case 2:
-                return "Mon";
-            case 3:
-                return "Tues";
-            case 4:
-                return "Wed";
-            case 5:
-                return "Thurs";
-            case 6:
-                return "Fri";
-            case 7:
-                return "Sat";
-        }
-        return null;
-    }
-
 
     @Override
     public void updateAll(int num) {

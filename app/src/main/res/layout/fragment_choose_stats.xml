@@ -11,8 +11,8 @@
         android:id="@+id/congrats"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="10dp"
         android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:text="@string/choose_stats_msg"
         android:visibility="visible" />
 

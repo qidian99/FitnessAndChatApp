@@ -1,20 +1,16 @@
 package edu.ucsd.cse110.googlefitapp;
 
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import edu.ucsd.cse110.googlefitapp.firebase.ChatMessaging;
-import edu.ucsd.cse110.googlefitapp.firebase.FirebaseMessageToChatMessageAdapter;
 import edu.ucsd.cse110.googlefitapp.firebase.FirebaseStoreToStoreUnitAdapter;
 import edu.ucsd.cse110.googlefitapp.firebase.StoreUnit;
-import edu.ucsd.cse110.googlefitapp.firebase.TestMessaging;
-import edu.ucsd.cse110.googlefitapp.firebase.TestStore;
 
 public class FriendChatActivity extends AppCompatActivity {
 
@@ -25,10 +21,8 @@ public class FriendChatActivity extends AppCompatActivity {
     public String FROM_KEY = "from";
     public String TEXT_KEY = "text";
     public String TIMESTAMP_KEY = "timestamp";
-
-    StoreUnit chatStore;
     public String from;
-
+    StoreUnit chatStore;
     ChatMessaging chatMessaging;
 
     @Override

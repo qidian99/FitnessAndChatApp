@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -15,11 +14,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.firebase.database.core.Constants;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -27,7 +24,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 
-import edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils;
 import edu.ucsd.cse110.googlefitapp.chatroom.views.ChatActivity;
 
 import static edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils.EXTRA_ROOM_NAME;
@@ -140,10 +136,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 }
 
 class ClickActionHelper {
-    public static void startActivity(String className, Bundle extras, Context context){
+    public static void startActivity(String className, Bundle extras, Context context) {
         Class cls = ChatActivity.class;
-        String roomName = (String)extras.get("roomName");
-        String to = (String)extras.get("to");
+        String roomName = (String) extras.get("roomName");
+        String to = (String) extras.get("to");
         Intent i = new Intent(context, cls);
         i.putExtra("from", roomName.substring(0, roomName.indexOf("TO")));
         i.putExtra("to", to);
