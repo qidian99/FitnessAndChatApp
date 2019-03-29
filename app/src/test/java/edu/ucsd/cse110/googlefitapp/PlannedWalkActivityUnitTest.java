@@ -1,12 +1,11 @@
 package edu.ucsd.cse110.googlefitapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
-
-import com.google.android.gms.fitness.request.DataReadRequest;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,8 +13,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-
-import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
@@ -37,7 +34,7 @@ public class PlannedWalkActivityUnitTest {
     private int nextStepCount;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
 
         googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
@@ -47,8 +44,9 @@ public class PlannedWalkActivityUnitTest {
             }
         });
 
-        Intent intent = new Intent(RuntimeEnvironment.application, PlannedWalkActivity.class);
+        Intent intent = new Intent(RuntimeEnvironment.application, MainActivity.class);
         intent.putExtra(PlannedWalkActivity.FITNESS_SERVICE_KEY, TEST_SERVICE);
+        intent.putExtra("test", true);
         activity = Robolectric.buildActivity(PlannedWalkActivity.class, intent).create().get();
 
         textSteps = activity.findViewById(R.id.textSteps);
@@ -69,7 +67,7 @@ public class PlannedWalkActivityUnitTest {
 
     @Test
     public void testInitalStep() {
-        SharedPreferences sharedPref = activity.getSharedPreferences("stepCountData", activity.MODE_PRIVATE);
+        SharedPreferences sharedPref = activity.getSharedPreferences("stepCountData", Context.MODE_PRIVATE);
         assertTrue(sharedPref.getInt("initialSteps", -1) == 0);
         activity.setStepCount(nextStepCount);
         assertTrue(sharedPref.getInt("initialSteps", -1) == 0);
@@ -95,7 +93,7 @@ public class PlannedWalkActivityUnitTest {
 
     @Test
     public void testTimeUpdate() {
-        assertEquals("0:00", textTime.getText().toString());
+        assertEquals("time elapsed", textTime.getText().toString());
         activity.setTime(1000);
         activity.setTime();
         assertEquals("16:40", textTime.getText().toString());
@@ -103,7 +101,7 @@ public class PlannedWalkActivityUnitTest {
 
     @Test
     public void testWholeMin() {
-        assertEquals("0:00", textTime.getText().toString());
+        assertEquals("time elapsed", textTime.getText().toString());
         activity.setTime(3600);
         activity.setTime();
         assertEquals("60:00", textTime.getText().toString());

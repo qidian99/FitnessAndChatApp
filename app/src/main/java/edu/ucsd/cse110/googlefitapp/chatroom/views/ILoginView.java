@@ -6,8 +6,12 @@ package edu.ucsd.cse110.googlefitapp.chatroom.views;
 
 public interface ILoginView {
     void showToast(String message);
+
     void authSuccessful();
+
     void showRoomDialog();
+
     void changeButtonText();
+
     void startChatActivity(String roomName);
 }

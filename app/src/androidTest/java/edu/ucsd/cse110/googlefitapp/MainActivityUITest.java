@@ -15,8 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
-import com.google.android.gms.fitness.request.DataReadRequest;
-
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -26,8 +24,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.Calendar;
 
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.fitness.FitnessServiceFactory;
@@ -150,7 +146,7 @@ public class MainActivityUITest {
                 allOf(withId(R.id.stepsLeft2), withText("STEPS LEFT"),
                         childAtPosition(
                                 childAtPosition(
-                                        IsInstanceOf.<View>instanceOf(android.widget.TableLayout.class),
+                                        IsInstanceOf.instanceOf(android.widget.TableLayout.class),
                                         0),
                                 1),
                         isDisplayed()));
@@ -160,7 +156,7 @@ public class MainActivityUITest {
                 allOf(withId(R.id.stepsLeft),
                         childAtPosition(
                                 childAtPosition(
-                                        IsInstanceOf.<View>instanceOf(android.widget.TableLayout.class),
+                                        IsInstanceOf.instanceOf(android.widget.TableLayout.class),
                                         1),
                                 1),
                         isDisplayed()));

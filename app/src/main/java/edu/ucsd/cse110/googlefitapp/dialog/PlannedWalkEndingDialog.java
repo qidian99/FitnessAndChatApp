@@ -103,4 +103,16 @@ public class PlannedWalkEndingDialog extends DialogFragment {
     public float getSpeed() {
         return speed;
     }
+
+    public int getSec() {
+        return sec;
+    }
+
+    public int getMin() {
+        return min;
+    }
+
+    public int getSteps() {
+        return steps;
+    }
 }

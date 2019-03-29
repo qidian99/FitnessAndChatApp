@@ -11,9 +11,9 @@
         android:id="@+id/newGoal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:hint="Steps for New Goal"
         android:imeOptions="actionDone"
-        android:layout_marginTop="20dp"
         android:inputType="number"
         android:visibility="visible" />
 
@@ -21,8 +21,8 @@
         android:id="@+id/doneBtn"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
         android:layout_alignParentLeft="true"
+        android:layout_marginTop="5dp"
         android:text="@string/confirm" />
-    
+
 </LinearLayout>

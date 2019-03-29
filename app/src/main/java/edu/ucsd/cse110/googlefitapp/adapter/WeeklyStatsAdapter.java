@@ -28,21 +28,14 @@ import edu.ucsd.cse110.googlefitapp.fitness.FitnessService;
 import edu.ucsd.cse110.googlefitapp.mock.StepCalendar;
 
 public class WeeklyStatsAdapter implements FitnessService {
-    /*           .addField("ActiveSteps", Field.FORMAT_INT32)
-                .addField("ActiveMin", Field.FORMAT_INT32)
-                .addField("ActiveSec", Field.FORMAT_INT32)
-                .addField("ActiveDistance", Field.FORMAT_FLOAT)
-                .addField("ActiveSpeed", Field.FORMAT_FLOAT)
-                */
     public static final int ACTIVE_STEP_INDEX = 0;
     public static final int ACTIVE_MIN_INDEX = 1;
     public static final int ACTIVE_SEC_INDEX = 2;
     public static final int ACTIVE_DIST_INDEX = 3;
     public static final int ACTIVE_SPEED_INDEX = 4;
-
+    public static Calendar calendar = MainActivity.calendar;
     private static String ACTIVE_DT_NAME = "edu.ucsd.cse110.googlefitapp.active";
     private static String APP_PACKAGE_NAME = "edu.ucsd.cse110.googlefitapp";
-    public static Calendar calendar = MainActivity.calendar;
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "WeeklyStatsAdapter";
     private boolean isCancelled = false;
@@ -177,16 +170,17 @@ public class WeeklyStatsAdapter implements FitnessService {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
 //        tempCal.add(Calendar.DATE, -tempCal.get(Calendar.DAY_OF_WEEK) + 1);
         tempCal.add(Calendar.DATE, -6);
         long startTime = tempCal.getTimeInMillis();
+        Log.e(TAG, "START TIMEEEEEEEEEEE total " + startTime);
         // Get next Saturday
         tempCal.add(Calendar.DATE, 7);
         tempCal.add(Calendar.SECOND, -1);
         long endTime = tempCal.getTimeInMillis();
-//        DataSource activeDataSource = new DataSource.Builder()
+//        DataSource activeDataSource = new DataSource.Builder() 1552248000608000000, 1552274808405000000
 //                .setAppPackageName(APP_PACKAGE_NAME)
 //                .setDataType(activeDataType)
 //                .setName(ACTIVE_DT_NAME)
@@ -207,10 +201,12 @@ public class WeeklyStatsAdapter implements FitnessService {
         Calendar tempCal = (Calendar) cal.clone();
         tempCal.set(Calendar.SECOND, 0);
         tempCal.set(Calendar.MINUTE, 0);
-        tempCal.set(Calendar.HOUR, 0);
+        tempCal.set(Calendar.HOUR_OF_DAY, 0);
         // Get last Sunday
         tempCal.add(Calendar.DATE, -6);
         long startTime = tempCal.getTimeInMillis();
+        Log.e(TAG, "START TIMEEEEEEEEEEE active " + startTime);
+
         // Get next Saturday
         tempCal.add(Calendar.DATE, 7);
         tempCal.add(Calendar.SECOND, -1);
@@ -254,11 +250,12 @@ public class WeeklyStatsAdapter implements FitnessService {
                                 } else {
                                     activity.getWeeklyTotalSteps()[i] = 0;
                                 }
-                                activity.setInActiveStepRead(true);
                             }
+                            activity.setInActiveStepRead(true);
                         })
                 .addOnFailureListener(
-                        e -> {Log.e(TAG, "Fail to get the last 7 day total steps");
+                        e -> {
+                            Log.e(TAG, "Fail to get the last 7 day total steps");
                         });
 
         // Active steps data read response
@@ -285,11 +282,12 @@ public class WeeklyStatsAdapter implements FitnessService {
                                     activity.getWeeklyActiveDistance()[i] = 0;
                                     activity.getWeeklyActiveSpeed()[i] = 0;
                                 }
-                                activity.setActiveStepRead(true);
                             }
+                            activity.setActiveStepRead(true);
                         })
                 .addOnFailureListener(
-                        e -> {Log.e(TAG, "Fail to get the last 7 day active steps");
+                        e -> {
+                            Log.e(TAG, "Fail to get the last 7 day active steps");
                         });
         return null;
     }
@@ -340,7 +338,6 @@ public class WeeklyStatsAdapter implements FitnessService {
             }
         }
     }
-
 
 
 }

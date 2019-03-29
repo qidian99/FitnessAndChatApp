@@ -1,11 +1,12 @@
 package edu.ucsd.cse110.googlefitapp;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.widget.Button;
-
-import junit.framework.TestCase;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,11 +29,15 @@ import static org.junit.Assert.assertTrue;
 public class ManuallyEnterStepDialogUnitTest {
     private static final String TEST_SERVICE = "TEST_SET_STEP_DIALOG";
     private Button setStepBtn;
-    private DialogFragment dialogFragment;
+    private ManuallyEnterStepDialog manuallyEnterStepDialog;
     private MainActivity activity;
+    private EditText stepText;
+    private TextView stepMain;
+    private Button posBtn;
+    private DialogFragment dialogFragment;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
 
         googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
@@ -47,6 +52,7 @@ public class ManuallyEnterStepDialogUnitTest {
         intent.putExtra("TEST_SERVICE_MAIN", TEST_SERVICE);
         intent.putExtra("TEST_SERVICE_STEP_COUNT", TEST_SERVICE);
         activity = Robolectric.buildActivity(MainActivity.class, intent).create().get();
+
         setStepBtn = activity.findViewById(R.id.btnSetStep);
         setStepBtn.performClick();
         dialogFragment = (DialogFragment) activity.getSupportFragmentManager()
@@ -54,14 +60,32 @@ public class ManuallyEnterStepDialogUnitTest {
     }
 
     @Test
+    public void testNullTitle() {
+        manuallyEnterStepDialog = ManuallyEnterStepDialog.newInstance(null);
+        assertNull(manuallyEnterStepDialog);
+    }
+
+    @Test
+    public void testTitle() {
+        manuallyEnterStepDialog = ManuallyEnterStepDialog.newInstance("manually enter step dialog");
+        Bundle bundle = manuallyEnterStepDialog.getArguments();
+        assertNotNull(bundle);
+        String title = bundle.getString("title");
+        assertNotNull(title);
+        assertEquals("manually enter step dialog", title);
+    }
+
+    @Test
     public void testSetStepDialogIsShown() {
-        assertNotNull(dialogFragment);
-        assertTrue(dialogFragment.getShowsDialog());
+        manuallyEnterStepDialog = ManuallyEnterStepDialog.newInstance("manually enter step dialog");
+        assertNotNull(manuallyEnterStepDialog);
+        assertTrue(manuallyEnterStepDialog.getShowsDialog());
     }
 
     @Test
     public void testSetStepDialogCancelable() {
-        assertTrue(dialogFragment.isCancelable());
+        manuallyEnterStepDialog = ManuallyEnterStepDialog.newInstance("manually enter step dialog");
+        assertTrue(manuallyEnterStepDialog.isCancelable());
     }
 
     @Test
@@ -94,7 +118,8 @@ public class ManuallyEnterStepDialogUnitTest {
         }
 
         @Override
-        public void updateStepCount() {}
+        public void updateStepCount() {
+        }
 
         @Override
         public void stopAsync() {

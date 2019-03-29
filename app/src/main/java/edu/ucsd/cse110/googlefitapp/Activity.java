@@ -9,4 +9,7 @@ public abstract class Activity extends AppCompatActivity implements Subject {
 
     public abstract void setStep(int currentStep);
 
+    public abstract int getGoal();
+
+    public abstract float getStrideLength();
 }

@@ -26,8 +26,9 @@ public class EncouragementDisplay implements Observer {
             activity.showAchieveHalfEncouragement();
         }
 
-        if (currentStep > goal && activity.getGoalChangeable()) {
+        if (currentStep >= goal && activity.getGoalChangeable()) {
             Log.d(TAG, "need show newGoalPrompt");
+            activity.setGoalChangeable(false);
             activity.showNewGoalPrompt();
         }
 

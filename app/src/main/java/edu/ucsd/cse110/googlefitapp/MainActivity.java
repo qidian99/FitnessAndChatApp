@@ -15,8 +15,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
@@ -39,6 +41,8 @@ import java.util.Objects;
 
 import edu.ucsd.cse110.googlefitapp.adapter.PlannedWalkAdapter;
 import edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter;
+import edu.ucsd.cse110.googlefitapp.chatroom.views.LoginActivity;
+import edu.ucsd.cse110.googlefitapp.dialog.ChooseStatsDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.CustomGoalDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.HeightDialog;
 import edu.ucsd.cse110.googlefitapp.dialog.ManuallyEnterStepDialog;
@@ -55,10 +59,10 @@ import edu.ucsd.cse110.googlefitapp.observer.EncouragementDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.GoalDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.GraphDisplay;
 import edu.ucsd.cse110.googlefitapp.observer.Observer;
-import edu.ucsd.cse110.googlefitapp.chatroom.views.LoginActivity;
 import edu.ucsd.cse110.googlefitapp.observer.StepDisplay;
 
 import static edu.ucsd.cse110.googlefitapp.adapter.UnplannedWalkAdapter.RC_SIGN_IN;
+import static edu.ucsd.cse110.googlefitapp.chatroom.utils.MyUtils.EXTRA_ROOM_NAME;
 
 public class MainActivity extends Activity implements HeightDialog.HeightPrompterListener,
         CustomGoalDialog.GoalPrompterListener, ManuallyEnterStepDialog.ManualStepSetterListener,
@@ -75,6 +79,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     public static final String KEY_STRIDE = "stride";
     public static final int DEFAULT_GOAL = 5000;
     public static final String TAG = "MAIN";
+    public static final String DOCUMENT_KEY = "public_ntfcn";
     private static final int ACTIVE_SESSION_REQUEST_CODE = 1000;
     public static boolean firstTimeUser = true;
     public static FitnessServiceFactory fitnessServiceFactory = new GoogleFitnessServiceFactory();
@@ -104,8 +109,8 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     private int day;
     private int today;
     private boolean notCleared;
+    private boolean isTest = false;
     private DrawerLayout drawerLayout;
-    public static final String DOCUMENT_KEY = "chat1";
     private ChatMessaging chatMessaging;
 
 
@@ -125,8 +130,13 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         return strideLength;
     }
 
-    public void setGoal(int goal){
+    public int getGoal() {
+        return this.goal;
+    }
+
+    public void setGoal(int goal) {
         this.goal = goal;
+        getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putInt("goal", goal).apply();
     }
 
     public boolean getGoalChangeable() {
@@ -134,6 +144,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     }
 
     public void setGoalChangeable(boolean goalChangeable) {
+        getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putBoolean("goalChangeable", goalChangeable).apply();
         this.goalChangeable = goalChangeable;
     }
 
@@ -164,7 +175,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         // fitnessService.setup();
     }
@@ -175,13 +186,27 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        boolean test = getIntent().getBooleanExtra("FriendListTest", false);
+
         // For testing
-        if (getIntent().getBooleanExtra("TEST", false)) {
+        if (getIntent().getBooleanExtra("TEST", false) || test) {
+            if (getIntent().getBooleanExtra("TEST", false)) {
+                isTest = true;
+            }
             String mainServiceKey = getIntent().getStringExtra("TEST_SERVICE_MAIN");
             String stepCountServiceKey = getIntent().getStringExtra("TEST_SERVICE_STEP_COUNT");
             fitnessService = fitnessServiceFactory.create(mainServiceKey, this);
             setFitnessServiceKey(stepCountServiceKey);
             chatMessaging = new TestMessaging();
+            // Set up drawer item
+            NavigationView navView = findViewById(R.id.nav_view);
+            Menu m = navView.getMenu();
+            m.clear();
+
+            // Request friend view (User to Other)
+            SubMenu reqFriendMenu = m.addSubMenu("Friend List");
+            reqFriendMenu.add("daw096@ucsd.edu");
+
         } else { // Normal setup
             fitnessServiceFactory.put(MAIN_SERVICE, UnplannedWalkAdapter::new);
 
@@ -193,13 +218,13 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             subscribeToNotificationsTopic(chatMessaging);
         }
 
-        ProgressBar progressBarLeft = (ProgressBar)findViewById(R.id.spin_kit_steps_left);
+        ProgressBar progressBarLeft = findViewById(R.id.spin_kit_steps_left);
         FadingCircle wave1 = new FadingCircle();
         wave1.setColor(Color.parseColor("#90000000"));
         progressBarLeft.setIndeterminateDrawable(wave1);
         findViewById(R.id.stepsLeft).setVisibility(View.INVISIBLE);
 
-        ProgressBar progressBarTotal = (ProgressBar)findViewById(R.id.spin_kit_steps_taken);
+        ProgressBar progressBarTotal = findViewById(R.id.spin_kit_steps_taken);
         FadingCircle wave2 = new FadingCircle();
         wave2.setColor(Color.parseColor("#ff00ddff"));
         progressBarTotal.setIndeterminateDrawable(wave2);
@@ -211,11 +236,15 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         setSupportActionBar(toolbar);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-        TextView mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+        TextView mTitle = toolbar.findViewById(R.id.toolbar_title);
         mTitle.setText(getString(R.string.PersonalBest));
 
         ImageView friendHint = findViewById(R.id.hintFriend);
-        friendHint.setVisibility(View.INVISIBLE);
+        if (test) {
+            friendHint.setVisibility(View.VISIBLE);
+        } else {
+            friendHint.setVisibility(View.INVISIBLE);
+        }
 
         ImageView addFriend = findViewById(R.id.friend_18);
         addFriend.setOnTouchListener(new OnTouchListener() {
@@ -248,7 +277,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         addFriend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                lauchFriendSignUpActivity();
+                launchFriendSignUpActivity();
             }
         });
 
@@ -256,7 +285,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         chatBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                lauchChatroomActivity();
+                launchChatRoomActivity();
             }
         });
 
@@ -318,9 +347,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.friendlist);
-//        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
-
-//        setUpFriendlist();
 
         fitnessService.setup();
 
@@ -357,6 +383,8 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
         // Users can roll back the date
         Button setDateBtn = findViewById(R.id.mockCalBtn);
+        ((TextView) findViewById(R.id.textCal)).setText(dateFormat.format(calendar.getTime()));
+
         Calendar tempCal = Calendar.getInstance();
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this, MainActivity.this, tempCal.get(Calendar.YEAR),
@@ -373,9 +401,8 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
         // Go to the bar chart activity.
         Button btnGoToWeekly = findViewById(R.id.weeklyButton);
-        System.out.println("started bar");
 
-        btnGoToWeekly.setOnClickListener(v -> launchWeeklyStats());
+        btnGoToWeekly.setOnClickListener(v -> showChooseStatsPrompt());
 
         checkForDayChange();
 
@@ -383,11 +410,31 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         new StepDisplay(this);
         new EncouragementDisplay(this);
         new GraphDisplay(this);
+
+        Intent intent = new Intent(MainActivity.this, GoalService.class);
+        startService(intent);
+
+        // If the notification is clicked, we check that if an intent has been passed in to
+        // jump to the desired activity / dialog
+        if (getIntent().getBooleanExtra("goalReached", false)) {
+            showNewGoalPrompt();
+            setGoalChangeable(false);
+        }
+        checkIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        checkIntent(intent);
     }
 
 
-    private void lauchFriendSignUpActivity() {
+    private void launchFriendSignUpActivity() {
         Intent intent = new Intent(MainActivity.this, NewFriendSignUpActivity.class);
+        if (isTest) {
+            intent.putExtra("testkey", true);
+        }
         intent.putExtra("uid", fitnessService.getUID());
         intent.putExtra("email", fitnessService.getEmail());
         Log.d(TAG, "Async stopped");
@@ -400,22 +447,11 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         int day = sharedPref.getInt("day", -1);
 
         if (day != today) {
-            goalChangeable = true;
+            sharedPref.edit().putBoolean("changing day", true).putInt("day", today).apply();
             canShowHalfEncouragement = true;
             canShowOverPrevEncouragement = true;
-            sharedPref.edit().putInt("day", today).apply();
-        }
-    }
+            fitnessService.updateStepCount();
 
-    public void launchWeeklyStats() {
-        try {
-            Intent intent = new Intent(MainActivity.this, WeeklyStatsActivity.class);
-            startActivity(intent);
-            Log.d(TAG, getString(R.string.lauchWeeklyStatsSuccess));
-
-        } catch (Exception e) {
-            Log.d(TAG, getString(R.string.lauchWeeklyStatsFailure) + e.toString());
-            e.printStackTrace();
         }
     }
 
@@ -425,6 +461,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     @Override
     public void setStep(int currentStep) {
         this.currentStep = currentStep;
+        getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE).edit().putInt("step", currentStep).apply();
     }
 
     public void launchStepCountActivity() {
@@ -446,38 +483,42 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // User pressed the return button on their device -- no extras on intent
-        if (data == null)
-            return;
+        if (requestCode == 1438) {
+            fitnessService.setup();
+        } else {
+            if (data == null)
+                return;
 
-        Log.d(TAG, "switch back to main activity success");
+            Log.d(TAG, "switch back to main activity success");
 
-        // Firstly it fetches active data from PlannedWalkActivity
-        if (requestCode == ACTIVE_SESSION_REQUEST_CODE) {
-            super.onActivityResult(requestCode, resultCode, data);
-            stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
-            statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
-            sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
+            // Firstly it fetches active data from PlannedWalkActivity
+            if (requestCode == ACTIVE_SESSION_REQUEST_CODE) {
+                super.onActivityResult(requestCode, resultCode, data);
+                stepPref = getSharedPreferences("weekly_steps", MODE_PRIVATE);
+                statsPref = getSharedPreferences("weekly_data", MODE_PRIVATE);
+                sharedPref = getSharedPreferences(SHARED_PREFERENCE_NAME, MODE_PRIVATE);
 
-            activeDistance = data.getFloatExtra("distance", 0.0f);
-            activeSpeed = data.getFloatExtra("speed", 0.0f);
-            activeMin = data.getIntExtra("min", 0);
-            activeSec = data.getIntExtra("second", 0);
-            activeSteps = data.getIntExtra("steps", 0);
-            displayActiveData();
+                activeDistance = data.getFloatExtra("distance", 0.0f);
+                activeSpeed = data.getFloatExtra("speed", 0.0f);
+                activeMin = data.getIntExtra("min", 0);
+                activeSec = data.getIntExtra("second", 0);
+                activeSteps = data.getIntExtra("steps", 0);
+                displayActiveData();
 
-            // Then, store the active data into local storage
-            // Note that if the date is Saturday, a new cycle will start, so also weekly data are cleared
-            today = calendar.get(Calendar.DAY_OF_WEEK);
-            UpdateActiveSteps();
+                // Then, store the active data into local storage
+                // Note that if the date is Saturday, a new cycle will start, so also weekly data are cleared
+                today = calendar.get(Calendar.DAY_OF_WEEK);
+                UpdateActiveSteps();
 
-            // Finally, update total steps, and display it on UI
-            fitnessService.updateStepCount();
-            fitnessService.startAsync();
-        } else if(requestCode == RC_SIGN_IN ){
-            // The Task returned from this call is always completed, no need to attach
-            // a listener.
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
+                // Finally, update total steps, and display it on UI
+                fitnessService.updateStepCount();
+                fitnessService.startAsync();
+            } else if (requestCode == RC_SIGN_IN) {
+                // The Task returned from this call is always completed, no need to attach
+                // a listener.
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                handleSignInResult(task);
+            }
         }
     }
 
@@ -517,7 +558,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
 
         currentStep += activeSteps;
         if (currentStep >= this.goal && goalChangeable) { // this.goal is steps remaining
-            goalChangeable = false; // Goal is only allowed to be set once in a week
+            setGoalChangeable(false); // Goal is only allowed to be set once in a week
             showNewGoalPrompt();
         }
 
@@ -565,6 +606,12 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
                 Toast.LENGTH_LONG).show();
     }
 
+    public void showChooseStatsPrompt() {
+        FragmentManager fm = getSupportFragmentManager();
+        ChooseStatsDialog setGoalDialogFragment = ChooseStatsDialog.newInstance(getString(R.string.choose_stats), this);
+        setGoalDialogFragment.show(fm, "fragment_choose_stats");
+    }
+
     private void displayActiveData() {
         FragmentManager fm = getSupportFragmentManager();
         PlannedWalkEndingDialog plannedWalkEndingDialog = PlannedWalkEndingDialog.newInstance(getString(R.string.prevSession), activeDistance,
@@ -597,7 +644,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
                 Toast.LENGTH_LONG).show();
     }
 
-    //when we are done with the new goal
+    // When we are done with the new goal
     @SuppressLint("DefaultLocale")
     @Override
     public void onFinishEditDialog(int goal) {
@@ -605,16 +652,11 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
         goalText.setText(String.format(SHOW_GOAL, goal));
 
         // Save new goal
-        this.goal = goal;
-
+        setGoal(goal);
         fitnessService.updateStepCount();
 
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCE_NAME,
-                MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(KEY_GOAL, goal);
-        editor.apply();
     }
+
 
     @Override
     public void onFinishEditDialog(int[] inputStep) {
@@ -626,8 +668,6 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
     }
 
     public void mockCalendar(View view) {
-//        System.out.println(fitnessService.getLast7DaysSteps(weeklyInactiveSteps, weeklyActiveSteps,
-//                Calendar.getInstance()));
     }
 
     @Override
@@ -640,7 +680,7 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
                 + ", New day of Week: " + calendar.get(Calendar.DAY_OF_WEEK));
 
         ((TextView) findViewById(R.id.textCal)).setText(dateFormat.format(calendar.getTime()));
-        fitnessService.updateStepCount();
+        checkForDayChange();
     }
 
     @Override
@@ -678,13 +718,24 @@ public class MainActivity extends Activity implements HeightDialog.HeightPrompte
             observer.update(currentStep, lastStep, goal, day, yesterday, today, notCleared);
         }
     }
+
     private void subscribeToNotificationsTopic(ChatMessaging chatMessaging) {
         chatMessaging.subscribe(this);
     }
 
-    private void lauchChatroomActivity() {
+    private void launchChatRoomActivity() {
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(intent);
         overridePendingTransition(R.anim.slide_r_to_l_enter, R.anim.slide_r_to_l_exit);
+    }
+
+    public void checkIntent(Intent intent) {
+        if (intent.hasExtra("click_action")) {
+            Log.e("ClickActionHelper", "from: " + intent.getStringExtra("from"));
+            Log.e("ClickActionHelper", "to: " + intent.getStringExtra("to"));
+            Log.e("ClickActionHelper", "friend: " + intent.getStringExtra("friend"));
+            Log.e("ClickActionHelper", "roomName: " + intent.getStringExtra(EXTRA_ROOM_NAME));
+            ClickActionHelper.startActivity(intent.getStringExtra("click_action"), intent.getExtras(), this);
+        }
     }
 }

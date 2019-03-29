@@ -24,11 +24,12 @@ import edu.ucsd.cse110.googlefitapp.R;
 public class FirebaseStoreToStoreUnitAdapter implements StoreUnit {
     CollectionReference chat;
     FriendChatActivity activity;
-    public FirebaseStoreToStoreUnitAdapter(FriendChatActivity activity){
+
+    public FirebaseStoreToStoreUnitAdapter(FriendChatActivity activity) {
         chat = FirebaseFirestore.getInstance()
-                .collection(activity.COLLECTION_KEY)
-                .document(activity.DOCUMENT_KEY)
-                .collection(activity.MESSAGES_KEY);
+                .collection(FriendChatActivity.COLLECTION_KEY)
+                .document(FriendChatActivity.DOCUMENT_KEY)
+                .collection(FriendChatActivity.MESSAGES_KEY);
         this.activity = activity;
         FirebaseApp.initializeApp(activity);
 
@@ -40,7 +41,7 @@ public class FirebaseStoreToStoreUnitAdapter implements StoreUnit {
         chat.orderBy(activity.TIMESTAMP_KEY, Query.Direction.ASCENDING)
                 .addSnapshotListener((newChatSnapShot, error) -> {
                     if (error != null) {
-                        Log.e(activity.TAG, error.getLocalizedMessage());
+                        Log.e(FriendChatActivity.TAG, error.getLocalizedMessage());
                         return;
                     }
 
@@ -79,7 +80,7 @@ public class FirebaseStoreToStoreUnitAdapter implements StoreUnit {
         chat.add(newMessage).addOnSuccessListener(result -> {
             messageView.setText("");
         }).addOnFailureListener(error -> {
-            Log.e(activity.TAG, error.getLocalizedMessage());
+            Log.e(FriendChatActivity.TAG, error.getLocalizedMessage());
         });
     }
 }

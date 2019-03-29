@@ -1,12 +1,12 @@
 package edu.ucsd.cse110.googlefitapp;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.widget.Button;
 
-import junit.framework.TestCase;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +32,7 @@ public class CustomGoalDialogUnitTest {
     private MainActivity activity;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         FitnessServiceFactory googleFitnessServiceFactory = new GoogleFitnessServiceFactory();
 
         googleFitnessServiceFactory.put(TEST_SERVICE, new FitnessServiceFactory.BluePrint() {
@@ -75,6 +75,21 @@ public class CustomGoalDialogUnitTest {
         assertEquals("fragment_set_goal", dialogFragment.getTag());
     }
 
+    @Test
+    public void testNullTitle() {
+        CustomGoalDialog goalDialog = CustomGoalDialog.newInstance(null);
+        assertNull(goalDialog);
+    }
+
+    @Test
+    public void testTitle() {
+        CustomGoalDialog goalDialog = CustomGoalDialog.newInstance("title");
+        Bundle bundle = goalDialog.getArguments();
+        Assert.assertNotNull(bundle);
+        String title = bundle.getString("title");
+        assertEquals("title", title);
+    }
+
     private class TestFitnessService implements FitnessService {
         private static final String TAG = "[TestStepCountActFitnessService]: ";
         private Activity mainActivity;
@@ -94,7 +109,8 @@ public class CustomGoalDialogUnitTest {
         }
 
         @Override
-        public void updateStepCount() {}
+        public void updateStepCount() {
+        }
 
         @Override
         public void stopAsync() {
